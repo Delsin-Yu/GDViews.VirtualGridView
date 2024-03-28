@@ -1,0 +1,74 @@
+[gd_scene load_steps=3 format=3 uid="uid://73yxo01kqtsi"]
+
+[ext_resource type="Script" path="res://Example.cs" id="1_wg4ng"]
+[ext_resource type="PackedScene" uid="uid://bbflxig4up0wr" path="res://view.tscn" id="2_7ef37"]
+
+[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_up", "_down", "_left", "_right", "_scramble")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_wg4ng")
+_packedScene = ExtResource("2_7ef37")
+_container = NodePath("Panel")
+_up = NodePath("Button")
+_down = NodePath("Button2")
+_left = NodePath("Button3")
+_right = NodePath("Button4")
+_scramble = NodePath("Button5")
+
+[node name="Panel" type="Panel" parent="."]
+clip_contents = true
+layout_mode = 0
+offset_left = 103.0
+offset_top = 81.0
+offset_right = 463.0
+offset_bottom = 441.0
+
+[node name="Button" type="Button" parent="."]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+offset_left = 610.0
+offset_top = 229.0
+offset_right = 674.0
+offset_bottom = 293.0
+
+[node name="Button2" type="Button" parent="."]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+offset_left = 609.0
+offset_top = 312.0
+offset_right = 673.0
+offset_bottom = 376.0
+
+[node name="Button3" type="Button" parent="."]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+offset_left = 535.0
+offset_top = 271.0
+offset_right = 599.0
+offset_bottom = 335.0
+
+[node name="Button4" type="Button" parent="."]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+offset_left = 694.0
+offset_top = 270.0
+offset_right = 758.0
+offset_bottom = 334.0
+
+[node name="Button5" type="Button" parent="."]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+offset_left = 803.0
+offset_top = 420.0
+offset_right = 867.0
+offset_bottom = 484.0
+text = "Add
+Element"
