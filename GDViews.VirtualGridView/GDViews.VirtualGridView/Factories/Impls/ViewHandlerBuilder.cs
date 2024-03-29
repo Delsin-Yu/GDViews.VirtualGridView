@@ -16,5 +16,5 @@ internal class ViewHandlerBuilder : IViewHandlerBuilder
     public int ViewportColumns { get; }
     public int ViewportRows { get; }
 
-    public IDataLayoutBuilder WithViewHandler(IViewHandler viewHandler, IElementTweener elementTweener, IElementFader elementFader) => new DataLayoutSelectionBuilder(this, viewHandler, elementTweener, elementFader);
+    public IDataLayoutBuilder WithHandlers(IViewHandler viewHandler, IElementTweener elementTweener, IElementFader elementFader) => new DataLayoutSelectionBuilder(this, viewHandler, elementTweener, elementFader);
 }

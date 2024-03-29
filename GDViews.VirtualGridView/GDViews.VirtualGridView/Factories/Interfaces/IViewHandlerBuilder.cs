@@ -2,5 +2,5 @@
 
 public interface IViewHandlerBuilder
 {
-    IDataLayoutBuilder WithViewHandler(IViewHandler viewHandler, IElementTweener elementTweener, IElementFader elementFader);
+    IDataLayoutBuilder WithHandlers(IViewHandler viewHandler, IElementTweener elementTweener, IElementFader elementFader);
 }

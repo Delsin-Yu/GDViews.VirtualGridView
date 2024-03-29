@@ -31,9 +31,9 @@ public partial class Example : Node
         // Scramble(dataList1);
         // Scramble(dataList2);
 
-        _virtualGridView = VirtualGridViewFactory
-            .CreateView(5, 5)
-            .WithViewHandler(
+        _virtualGridView = VirtualGridView
+            .Create(5, 5)
+            .WithHandlers(
                 ViewHandlerFactory.CreateCenterAlignedHandler(),
                 //ElementTweenerFactory.None,
                 //ElementFaderFactory.None
@@ -41,14 +41,14 @@ public partial class Example : Node
                 ElementFaders.CreateScaleRotate(0.25f, TweenSetups.EaseOutSine)
             )
             .WithVerticalDataLayout<string>()
-                .AddColumnDataSource(DataSetDefinitionFactory.Create(dataList1, [0, 1]))
-                .AddColumnDataSource(DataSetDefinitionFactory.Create(dataList2, [2, 3, 4]))
+                .AddColumnDataSource(DataSetDefinition.Create(dataList1, [0, 1]))
+                .AddColumnDataSource(DataSetDefinition.Create(dataList2, [2, 3, 4]))
             .WithDelegate<View>()
                 .ConfigureDrawHandler((data, view) => view.Print(data))
             .WithArgument(
                 _packedScene,
                 _container,
-                InfinitLayoutGridFactory.CreateSimple(
+                InfinitLayoutGrids.CreateSimple(
                     new(64, 64),
                     new(10, 10)
                 )
