@@ -2,7 +2,7 @@
 
 namespace GodotViews.VirtualGrid;
 
-public class FadeFader(float duration, TweenSetup tweenSetup) : GodotTweenBasedElementFader, IGodotTweenFader
+public class FadeFader(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedElementFader, IGodotTweenFader
 {
     public float Duration { get; set; } = duration;
     public TweenSetup TweenSetup { get; set; } = tweenSetup;

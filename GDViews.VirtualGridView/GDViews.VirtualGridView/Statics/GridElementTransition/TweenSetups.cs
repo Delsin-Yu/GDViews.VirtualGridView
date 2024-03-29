@@ -2,11 +2,15 @@ using Godot;
 
 namespace GodotViews.VirtualGrid;
 
+public record TweenSetup(Tween.EaseType EaseType, Tween.TransitionType TransitionType);
+
 /// <summary>
 /// https://easings.net/
 /// </summary>
 public static class TweenSetups
 {
+    public static readonly TweenSetup Linear = new(Tween.EaseType.InOut, Tween.TransitionType.Linear);
+    
     public static readonly TweenSetup EaseInSine = new(Tween.EaseType.In, Tween.TransitionType.Sine);
     public static readonly TweenSetup EaseOutSine = new(Tween.EaseType.Out, Tween.TransitionType.Sine);
     public static readonly TweenSetup EaseInOutSine = new(Tween.EaseType.InOut, Tween.TransitionType.Sine);

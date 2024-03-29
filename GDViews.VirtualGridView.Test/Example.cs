@@ -16,6 +16,7 @@ public partial class Example : Node
     [Export] private Button _left;
     [Export] private Button _right;
 
+    [Export] private Button _add;
     [Export] private Button _scramble;
 
     private IVirtualGridView<string, View> _virtualGridView;
@@ -34,8 +35,10 @@ public partial class Example : Node
             .CreateView(5, 5)
             .WithViewHandler(
                 ViewHandlerFactory.CreateCenterAlignedHandler(),
-                ElementTweenerFactory.CreatePositional(0.25f, TweenSetups.EaseOutCubic),
-                ElementFaderFactory.CreateScale(0.25f, TweenSetups.EaseInOutSine)
+                //ElementTweenerFactory.None,
+                //ElementFaderFactory.None
+                ElementTweeners.CreatePositional(0.1f, TweenSetups.EaseOutSine),
+                ElementFaders.CreateScaleRotate(0.25f, TweenSetups.EaseInOutSine)
             )
             .WithVerticalDataLayout<string>()
                 .AddColumnDataSource(DataSetDefinitionFactory.Create(dataList1, [0, 1]))
@@ -65,25 +68,31 @@ public partial class Example : Node
         };
         _right.Pressed += () => { _virtualGridView.Move(MoveDirection.Right); };
 
-        _scramble.Pressed += () =>
+        _add.Pressed += () =>
         {
             dataList1.Add(faker.Lorem.Word());
             dataList2.Add(faker.Lorem.Word());
+            _virtualGridView.Redraw();
+        };
+        _scramble.Pressed += () =>
+        {
+            Scramble(dataList1);
+            Scramble(dataList2);
             _virtualGridView.Redraw();
         };
         return;
 
         void Scramble(List<string> list)
         {
+            var length = list.Count;
             list.Clear();
-            list.AddRange(GetRandom());
+            list.AddRange(GetRandom(length));
             
             return;
             
-            IEnumerable<string> GetRandom()
+            IEnumerable<string> GetRandom(int amount)
             {
-                var randomNum = Random.Shared.Next(5, 500);
-                for (var i = 0; i < randomNum; i++)
+                for (var i = 0; i < amount; i++)
                 {
                     yield return faker.Lorem.Word();
                 }

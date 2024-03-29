@@ -4,7 +4,13 @@ using Godot;
 
 namespace GodotViews.VirtualGrid;
 
-internal class GodotTweenCore<TTweenType>(ITweenUser<TTweenType> tweenUser)
+internal interface ITweenCoreUser<in TTweenType>
+{
+    bool IsTweenSupported(TTweenType tweenType);
+    void InitializeTween(TTweenType tweenType, in Vector2? targetPosition, Control control, Tween tween);
+}
+
+internal class GodotTweenCore<TTweenType>(ITweenCoreUser<TTweenType> tweenCoreUser)
 {
     private readonly Dictionary<Control, Tween> _activeTween = new();
 
@@ -12,7 +18,7 @@ internal class GodotTweenCore<TTweenType>(ITweenUser<TTweenType> tweenUser)
     {
         KillTween(control);
         
-        if (!tweenUser.IsTweenSupported(tweenType))
+        if (!tweenCoreUser.IsTweenSupported(tweenType))
         {
             onFinish?.Invoke(control);
             return;
@@ -21,7 +27,7 @@ internal class GodotTweenCore<TTweenType>(ITweenUser<TTweenType> tweenUser)
         var runningTween = control.CreateTween();
         _activeTween[control] = runningTween;
         
-        tweenUser.InitializeTween(tweenType, targetPosition, control, runningTween);
+        tweenCoreUser.InitializeTween(tweenType, targetPosition, control, runningTween);
 
         runningTween
             .TweenCallback(
@@ -40,7 +46,6 @@ internal class GodotTweenCore<TTweenType>(ITweenUser<TTweenType> tweenUser)
     public void KillTween(Control control)
     {
         if (!_activeTween.Remove(control, out var runningTween)) return;
-        
         runningTween.Kill();
         runningTween.Dispose();
     }

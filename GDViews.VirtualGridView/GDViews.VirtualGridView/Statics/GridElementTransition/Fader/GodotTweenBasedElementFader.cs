@@ -3,7 +3,7 @@ using Godot;
 
 namespace GodotViews.VirtualGrid;
 
-public abstract class GodotTweenBasedElementFader : IElementFader, ITweenUser<GodotTweenBasedElementFader.FadeType>
+public abstract class GodotTweenCoreBasedElementFader : IElementFader, ITweenCoreUser<GodotTweenCoreBasedElementFader.FadeType>
 {
     public enum FadeType
     {
@@ -13,7 +13,7 @@ public abstract class GodotTweenBasedElementFader : IElementFader, ITweenUser<Go
     
     private readonly GodotTweenCore<FadeType> _tweenCore;
 
-    protected GodotTweenBasedElementFader()
+    protected GodotTweenCoreBasedElementFader()
     {
         _tweenCore = new(this);
     }

@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://Example.cs" id="1_wg4ng"]
 [ext_resource type="PackedScene" uid="uid://bbflxig4up0wr" path="res://view.tscn" id="2_7ef37"]
 
-[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_up", "_down", "_left", "_right", "_scramble")]
+[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_up", "_down", "_left", "_right", "_add", "_scramble")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -17,7 +17,8 @@ _up = NodePath("Button")
 _down = NodePath("Button2")
 _left = NodePath("Button3")
 _right = NodePath("Button4")
-_scramble = NodePath("Button5")
+_add = NodePath("Button5")
+_scramble = NodePath("Button6")
 
 [node name="Panel" type="Panel" parent="."]
 clip_contents = true
@@ -72,3 +73,13 @@ offset_right = 867.0
 offset_bottom = 484.0
 text = "Add
 Element"
+
+[node name="Button6" type="Button" parent="."]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+offset_left = 892.0
+offset_top = 420.0
+offset_right = 964.0
+offset_bottom = 484.0
+text = "Scramble"

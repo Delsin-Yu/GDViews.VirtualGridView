@@ -3,7 +3,7 @@ using Godot;
 
 namespace GodotViews.VirtualGrid;
 
-public abstract class GodotTweenBasedElementTweener : IElementTweener, ITweenUser<GodotTweenBasedElementTweener.TweenType>
+public abstract class GodotTweenCoreBasedElementTweener : IElementTweener, ITweenCoreUser<GodotTweenCoreBasedElementTweener.TweenType>
 {
     public enum TweenType
     {
@@ -14,7 +14,7 @@ public abstract class GodotTweenBasedElementTweener : IElementTweener, ITweenUse
 
     private readonly GodotTweenCore<TweenType> _tweenCore;
 
-    protected GodotTweenBasedElementTweener()
+    protected GodotTweenCoreBasedElementTweener()
     {
         _tweenCore = new(this);
     }
