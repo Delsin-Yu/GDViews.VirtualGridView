@@ -2,10 +2,10 @@ using Godot;
 
 namespace GodotViews.VirtualGrid.Examples;
 
-public partial class View : Button
+public partial class View : VirtualGridViewItem<string>
 {
-    public void Print(string value)
+    protected override void _OnGridItemDraw(string data, Vector2I gridPosition)
     {
-        Text = value;
+        Text = data;
     }
 }

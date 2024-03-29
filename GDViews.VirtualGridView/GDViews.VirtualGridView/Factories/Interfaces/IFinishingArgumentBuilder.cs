@@ -2,9 +2,10 @@
 
 namespace GodotViews.VirtualGrid;
 
-public interface IFinishingArgumentBuilder<TDataType, TButtonType>
+public interface IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
 {
-    IVirtualGridView<TDataType, TButtonType> Build();
-    IFinishingArgumentBuilder<TDataType, TButtonType> ConfigureHorizontalScrollBar(ScrollBar scrollBar);
-    IFinishingArgumentBuilder<TDataType, TButtonType> ConfigureVerticalScrollBar(ScrollBar scrollBar);
+    IVirtualGridView<TDataType, TButtonType, TExtraArgument> Build();
+    IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> ConfigureHorizontalScrollBar(ScrollBar scrollBar);
+    IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> ConfigureVerticalScrollBar(ScrollBar scrollBar);
+    IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> ConfigureExtraArgument(TExtraArgument extraArgument);
 }

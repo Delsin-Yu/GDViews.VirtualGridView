@@ -2,51 +2,55 @@
 
 namespace GodotViews.VirtualGrid;
 
-internal class FinishingArgumentBuilder<TDataType, TButtonType>(
-    DelegateBuilder<TDataType, TButtonType> delegateBuilder,
+internal class FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
+    DataLayoutBuilder<TDataType> dataLayoutBuilder, 
+    IDataInspector<TDataType> dataInspector,
     PackedScene itemPrefab,
     Control itemContainer,
-    IInfiniteLayoutGrid layoutGrid) : IFinishingArgumentBuilder<TDataType, TButtonType> where TButtonType : Button
+    IInfiniteLayoutGrid layoutGrid) : IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
 {
     private ScrollBar? _horizontalScrollBar;
     private ScrollBar? _verticalScrollBar;
+    private TExtraArgument? _extraArgument;
 
-    public IFinishingArgumentBuilder<TDataType, TButtonType> ConfigureVerticalScrollBar(ScrollBar verticalScrollBar)
+    public IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> ConfigureVerticalScrollBar(ScrollBar verticalScrollBar)
     {
         _verticalScrollBar = verticalScrollBar;
         return this;
     }
 
-    public IFinishingArgumentBuilder<TDataType, TButtonType> ConfigureHorizontalScrollBar(ScrollBar horizontalScrollBar)
+    public IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> ConfigureHorizontalScrollBar(ScrollBar horizontalScrollBar)
     {
         _horizontalScrollBar = horizontalScrollBar;
         return this;
     }
 
-    public IVirtualGridView<TDataType, TButtonType> Build()
+    public IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> ConfigureExtraArgument(TExtraArgument extraArgument)
     {
-        var dataLayoutBuilder = delegateBuilder.DataLayoutBuilder;
+        _extraArgument = extraArgument;
+        return this;
+    }
+    
+    public IVirtualGridView<TDataType, TButtonType, TExtraArgument> Build()
+    {
         var dataLayoutSelectionBuilder = dataLayoutBuilder.DataLayoutSelectionBuilder;
         var viewAlignmentBuilder = dataLayoutSelectionBuilder.ViewHandlerBuilder;
 
-        return new VirtualGridViewImpl<TDataType, TButtonType>(
+        return new VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument>(
             viewAlignmentBuilder.ViewportRows,
             viewAlignmentBuilder.ViewportColumns,
             dataLayoutSelectionBuilder.ViewHandler,
             dataLayoutSelectionBuilder.ElementTweener,
             dataLayoutSelectionBuilder.ElementFader,
             dataLayoutBuilder.DataLayoutDirection,
-            delegateBuilder.DrawHandler,
-            delegateBuilder.FocusEnteredHandler,
-            delegateBuilder.FocusExitedHandler,
-            delegateBuilder.PressedHandler,
             _horizontalScrollBar,
             _verticalScrollBar,
-            delegateBuilder.DataInspector,
+            dataInspector,
             dataLayoutBuilder.EqualityComparer,
             itemPrefab,
             itemContainer,
-            layoutGrid
+            layoutGrid,
+            _extraArgument
         );
     }
 }

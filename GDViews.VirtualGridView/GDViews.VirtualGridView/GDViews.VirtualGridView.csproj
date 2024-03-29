@@ -37,4 +37,5 @@
         <PackageReference Include="GodotSharp" Version="4.1.0"/>
         <PackageReference Include="Godot.SourceGenerators" Version="4.1.0"/>
     </ItemGroup>
+    
 </Project>

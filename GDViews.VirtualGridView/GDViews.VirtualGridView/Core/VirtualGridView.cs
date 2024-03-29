@@ -14,24 +14,9 @@ public enum MoveDirection
     Right
 }
 
-public interface IDynamicGridViewer<T>
-{
-    int FixedMetric { get; }
-
-    int GetDynamicMetric();
-
-    bool TryGetGridElement(int fixedMetricIndex, int dynamicMetricIndex, [NotNullWhen(true)] out T? element);
-}
-
 public record struct DataSetDefinition<TDataType>(IDynamicGridViewer<TDataType> DataSet, IReadOnlyList<int> DataSpan);
 
-internal enum DataLayoutDirection
-{
-    Horizontal,
-    Vertical
-}
-
-internal class VirtualGridViewImpl<TDataType, TButtonType> : IVirtualGridView<TDataType, TButtonType> where TButtonType : Button
+internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVirtualGridView<TDataType, TButtonType, TExtraArgument> where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
 {
     private class DataView
     {
@@ -41,6 +26,11 @@ internal class VirtualGridViewImpl<TDataType, TButtonType> : IVirtualGridView<TD
         public override string ToString() => $"Button: {AssignedButton?.Name ?? "Null"}, Data: {Data}";
     }
 
+    private record struct DelegateBindings(
+        Action FocusEnteredHandler,
+        Action FocusExitedHandler,
+        Action PressedHandler
+    );
 
     private readonly Vector2I _viewportSize;
     private readonly int _viewportRows;
@@ -49,10 +39,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType> : IVirtualGridView<TD
     private readonly IElementTweener _elementTweener;
     private readonly IElementFader _elementFader;
     private readonly DataLayoutDirection _dataLayoutDirection;
-    private readonly Action<TDataType, TButtonType>? _drawHandler;
-    private readonly Action<TDataType, TButtonType>? _focusEnteredHandler;
-    private readonly Action<TDataType, TButtonType>? _focusExitedHandler;
-    private readonly Action<TDataType, TButtonType>? _pressedHandler;
+    
     private readonly ScrollBar? _horizontalScrollBar;
     private readonly ScrollBar? _verticalScrollBar;
     private readonly IDataInspector<TDataType> _dataInspector;
@@ -64,12 +51,25 @@ internal class VirtualGridViewImpl<TDataType, TButtonType> : IVirtualGridView<TD
     private readonly Stack<TButtonType> _buttonPool;
     private readonly Action<Control> _collectInvincibleControlHandler;
 
+    private readonly TExtraArgument? _extraArgument;
+
     private DataView[,] _currentView;
     private DataView[,] _nextView;
 
-    public int ViewColumnIndex { get; private set; }
+    private readonly Dictionary<TButtonType, DelegateBindings> _delegateBindings = [];
 
+    private int _currentSelectedViewRowIndex;
+    private int _currentSelectedViewColumnIndex;
+    
+    public int ViewColumnIndex { get; private set; }
     public int ViewRowIndex { get; private set; }
+
+
+    public bool GrabLastFocus(LastFocusType lastFocusType) => throw new NotImplementedException();
+
+    public bool GrabFocus(IViewFocusFinder focusFinder) => throw new NotImplementedException();
+
+    public bool GrabFocus(IDataFocusFinder<TDataType> focusFinder) => throw new NotImplementedException();
 
     internal VirtualGridViewImpl(int viewportRows,
         int viewportColumns,
@@ -77,17 +77,14 @@ internal class VirtualGridViewImpl<TDataType, TButtonType> : IVirtualGridView<TD
         IElementTweener elementTweener,
         IElementFader elementFader,
         DataLayoutDirection dataLayoutDirection,
-        Action<TDataType, TButtonType>? drawHandler,
-        Action<TDataType, TButtonType>? focusEnteredHandler,
-        Action<TDataType, TButtonType>? focusExitedHandler,
-        Action<TDataType, TButtonType>? pressedHandler,
         ScrollBar? horizontalScrollBar,
         ScrollBar? verticalScrollBar,
         IDataInspector<TDataType> dataInspector,
         IEqualityComparer<TDataType> equalityComparer,
         PackedScene itemPrefab,
         Control itemContainer,
-        IInfiniteLayoutGrid layoutGrid)
+        IInfiniteLayoutGrid layoutGrid,
+        TExtraArgument? extraArgument)
     {
         _viewportRows = viewportRows;
         _viewportColumns = viewportColumns;
@@ -96,9 +93,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType> : IVirtualGridView<TD
         _elementFader = elementFader;
         _viewHandler = viewHandler;
         _dataLayoutDirection = dataLayoutDirection;
-        _focusEnteredHandler = focusEnteredHandler;
-        _focusExitedHandler = focusExitedHandler;
-        _pressedHandler = pressedHandler;
+
         _horizontalScrollBar = horizontalScrollBar;
         _verticalScrollBar = verticalScrollBar;
         _dataInspector = dataInspector;
@@ -106,7 +101,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType> : IVirtualGridView<TD
         _itemPrefab = itemPrefab;
         _itemContainer = itemContainer;
         _layoutGrid = layoutGrid;
-        _drawHandler = drawHandler;
+        _extraArgument = extraArgument;
 
         _collectInvincibleControlHandler = CollectionButtonInstance;
         _currentView = new DataView[_viewportRows, _viewportColumns];
@@ -129,11 +124,13 @@ internal class VirtualGridViewImpl<TDataType, TButtonType> : IVirtualGridView<TD
             var instance = itemPrefab.Instantiate<TButtonType>();
             _buttonPool.Push(instance);
             instance.Hide();
-            itemContainer.AddChild(instance);
+            itemContainer.AddChild(instance, @internal: Node.InternalMode.Front);
         }
     }
 
-    private TButtonType GetAndInitializeButtonInstance(TDataType data)
+    private static Vector2I CreatePosition(int rowIndex, int columnIndex) => new(columnIndex, rowIndex);
+    
+    private TButtonType GetAndInitializeButtonInstance(TDataType data, int rowIndex, int columnIndex)
     {
         if (!_buttonPool.TryPop(out var instance))
         {
@@ -145,15 +142,87 @@ internal class VirtualGridViewImpl<TDataType, TButtonType> : IVirtualGridView<TD
             instance.Show();
         }
 
-        _drawHandler?.Invoke(data, instance);
-
+        DelegateRunner.RunProtected(
+            instance._OnDrawHandler,
+            data,
+            CreatePosition(rowIndex, columnIndex),
+            _extraArgument,
+            "On Draw",
+            instance.LocalName
+        );
+        
+        AssignFocusEnteredDelegate(instance, data, rowIndex, columnIndex);
+        
         return instance;
     }
 
     private void CollectionButtonInstance(Control button)
     {
-        _buttonPool.Push((TButtonType)button);
+        var typedButton = (TButtonType)button;
+        RemoveFocusEnteredDelegate(typedButton);
+        DelegateRunner.RunProtected(
+            typedButton._OnDisappearHandler,
+            _extraArgument,
+            "On Disappear",
+            typedButton.LocalName
+        );
+        _buttonPool.Push(typedButton);
         button.Hide();
+    }
+    
+    private void AssignFocusEnteredDelegate(TButtonType button, TDataType data, int rowIndex, int columnIndex)
+    {
+        var viewPosition = CreatePosition(rowIndex, columnIndex);
+        var focusEnteredDelegate = () =>
+        {
+            _currentSelectedViewRowIndex = viewPosition.X;
+            _currentSelectedViewColumnIndex = viewPosition.Y;
+            
+            DelegateRunner.RunProtected(
+                button._OnFocusEnteredHandler,
+                data,
+                viewPosition,
+                _extraArgument,
+                "On Focus Enter",
+                button.LocalName
+            );
+        };
+
+        Action focusExitedDelegate = () => DelegateRunner.RunProtected(
+            button._OnFocusExitedHandler,
+            data,
+            viewPosition,
+            _extraArgument,
+            "On Focus Exit",
+            button.LocalName
+        );
+
+        Action pressedDelegate = () => DelegateRunner.RunProtected(
+            button._OnPressedHandler,
+            data,
+            viewPosition,
+            _extraArgument,
+            "On Press",
+            button.LocalName
+        );
+        
+        _delegateBindings[button] = new(focusEnteredDelegate, focusExitedDelegate, pressedDelegate);
+        
+        button.FocusEntered += focusEnteredDelegate;
+        button.FocusExited += focusExitedDelegate;
+        button.Pressed += pressedDelegate;
+    }
+
+    private void RemoveFocusEnteredDelegate(TButtonType button)
+    {
+        if (!_delegateBindings.Remove(button, out var focusEnteredDelegate))
+            throw new KeyNotFoundException(button.Name);
+
+        var (focusEnteredHandler, focusExitedHandler, pressedHandler) = focusEnteredDelegate;
+        
+        button.FocusEntered -= focusEnteredHandler;
+        button.FocusExited -= focusExitedHandler;
+        button.Pressed -= pressedHandler;
     }
 
     public void Redraw()
@@ -185,10 +254,20 @@ internal class VirtualGridViewImpl<TDataType, TButtonType> : IVirtualGridView<TD
 
                 currentViewItem.Data = currentDataValue;
 
-                var button = GetAndInitializeButtonInstance(currentDataValue.Unwrap());
-                button.Position = _layoutGrid.GetGridElementPosition(new(columnIndex, rowIndex));
+                var unwrappedData = currentDataValue.Unwrap();
+                var button = GetAndInitializeButtonInstance(unwrappedData, rowIndex, columnIndex);
+                button.Position = _layoutGrid.GetGridElementPosition(CreatePosition(rowIndex, columnIndex));
                 _elementTweener.KillTween(button);
                 _elementFader.Appear(button);
+                
+                DelegateRunner.RunProtected(
+                    button._OnAppearHandler,
+                    unwrappedData,
+                    CreatePosition(rowIndex, columnIndex),
+                    _extraArgument,
+                    "On Appear",
+                    button.LocalName
+                );
                 
                 currentViewItem.AssignedButton = button;
             }
@@ -285,11 +364,31 @@ internal class VirtualGridViewImpl<TDataType, TButtonType> : IVirtualGridView<TD
                     targetGridPosition = currentGridIndex - moveDirectionVector;
                     _elementFader.KillTween(currentButton);
                     _elementTweener.MoveTo(currentButton, _layoutGrid.GetGridElementPosition(SwapXY(targetGridPosition)));
+                    
+                    DelegateRunner.RunProtected(
+                        currentButton._OnMoveHandler,
+                        currentViewItem.Data.Unwrap(),
+                        CreatePosition(rowIndex, columnIndex),
+                        _extraArgument,
+                        "On Move",
+                        currentButton.LocalName
+                    );
+                    
                     break;
                 case EDGE_OUT:
                     targetGridPosition = isRow ? new(movingOutLineIndex, columnIndex) : new(rowIndex, movingOutLineIndex);
                     _elementFader.KillTween(currentButton);
                     _elementTweener.MoveOut(currentButton, _layoutGrid.GetGridElementPosition(SwapXY(targetGridPosition)), _collectInvincibleControlHandler);
+                                        
+                    DelegateRunner.RunProtected(
+                        currentButton._OnMoveOutHandler,
+                        currentViewItem.Data.Unwrap(),
+                        CreatePosition(rowIndex, columnIndex),
+                        _extraArgument,
+                        "On Move Out",
+                        currentButton.LocalName
+                    );
+                    
                     break;
                 default:
                     throw new ArgumentException(nameof(movementType));
@@ -321,20 +420,30 @@ internal class VirtualGridViewImpl<TDataType, TButtonType> : IVirtualGridView<TD
 
                 var movementType = GetEdgeType(rowIndex, columnIndex);
 
-                nextViewItem.AssignedButton = GetAndInitializeButtonInstance(data);
+                var newButton = GetAndInitializeButtonInstance(data, rowIndex, columnIndex);
+                nextViewItem.AssignedButton = newButton;
 
                 switch (movementType)
                 {
                     case EDGE_IN:
                         Vector2I emulatedStartPosition =
                             isRow ?
-                                new(movingInLineIndex, columnIndex) :
-                                new(rowIndex, movingInLineIndex);
+                                new(columnIndex, movingInLineIndex) :
+                                new(movingInLineIndex, rowIndex);
 
-                        nextViewItem.AssignedButton.Position = _layoutGrid.GetGridElementPosition(SwapXY(emulatedStartPosition));
+                        newButton.Position = _layoutGrid.GetGridElementPosition(emulatedStartPosition);
 
-                        _elementFader.KillTween(nextViewItem.AssignedButton);
-                        _elementTweener.MoveIn(nextViewItem.AssignedButton, _layoutGrid.GetGridElementPosition(new(columnIndex, rowIndex)));
+                        _elementFader.KillTween(newButton);
+                        _elementTweener.MoveIn(newButton, _layoutGrid.GetGridElementPosition(new(columnIndex, rowIndex)));
+
+                        DelegateRunner.RunProtected(
+                            newButton._OnMoveInHandler,
+                            data,
+                            CreatePosition(rowIndex, columnIndex),
+                            _extraArgument,
+                            "On Move Out",
+                            newButton.LocalName
+                        );
 
                         break;
                     default:

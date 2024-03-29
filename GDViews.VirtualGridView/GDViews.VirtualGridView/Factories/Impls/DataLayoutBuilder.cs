@@ -33,7 +33,8 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
 
     private record struct AnnotatedDataSet<T>(IDynamicGridViewer<T> DataSet, int LocalIndex);
 
-    public IDelegateBuilder<TDataType, TButtonType> WithDelegate<TButtonType>() where TButtonType : Button
+    
+    public IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> WithArgument<TButtonType, TExtraArgument>(PackedScene itemPrefab, Control itemContainer, IInfiniteLayoutGrid layoutGrid) where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
     {
         HashSet<int> existingIndexes = [];
 
@@ -106,7 +107,7 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
             new HorizontalDataInspector<TDataType>(dataMap, viewColumns, viewRows) :
             new VerticalDataInspector<TDataType>(dataMap, viewColumns, viewRows);
 
-        return new DelegateBuilder<TDataType, TButtonType>(this, dataInspector);
+        return new FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(this, dataInspector, itemPrefab, itemContainer, layoutGrid);
     }
 
     private class HorizontalDataInspector<T>(AnnotatedDataSet<T>[] dataMap, int viewColumns, int viewRows) : IDataInspector<T>

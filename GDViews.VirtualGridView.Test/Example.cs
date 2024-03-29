@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using Godot;
-using System.Linq;
 using Bogus;
 
 namespace GodotViews.VirtualGrid.Examples;
@@ -19,10 +17,11 @@ public partial class Example : Node
     [Export] private Button _add;
     [Export] private Button _scramble;
 
-    private IVirtualGridView<string, View> _virtualGridView;
+    private IVirtualGridView<string, View, NoExtraArgument> _virtualGridView;
 
     public override void _Ready()
     {
+        
         var faker = new Faker();
 
         var dataList1 = new List<string>();
@@ -35,17 +34,15 @@ public partial class Example : Node
             .Create(5, 5)
             .WithHandlers(
                 ViewHandlerFactory.CreateCenterAlignedHandler(),
-                //ElementTweenerFactory.None,
-                //ElementFaderFactory.None
+                //ElementTweeners.None,
+                //ElementFaders.None
                 ElementTweeners.CreatePositional(0.25f, TweenSetups.EaseOutSine),
                 ElementFaders.CreateScaleRotate(0.25f, TweenSetups.EaseOutSine)
             )
             .WithVerticalDataLayout<string>()
                 .AddColumnDataSource(DataSetDefinition.Create(dataList1, [0, 1]))
                 .AddColumnDataSource(DataSetDefinition.Create(dataList2, [2, 3, 4]))
-            .WithDelegate<View>()
-                .ConfigureDrawHandler((data, view) => view.Print(data))
-            .WithArgument(
+            .WithArgument<View>(
                 _packedScene,
                 _container,
                 InfinitLayoutGrids.CreateSimple(
