@@ -37,8 +37,8 @@ public partial class Example : Node
                 ViewHandlerFactory.CreateCenterAlignedHandler(),
                 //ElementTweenerFactory.None,
                 //ElementFaderFactory.None
-                ElementTweeners.CreatePositional(0.1f, TweenSetups.EaseOutSine),
-                ElementFaders.CreateScaleRotate(0.25f, TweenSetups.EaseInOutSine)
+                ElementTweeners.CreatePositional(0.25f, TweenSetups.EaseOutSine),
+                ElementFaders.CreateScaleRotate(0.25f, TweenSetups.EaseOutSine)
             )
             .WithVerticalDataLayout<string>()
                 .AddColumnDataSource(DataSetDefinitionFactory.Create(dataList1, [0, 1]))

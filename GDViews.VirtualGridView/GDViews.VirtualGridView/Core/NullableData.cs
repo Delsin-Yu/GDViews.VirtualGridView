@@ -41,10 +41,3 @@ internal readonly struct NullableData<T>(bool hasValue, T? value)
         return value!.ToString()!;
     }
 }
-
-internal interface IDataInspector<T>
-{
-    int ViewRowCount { get; }
-
-    ReadOnlySpan<NullableData<T>> InspectViewColumn(int rowIndex, int columnOffset, int rowOffset);
-}
