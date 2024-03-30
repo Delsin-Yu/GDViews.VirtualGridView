@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Godot;
 
 namespace GodotViews.VirtualGrid;
@@ -14,9 +12,17 @@ public enum MoveDirection
     Right
 }
 
+internal interface IVirtualGridViewParent<TDataType, TExtraArgument>
+{
+    TExtraArgument? ExtraArgument { get; }
+    void FocusTo(VirtualGridViewItem<TDataType, TExtraArgument>.CurrentInfo info);
+}
+
 public record struct DataSetDefinition<TDataType>(IDynamicGridViewer<TDataType> DataSet, IReadOnlyList<int> DataSpan);
 
-internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVirtualGridView<TDataType, TButtonType, TExtraArgument> where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
+internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
+    IVirtualGridViewParent<TDataType, TExtraArgument>,
+    IVirtualGridView<TDataType, TButtonType, TExtraArgument> where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
 {
     private class DataView
     {
@@ -35,11 +41,11 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVi
     private readonly Vector2I _viewportSize;
     private readonly int _viewportRows;
     private readonly int _viewportColumns;
-    private readonly IViewHandler _viewHandler;
+    private readonly IViewPositioner _viewPositioner;
     private readonly IElementTweener _elementTweener;
     private readonly IElementFader _elementFader;
     private readonly DataLayoutDirection _dataLayoutDirection;
-    
+
     private readonly ScrollBar? _horizontalScrollBar;
     private readonly ScrollBar? _verticalScrollBar;
     private readonly IDataInspector<TDataType> _dataInspector;
@@ -56,16 +62,96 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVi
     private DataView[,] _currentView;
     private DataView[,] _nextView;
 
-    private readonly Dictionary<TButtonType, DelegateBindings> _delegateBindings = [];
-
     private int _currentSelectedViewRowIndex;
     private int _currentSelectedViewColumnIndex;
-    
+    private NullableData<TDataType> _currentSelectedData;
+
     public int ViewColumnIndex { get; private set; }
     public int ViewRowIndex { get; private set; }
+    public TExtraArgument? ExtraArgument => _extraArgument;
 
 
-    public bool GrabLastFocus(LastFocusType lastFocusType) => throw new NotImplementedException();
+    public bool GrabLastFocus(LastFocusType lastFocusType)
+    {
+        Vector2I dataPositionRelativeToViewport;
+        switch (lastFocusType)
+        {
+            case LastFocusType.LastViewFocus:
+
+                dataPositionRelativeToViewport = VirtualGridView.CreatePosition(
+                    _currentSelectedViewRowIndex,
+                    _currentSelectedViewColumnIndex
+                );
+                break;
+            case LastFocusType.LastDataFocus:
+
+                var lastSelectionData = GetLastDataFocusAbsolutePosition();
+
+                if (lastSelectionData is null) return false;
+
+                var (rowIndex, columnOffset, rowOffset, spanIndex) = lastSelectionData.Value;
+
+                var absoluteDataPosition = VirtualGridView.CreatePosition(
+                    rowIndex + rowOffset,
+                    columnOffset + spanIndex
+                );
+
+                var currentViewOffset = VirtualGridView.CreatePosition(
+                    ViewRowIndex,
+                    ViewColumnIndex
+                );
+
+                dataPositionRelativeToViewport = absoluteDataPosition - currentViewOffset;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(lastFocusType), lastFocusType, null);
+        }
+
+        return FocusToTarget(dataPositionRelativeToViewport.Y, dataPositionRelativeToViewport.X);
+    }
+
+    internal bool FocusToTarget(int viewportRowIndex, int viewportColumnIndex)
+    {
+        var viewportSize = VirtualGridView.CreatePosition(_viewportRows, _viewportColumns);
+        var dataPositionRelativeToViewport = VirtualGridView.CreatePosition(viewportRowIndex, viewportColumnIndex);
+        _viewPositioner.GetTargetPosition(
+            viewportSize,
+            dataPositionRelativeToViewport,
+            out var targetDataPosition
+        );
+        
+        if (targetDataPosition < Vector2I.Zero || targetDataPosition >= viewportSize) return false;
+        
+        var offset = dataPositionRelativeToViewport - targetDataPosition;
+        ApplyMovementOffset(offset);
+        return true;
+    }
+
+    private record struct ViewData(int RowIndex, int ColumnOffset, int RowOffset, int SpanIndex);
+    
+    private ViewData? GetLastDataFocusAbsolutePosition()
+    {
+        _dataInspector.GetDataSetMetrics(out var rows, out var columns);
+        for (var rowOffset = 0; rowOffset < rows; rowOffset += _viewportRows)
+        {
+            for (var columnOffset = 0; columnOffset < columns; columnOffset += _viewportColumns)
+            {
+                for (var rowIndex = 0; rowIndex < _viewportRows; rowIndex++)
+                {
+                    var columnSpan = _dataInspector.InspectViewColumn(rowIndex, columnOffset, rowOffset);
+                    for (var spanIndex = 0; spanIndex < columnSpan.Length; spanIndex++)
+                    {
+                        var cellData = columnSpan[spanIndex];
+                        if (!IsMatch(in cellData, in _currentSelectedData, out var aIsNull, out var bIsNull)) continue;
+                        if (aIsNull) continue;
+                        return new(rowIndex, columnOffset, rowOffset, spanIndex);
+                    }
+                }
+            }
+        }
+
+        return default;
+    }
 
     public bool GrabFocus(IViewFocusFinder focusFinder) => throw new NotImplementedException();
 
@@ -73,7 +159,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVi
 
     internal VirtualGridViewImpl(int viewportRows,
         int viewportColumns,
-        IViewHandler viewHandler,
+        IViewPositioner viewPositioner,
         IElementTweener elementTweener,
         IElementFader elementFader,
         DataLayoutDirection dataLayoutDirection,
@@ -91,7 +177,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVi
         _viewportSize = new(_viewportRows, _viewportColumns);
         _elementTweener = elementTweener;
         _elementFader = elementFader;
-        _viewHandler = viewHandler;
+        _viewPositioner = viewPositioner;
         _dataLayoutDirection = dataLayoutDirection;
 
         _horizontalScrollBar = horizontalScrollBar;
@@ -127,8 +213,6 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVi
             itemContainer.AddChild(instance, @internal: Node.InternalMode.Front);
         }
     }
-
-    private static Vector2I CreatePosition(int rowIndex, int columnIndex) => new(columnIndex, rowIndex);
     
     private TButtonType GetAndInitializeButtonInstance(TDataType data, int rowIndex, int columnIndex)
     {
@@ -142,87 +226,25 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVi
             instance.Show();
         }
 
-        DelegateRunner.RunProtected(
-            instance._OnDrawHandler,
-            data,
-            CreatePosition(rowIndex, columnIndex),
-            _extraArgument,
-            "On Draw",
-            instance.LocalName
-        );
-        
-        AssignFocusEnteredDelegate(instance, data, rowIndex, columnIndex);
-        
+        instance.DrawGridItem(new(this, rowIndex, columnIndex, data));
+
         return instance;
     }
 
+    public void FocusTo(VirtualGridViewItem<TDataType, TExtraArgument>.CurrentInfo info)
+    {
+        _currentSelectedViewRowIndex = info.RowIndex;
+        _currentSelectedViewColumnIndex = info.ColumnIndex;
+        _currentSelectedData = new(true, info.Data);
+        FocusToTarget(_currentSelectedViewRowIndex, _currentSelectedViewColumnIndex);
+    }
+    
     private void CollectionButtonInstance(Control button)
     {
         var typedButton = (TButtonType)button;
-        RemoveFocusEnteredDelegate(typedButton);
-        DelegateRunner.RunProtected(
-            typedButton._OnDisappearHandler,
-            _extraArgument,
-            "On Disappear",
-            typedButton.LocalName
-        );
+        typedButton.CallDisappear();
         _buttonPool.Push(typedButton);
         button.Hide();
-    }
-    
-    private void AssignFocusEnteredDelegate(TButtonType button, TDataType data, int rowIndex, int columnIndex)
-    {
-        var viewPosition = CreatePosition(rowIndex, columnIndex);
-        var focusEnteredDelegate = () =>
-        {
-            _currentSelectedViewRowIndex = viewPosition.X;
-            _currentSelectedViewColumnIndex = viewPosition.Y;
-            
-            DelegateRunner.RunProtected(
-                button._OnFocusEnteredHandler,
-                data,
-                viewPosition,
-                _extraArgument,
-                "On Focus Enter",
-                button.LocalName
-            );
-        };
-
-        Action focusExitedDelegate = () => DelegateRunner.RunProtected(
-            button._OnFocusExitedHandler,
-            data,
-            viewPosition,
-            _extraArgument,
-            "On Focus Exit",
-            button.LocalName
-        );
-
-        Action pressedDelegate = () => DelegateRunner.RunProtected(
-            button._OnPressedHandler,
-            data,
-            viewPosition,
-            _extraArgument,
-            "On Press",
-            button.LocalName
-        );
-        
-        _delegateBindings[button] = new(focusEnteredDelegate, focusExitedDelegate, pressedDelegate);
-        
-        button.FocusEntered += focusEnteredDelegate;
-        button.FocusExited += focusExitedDelegate;
-        button.Pressed += pressedDelegate;
-    }
-
-    private void RemoveFocusEnteredDelegate(TButtonType button)
-    {
-        if (!_delegateBindings.Remove(button, out var focusEnteredDelegate))
-            throw new KeyNotFoundException(button.Name);
-
-        var (focusEnteredHandler, focusExitedHandler, pressedHandler) = focusEnteredDelegate;
-        
-        button.FocusEntered -= focusEnteredHandler;
-        button.FocusExited -= focusExitedHandler;
-        button.Pressed -= pressedHandler;
     }
 
     public void Redraw()
@@ -256,19 +278,10 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVi
 
                 var unwrappedData = currentDataValue.Unwrap();
                 var button = GetAndInitializeButtonInstance(unwrappedData, rowIndex, columnIndex);
-                button.Position = _layoutGrid.GetGridElementPosition(CreatePosition(rowIndex, columnIndex));
+                button.Position = _layoutGrid.GetGridElementPosition(VirtualGridView.CreatePosition(rowIndex, columnIndex));
+                button.CallAppear();
                 _elementTweener.KillTween(button);
                 _elementFader.Appear(button);
-                
-                DelegateRunner.RunProtected(
-                    button._OnAppearHandler,
-                    unwrappedData,
-                    CreatePosition(rowIndex, columnIndex),
-                    _extraArgument,
-                    "On Appear",
-                    button.LocalName
-                );
-                
                 currentViewItem.AssignedButton = button;
             }
         }
@@ -284,9 +297,21 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVi
             if (aIsNull) return true;
             return _equalityComparer.Equals(a.Unwrap(), b.Unwrap());
         }
+
         return false;
     }
 
+    private void ApplyMovementOffset(Vector2I offset)
+    {
+        while (VirtualGridView.TryGetMoveDirection(ref offset, out var moveDirection))
+        {
+            if(moveDirection == Vector2I.Left) Move(MoveDirection.Right);
+            if(moveDirection == Vector2I.Right) Move(MoveDirection.Left);
+            if(moveDirection == Vector2I.Up) Move(MoveDirection.Down);
+            if(moveDirection == Vector2I.Down) Move(MoveDirection.Up);
+        }
+    }
+    
     public void Move(MoveDirection moveDirection)
     {
         Redraw();
@@ -324,8 +349,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVi
                 break;
             case MoveDirection.Right:
                 isRow = false;
-                isMovingOutLineIndex =0;
-                isMovingInLineIndex =  _viewportColumns - 1;
+                isMovingOutLineIndex = 0;
+                isMovingInLineIndex = _viewportColumns - 1;
                 movingOutLineIndex = -1;
                 movingInLineIndex = _viewportColumns;
                 moveDirectionVector = new(0, 1);
@@ -337,13 +362,10 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVi
         ViewRowIndex += moveDirectionVector.X;
         ViewColumnIndex += moveDirectionVector.Y;
 
-        if(ViewRowIndex < 0) throw new ArgumentOutOfRangeException(nameof(moveDirection));
-        if(ViewColumnIndex < 0) throw new ArgumentOutOfRangeException(nameof(moveDirection));
-        
         const byte EDGE_NORMAL = 0;
         const byte EDGE_OUT = 1;
         const byte EDGE_IN = 2;
-        
+
         // Move in-view items to new positions
         for (var rowIndex = 0; rowIndex < _viewportRows; rowIndex++)
         for (var columnIndex = 0; columnIndex < _viewportColumns; columnIndex++)
@@ -362,33 +384,15 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVi
                 case EDGE_NORMAL:
                 case EDGE_IN:
                     targetGridPosition = currentGridIndex - moveDirectionVector;
+                    currentButton.CallMove(new(this, targetGridPosition.X, targetGridPosition.Y, currentViewItem.Data.Unwrap()));
                     _elementFader.KillTween(currentButton);
                     _elementTweener.MoveTo(currentButton, _layoutGrid.GetGridElementPosition(SwapXY(targetGridPosition)));
-                    
-                    DelegateRunner.RunProtected(
-                        currentButton._OnMoveHandler,
-                        currentViewItem.Data.Unwrap(),
-                        CreatePosition(rowIndex, columnIndex),
-                        _extraArgument,
-                        "On Move",
-                        currentButton.LocalName
-                    );
-                    
                     break;
                 case EDGE_OUT:
                     targetGridPosition = isRow ? new(movingOutLineIndex, columnIndex) : new(rowIndex, movingOutLineIndex);
+                    currentButton.CallMoveOut();
                     _elementFader.KillTween(currentButton);
                     _elementTweener.MoveOut(currentButton, _layoutGrid.GetGridElementPosition(SwapXY(targetGridPosition)), _collectInvincibleControlHandler);
-                                        
-                    DelegateRunner.RunProtected(
-                        currentButton._OnMoveOutHandler,
-                        currentViewItem.Data.Unwrap(),
-                        CreatePosition(rowIndex, columnIndex),
-                        _extraArgument,
-                        "On Move Out",
-                        currentButton.LocalName
-                    );
-                    
                     break;
                 default:
                     throw new ArgumentException(nameof(movementType));
@@ -432,19 +436,9 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> : IVi
                                 new(movingInLineIndex, rowIndex);
 
                         newButton.Position = _layoutGrid.GetGridElementPosition(emulatedStartPosition);
-
+                        newButton.CallMoveIn();
                         _elementFader.KillTween(newButton);
                         _elementTweener.MoveIn(newButton, _layoutGrid.GetGridElementPosition(new(columnIndex, rowIndex)));
-
-                        DelegateRunner.RunProtected(
-                            newButton._OnMoveInHandler,
-                            data,
-                            CreatePosition(rowIndex, columnIndex),
-                            _extraArgument,
-                            "On Move Out",
-                            newButton.LocalName
-                        );
-
                         break;
                     default:
                         throw new ArgumentException(nameof(movementType));

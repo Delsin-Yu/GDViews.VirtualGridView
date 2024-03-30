@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://Example.cs" id="1_wg4ng"]
 [ext_resource type="PackedScene" uid="uid://bbflxig4up0wr" path="res://view.tscn" id="2_7ef37"]
 
-[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_up", "_down", "_left", "_right", "_add", "_scramble")]
+[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_up", "_down", "_left", "_right", "_add", "_scramble", "_grabData", "_grabView")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,58 +19,65 @@ _left = NodePath("Button3")
 _right = NodePath("Button4")
 _add = NodePath("Button5")
 _scramble = NodePath("Button6")
+_grabData = NodePath("Button7")
+_grabView = NodePath("Button8")
 
 [node name="Panel" type="Panel" parent="."]
 clip_contents = true
 layout_mode = 0
-offset_left = 103.0
-offset_top = 81.0
-offset_right = 463.0
-offset_bottom = 441.0
+offset_left = 193.0
+offset_top = 186.0
+offset_right = 923.0
+offset_bottom = 916.0
 
 [node name="Button" type="Button" parent="."]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 0
-offset_left = 610.0
-offset_top = 229.0
-offset_right = 674.0
-offset_bottom = 293.0
+offset_left = 1331.0
+offset_top = 380.0
+offset_right = 1395.0
+offset_bottom = 444.0
+focus_mode = 0
 
 [node name="Button2" type="Button" parent="."]
 auto_translate_mode = 1
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 0
-offset_left = 609.0
-offset_top = 312.0
-offset_right = 673.0
-offset_bottom = 376.0
+offset_left = 1330.0
+offset_top = 463.0
+offset_right = 1394.0
+offset_bottom = 527.0
+focus_mode = 0
 
 [node name="Button3" type="Button" parent="."]
 auto_translate_mode = 1
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 0
-offset_left = 535.0
-offset_top = 271.0
-offset_right = 599.0
-offset_bottom = 335.0
+offset_left = 1256.0
+offset_top = 422.0
+offset_right = 1320.0
+offset_bottom = 486.0
+focus_mode = 0
 
 [node name="Button4" type="Button" parent="."]
 auto_translate_mode = 1
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 0
-offset_left = 694.0
-offset_top = 270.0
-offset_right = 758.0
-offset_bottom = 334.0
+offset_left = 1415.0
+offset_top = 421.0
+offset_right = 1479.0
+offset_bottom = 485.0
+focus_mode = 0
 
 [node name="Button5" type="Button" parent="."]
 auto_translate_mode = 1
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 0
-offset_left = 803.0
-offset_top = 420.0
-offset_right = 867.0
-offset_bottom = 484.0
+offset_left = 1524.0
+offset_top = 571.0
+offset_right = 1596.0
+offset_bottom = 635.0
+focus_mode = 0
 text = "Add
 Element"
 
@@ -78,8 +85,31 @@ Element"
 auto_translate_mode = 1
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 0
-offset_left = 892.0
-offset_top = 420.0
-offset_right = 964.0
-offset_bottom = 484.0
+offset_left = 1613.0
+offset_top = 571.0
+offset_right = 1693.0
+offset_bottom = 635.0
+focus_mode = 0
 text = "Scramble"
+
+[node name="Button7" type="Button" parent="."]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+offset_left = 1510.0
+offset_top = 648.0
+offset_right = 1597.0
+offset_bottom = 712.0
+focus_mode = 0
+text = "Grab Data"
+
+[node name="Button8" type="Button" parent="."]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+offset_left = 1611.0
+offset_top = 651.0
+offset_right = 1698.0
+offset_bottom = 715.0
+focus_mode = 0
+text = "Grab View"

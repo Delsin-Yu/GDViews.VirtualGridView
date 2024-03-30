@@ -8,6 +8,7 @@ namespace GodotViews.VirtualGrid;
 
 internal interface IDataInspector<T>
 {
+    void GetDataSetMetrics(out int rows, out int columns);
     ReadOnlySpan<NullableData<T>> InspectViewColumn(int rowIndex, int columnOffset, int rowOffset);
 }
 
@@ -114,8 +115,12 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
     {
         private readonly NullableData<T>[] _view = new NullableData<T>[viewColumns];
 
-        public int ViewRowCount { get; } = viewRows;
-
+        public void GetDataSetMetrics(out int rows, out int columns)
+        {
+            rows = dataMap.Sum(x => x.DataSet.FixedMetric);
+            columns = dataMap.Max(x => x.DataSet.GetDynamicMetric());
+        }
+        
         /*
          * [0] DataSet1 <====> [0]
          * [1] DataSet1 <====> [1]
@@ -124,7 +129,7 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
          * [4] DataSet2 <====> [1]
          * [5] DataSet1 <====> [3]
          */
-
+        
         public ReadOnlySpan<NullableData<T>> InspectViewColumn(int rowIndex, int columnOffset, int rowOffset)
         {
             var viewSpan = _view.AsSpan();
@@ -132,7 +137,7 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
 
             var actualRow = rowOffset + rowIndex;
 
-            if (dataMap.Length <= actualRow)
+            if (actualRow < 0 || dataMap.Length <= actualRow)
                 return viewSpan;
 
             var dstColumnIndex = columnOffset + viewColumns;
@@ -142,8 +147,8 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
             for (var i = columnOffset; i < dstColumnIndex; i++)
             {
                 ref var current = ref viewSpan[i - columnOffset];
-
-                if (dataSet.TryGetGridElement(localIndex, i, out var element))
+                
+                if (i >= 0 && dataSet.TryGetGridElement(localIndex, i, out var element))
                     current = new(true, element);
                 else
                     current = NullableData<T>.Null;
@@ -157,8 +162,12 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
     {
         private readonly NullableData<T>[] _view = new NullableData<T>[viewColumns];
 
-        public int ViewRowCount { get; } = viewRows;
-
+        public void GetDataSetMetrics(out int rows, out int columns)
+        {
+            rows = dataMap.Max(x => x.DataSet.GetDynamicMetric());
+            columns = dataMap.Sum(x => x.DataSet.FixedMetric);
+        }
+        
         /*
          * [0] [1] [2] [3] [4] [5]
          * DS1 DS1 DS2 DS1 DS2 DS1
@@ -184,7 +193,7 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
             {
                 ref var current = ref viewSpan[i - columnOffset];
 
-                if (dataMap.Length <= i)
+                if (i < 0 || dataMap.Length <= i)
                 {
                     current = NullableData<T>.Null;
                     continue;
@@ -192,7 +201,7 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
 
                 var (dataSet, localIndex) = dataMap[i];
 
-                if (dataSet.TryGetGridElement(localIndex, actualRow, out var element))
+                if (actualRow >= 0 && dataSet.TryGetGridElement(localIndex, actualRow, out var element))
                     current = new(true, element);
                 else
                     current = NullableData<T>.Null;
