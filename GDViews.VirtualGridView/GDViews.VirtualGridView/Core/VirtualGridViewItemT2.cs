@@ -73,13 +73,13 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
             if (!AccessInfo(out var info)) return;
 
             if (Check(UIInputActionNames.UIDown, EdgeElementType.Down, in info, inputEvent))
-                info.Parent.Move(MoveDirection.Down);
+                info.Parent.MoveAndGrabFocus(MoveDirection.Down, info.RowIndex, info.ColumnIndex);
             else if (Check(UIInputActionNames.UIUp, EdgeElementType.Up, in info, inputEvent))
-                info.Parent.Move(MoveDirection.Up);
+                info.Parent.MoveAndGrabFocus(MoveDirection.Up, info.RowIndex, info.ColumnIndex);
             else if (Check(UIInputActionNames.UILeft, EdgeElementType.Left, in info, inputEvent))
-                info.Parent.Move(MoveDirection.Left);
+                info.Parent.MoveAndGrabFocus(MoveDirection.Left, info.RowIndex, info.ColumnIndex);
             else if(Check(UIInputActionNames.UIRight, EdgeElementType.Right, in info, inputEvent)) 
-                info.Parent.Move(MoveDirection.Right);
+                info.Parent.MoveAndGrabFocus(MoveDirection.Right, info.RowIndex, info.ColumnIndex);
         }
     }
 

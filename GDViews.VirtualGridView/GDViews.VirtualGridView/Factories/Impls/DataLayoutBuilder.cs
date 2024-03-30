@@ -12,9 +12,8 @@ internal interface IDataInspector<T>
     ReadOnlySpan<NullableData<T>> InspectViewColumn(int rowIndex, int columnOffset, int rowOffset);
 }
 
-internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayoutSelectionBuilder, DataLayoutDirection dataLayoutDirection, IEqualityComparer<TDataType>? equalityComparer, bool reverseLocalLayout) : IHorizontalDataLayoutBuilder<TDataType>, IVerticalDataLayoutBuilder<TDataType>
+internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayoutSelectionBuilder, IEqualityComparer<TDataType>? equalityComparer, bool reverseLocalLayout, bool isHorizontalDataLayout) : IHorizontalDataLayoutBuilder<TDataType>, IVerticalDataLayoutBuilder<TDataType>
 {
-    public DataLayoutDirection DataLayoutDirection { get; } = dataLayoutDirection;
     public DataLayoutSelectionBuilder DataLayoutSelectionBuilder { get; } = dataLayoutSelectionBuilder;
     public IEqualityComparer<TDataType> EqualityComparer { get; } = equalityComparer ?? EqualityComparer<TDataType>.Default;
 
@@ -104,7 +103,7 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
         var viewColumns = DataLayoutSelectionBuilder.ViewHandlerBuilder.ViewportColumns;
         var viewRows = DataLayoutSelectionBuilder.ViewHandlerBuilder.ViewportRows;
 
-        IDataInspector<TDataType> dataInspector = DataLayoutDirection == DataLayoutDirection.Horizontal ?
+        IDataInspector<TDataType> dataInspector = isHorizontalDataLayout ?
             new HorizontalDataInspector<TDataType>(dataMap, viewColumns, viewRows) :
             new VerticalDataInspector<TDataType>(dataMap, viewColumns, viewRows);
 

@@ -16,7 +16,7 @@ internal interface IVirtualGridViewParent<TDataType, TExtraArgument>
 {
     TExtraArgument? ExtraArgument { get; }
     void FocusTo(VirtualGridViewItem<TDataType, TExtraArgument>.CurrentInfo info);
-    void Move(MoveDirection moveDirection);
+    void MoveAndGrabFocus(MoveDirection moveDirection, int rowIndex, int columnIndex);
 }
 
 public record struct DataSetDefinition<TDataType>(IDynamicGridViewer<TDataType> DataSet, IReadOnlyList<int> DataSpan);
@@ -211,7 +211,6 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         IViewPositioner viewPositioner,
         IElementTweener elementTweener,
         IElementFader elementFader,
-        DataLayoutDirection dataLayoutDirection,
         ScrollBar? horizontalScrollBar,
         ScrollBar? verticalScrollBar,
         IDataInspector<TDataType> dataInspector,
@@ -374,6 +373,12 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             if(moveDirection == Vector2I.Up) Move(MoveDirection.Down);
             if(moveDirection == Vector2I.Down) Move(MoveDirection.Up);
         }
+    }
+
+    public void MoveAndGrabFocus(MoveDirection moveDirection, int rowIndex, int columnIndex)
+    {
+        Move(moveDirection);
+        _currentView[rowIndex, columnIndex].AssignedButton?.GrabFocus();
     }
     
     public void Move(MoveDirection moveDirection)

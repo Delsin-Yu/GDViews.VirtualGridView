@@ -42,7 +42,6 @@ internal class FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
             dataLayoutSelectionBuilder.ViewPositioner,
             dataLayoutSelectionBuilder.ElementTweener,
             dataLayoutSelectionBuilder.ElementFader,
-            dataLayoutBuilder.DataLayoutDirection,
             _horizontalScrollBar,
             _verticalScrollBar,
             dataInspector,

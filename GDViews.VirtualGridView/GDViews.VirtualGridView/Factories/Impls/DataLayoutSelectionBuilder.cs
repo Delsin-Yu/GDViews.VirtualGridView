@@ -9,7 +9,7 @@ internal class DataLayoutSelectionBuilder(ViewHandlerBuilder viewHandlerBuilder,
     public IElementTweener ElementTweener { get; } = elementTweener;
     public IElementFader ElementFader { get; } = elementFader;
 
-    public IHorizontalDataLayoutBuilder<TDataType> WithHorizontalDataLayout<TDataType>(IEqualityComparer<TDataType>? equalityComparer = null, bool reverseLocalLayout = false) => new DataLayoutBuilder<TDataType>(this, DataLayoutDirection.Horizontal, equalityComparer, reverseLocalLayout);
+    public IHorizontalDataLayoutBuilder<TDataType> WithHorizontalDataLayout<TDataType>(IEqualityComparer<TDataType>? equalityComparer = null, bool reverseLocalLayout = false) => new DataLayoutBuilder<TDataType>(this, equalityComparer, reverseLocalLayout, true);
 
-    public IVerticalDataLayoutBuilder<TDataType> WithVerticalDataLayout<TDataType>(IEqualityComparer<TDataType>? equalityComparer = null, bool reverseLocalLayout = false) => new DataLayoutBuilder<TDataType>(this, DataLayoutDirection.Vertical, equalityComparer, reverseLocalLayout);
+    public IVerticalDataLayoutBuilder<TDataType> WithVerticalDataLayout<TDataType>(IEqualityComparer<TDataType>? equalityComparer = null, bool reverseLocalLayout = false) => new DataLayoutBuilder<TDataType>(this, equalityComparer, reverseLocalLayout, false);
 }
