@@ -19,10 +19,6 @@ internal enum EdgeElementType : short
     Down = 1 << 2,
     Left = 1 << 3,
     Right = 1 << 4, 
-    GlobalUp = 1 << 5,
-    GlobalDown = 1 << 6,
-    GlobalLeft = 1 << 7,
-    GlobalRight = 1 << 8,
     None = 0
 }
 
@@ -49,7 +45,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         _OnPressedHandler = _OnGridItemPressed;
     }
 
-    internal CurrentInfo? Info { private get; set; }
+    internal CurrentInfo? Info { get; set; }
 
     private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnDrawHandler;
     private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnMoveHandler;
@@ -63,7 +59,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
 
     private string? _cachedName;
 
-    internal string LocalName => _cachedName ??= Name;
+    private string LocalName => _cachedName ??= Name;
     
     public sealed override void _GuiInput(InputEvent inputEvent)
     {

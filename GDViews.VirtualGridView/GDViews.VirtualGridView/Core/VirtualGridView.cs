@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Godot;
 
 namespace GodotViews.VirtualGrid;
@@ -166,36 +167,27 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     public bool GrabFocus(IDataFocusFinder<TDataType> focusFinder) => throw new NotImplementedException();
 
-    private VirtualGridViewItem<TDataType, TExtraArgument>.CurrentInfo ConstructInfo(int rowIndex,
+    private VirtualGridViewItem<TDataType, TExtraArgument>.CurrentInfo ConstructInfo(
+        int rowIndex,
         int columnIndex,
         int dataSetMaxRowIndex,
         int dataSetMaxColumnIndex,
         TDataType data)
     {
         var edgeElementType = EdgeElementType.None;
-        if (rowIndex == 0)
-        {
-            if (ViewRowIndex == 0) edgeElementType |= EdgeElementType.GlobalUp;
-            else edgeElementType |= EdgeElementType.Up;
-        }
 
-        if (rowIndex == _maxViewRowIndex)
-        {
-            if (ViewRowIndex + columnIndex == dataSetMaxRowIndex) edgeElementType |= EdgeElementType.GlobalDown;
-            else edgeElementType |= EdgeElementType.Down;
-        }
+        if (rowIndex == 0) edgeElementType |= EdgeElementType.Up;
+        if (columnIndex == 0) edgeElementType |= EdgeElementType.Left;
+        if (rowIndex == _maxViewRowIndex) edgeElementType |= EdgeElementType.Down;
+        if (columnIndex == _maxViewColumnIndex) edgeElementType |= EdgeElementType.Right;
 
-        if (columnIndex == 0)
-        {
-            if (ViewColumnIndex == 0) edgeElementType |= EdgeElementType.GlobalLeft;
-            else edgeElementType |= EdgeElementType.Left;
-        }
+        var absRowIndex = rowIndex + ViewRowIndex;
+        var absColumnIndex = columnIndex + ViewColumnIndex;
 
-        if (columnIndex == _maxViewColumnIndex)
-        {
-            if (ViewColumnIndex + columnIndex == dataSetMaxColumnIndex) edgeElementType |= EdgeElementType.GlobalRight;
-            edgeElementType |= EdgeElementType.Right;
-        }
+        if (absRowIndex == 0) edgeElementType &= ~ EdgeElementType.Up;
+        if (absColumnIndex == 0) edgeElementType &= ~ EdgeElementType.Left;
+        if (absRowIndex == dataSetMaxRowIndex) edgeElementType &= ~ EdgeElementType.Down;
+        if (absColumnIndex == dataSetMaxColumnIndex) edgeElementType &= ~ EdgeElementType.Right;
 
         return new(
             this,
@@ -325,7 +317,21 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                         ref currentViewItem.Data,
                         out var currentDataIsNull,
                         out var currentViewDataIsNull
-                    )) continue;
+                    ))
+                {
+                    if (!currentViewDataIsNull)
+                    {
+                        currentViewItem.AssignedButton!.Info =
+                            ConstructInfo(
+                                rowIndex,
+                                columnIndex,
+                                dataSetMaxRowIndex,
+                                dataSetMaxColumnIndex,
+                                currentDataValue.Unwrap()
+                            );
+                    }
+                    continue;
+                }
 
                 if (!currentViewDataIsNull)
                 {

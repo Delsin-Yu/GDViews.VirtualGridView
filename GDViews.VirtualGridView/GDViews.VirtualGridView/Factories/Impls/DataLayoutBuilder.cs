@@ -164,7 +164,7 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
         public void GetDataSetMetrics(out int rows, out int columns)
         {
             rows = dataMap.Max(x => x.DataSet.GetDynamicMetric());
-            columns = dataMap.Sum(x => x.DataSet.FixedMetric);
+            columns = dataMap.Length;
         }
         
         /*
