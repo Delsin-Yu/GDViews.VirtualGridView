@@ -39,14 +39,14 @@ public partial class Example : Node
         _virtualGridView = VirtualGridView
             .Create(10, 10)
             .WithHandlers(
-                ViewPositioners.CreateCentered(),
+                ViewPositioners.CreateSide(),
                 //ElementTweeners.None,
                 //ElementFaders.None
                 ElementTweeners.CreatePositional(0.25f, TweenSetups.EaseOutSine),
                 ElementFaders.CreateScaleRotate(0.25f, TweenSetups.EaseOutSine)
             )
             .WithHorizontalDataLayout<string>()
-                .AddRowDataSource(DataSetDefinition.Create(dataList1, Enumerable.Range(0, 20).ToArray()))
+                .AddRowDataSource(DataSetDefinition.Create(dataList1, [0,1,2]))
             //.WithVerticalDataLayout<string>()
             //     .AddColumnDataSource(DataSetDefinition.Create(dataList1, [0]))
             //     .AddColumnDataSource(DataSetDefinition.Create(dataList2, [1]))
@@ -112,7 +112,7 @@ public partial class Example : Node
             _virtualGridView.Redraw();
         };
         
-        for (int i = 0; i < 4000; i++)
+        for (int i = 0; i < 9; i++)
         {
             _add.EmitSignal(Button.SignalName.Pressed);
         }

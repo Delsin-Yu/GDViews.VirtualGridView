@@ -6,8 +6,6 @@ public interface IVirtualGridView<TDataType, TButtonType, TExtraArgument> where 
 {
     void Redraw();
     void Move(MoveDirection moveDirection);
-    int ViewColumnIndex { get; }
-    int ViewRowIndex { get; }
     bool GrabLastFocus(LastFocusType lastFocusType);
     bool GrabFocus(IViewFocusFinder focusFinder);
     bool GrabFocus(IDataFocusFinder<TDataType> focusFinder);
