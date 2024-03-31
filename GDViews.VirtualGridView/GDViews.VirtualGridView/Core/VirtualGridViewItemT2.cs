@@ -59,7 +59,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
 
     private string? _cachedName;
 
-    private string LocalName => _cachedName ??= Name;
+    internal string LocalName => _cachedName ??= Name;
     
     public sealed override void _GuiInput(InputEvent inputEvent)
     {

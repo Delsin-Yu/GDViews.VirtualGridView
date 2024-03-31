@@ -49,6 +49,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     private readonly IInfiniteLayoutGrid _layoutGrid;
 
     private readonly Stack<TButtonType> _buttonPool;
+    private readonly HashSet<TButtonType> _movingOutControls = [];
+    private readonly Stack<TButtonType> _pendingRemove = [];
     private readonly Action<Control> _collectInvincibleControlHandler;
 
     private DataView[,] _currentView;
@@ -231,7 +233,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         _layoutGrid = layoutGrid;
         ExtraArgument = extraArgument;
 
-        _collectInvincibleControlHandler = CollectionButtonInstance;
+        _collectInvincibleControlHandler = CollectButtonInstance;
         _currentView = new DataView[ViewRows, ViewColumns];
         _nextView = new DataView[ViewRows, ViewColumns];
 
@@ -266,6 +268,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         else
         {
             instance.Show();
+            instance.FocusMode = Control.FocusModeEnum.All;
+            instance.MouseFilter = Control.MouseFilterEnum.Stop;
         }
 
         instance.DrawGridItem(ConstructInfo(rowIndex, columnIndex, dataSetMaxRowIndex, dataSetMaxColumnIndex, data));
@@ -286,10 +290,11 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         );
     }
     
-    private void CollectionButtonInstance(Control button)
+    private void CollectButtonInstance(Control button)
     {
         var typedButton = (TButtonType)button;
         typedButton.CallDisappear();
+        _movingOutControls.Remove(typedButton);
         _buttonPool.Push(typedButton);
         button.Hide();
     }
@@ -335,8 +340,10 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
                 if (!currentViewDataIsNull)
                 {
-                    _elementTweener.KillTween(currentViewItem.AssignedButton!);
-                    _elementFader.Disappear(currentViewItem.AssignedButton!, _collectInvincibleControlHandler);
+                    var assignedButton = currentViewItem.AssignedButton!;
+                    _elementTweener.KillTween(assignedButton);
+                    _movingOutControls.Add(assignedButton);
+                    _elementFader.Disappear(assignedButton, _collectInvincibleControlHandler);
                     currentViewItem.AssignedButton = null;
                     currentViewItem.Data = NullableData<TDataType>.Null;
                 }
@@ -441,6 +448,16 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         const byte EDGE_OUT = 1;
         const byte EDGE_IN = 2;
 
+        foreach (var movingOutControl in _movingOutControls) 
+            _pendingRemove.Push(movingOutControl);
+
+        while (_pendingRemove.TryPop(out var movingOutControl))
+        {
+            _elementTweener.KillTween(movingOutControl);
+            _elementFader.KillTween(movingOutControl);
+            CollectButtonInstance(movingOutControl);
+        }
+
         // Move in-view items to new positions
         for (var rowIndex = 0; rowIndex < ViewRows; rowIndex++)
         for (var columnIndex = 0; columnIndex < ViewColumns; columnIndex++)
@@ -474,7 +491,10 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                 case EDGE_OUT:
                     targetGridPosition = isRow ? new(movingOutLineIndex, columnIndex) : new(rowIndex, movingOutLineIndex);
                     currentButton.CallMoveOut();
+                    currentButton.FocusMode = Control.FocusModeEnum.None;
+                    currentButton.MouseFilter = Control.MouseFilterEnum.Ignore;
                     _elementFader.KillTween(currentButton);
+                    _movingOutControls.Add(currentButton);
                     _elementTweener.MoveOut(currentButton, _layoutGrid.GetGridElementPosition(SwapXY(targetGridPosition)), _collectInvincibleControlHandler);
                     break;
                 default:

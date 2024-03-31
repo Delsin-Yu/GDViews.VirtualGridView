@@ -2,8 +2,12 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
-<!--    <PublishAot>true</PublishAot>-->
   </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(GodotTargetPlatform)' != 'android' ">
+    <PublishAot>true</PublishAot>
+  </PropertyGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\GDViews.VirtualGridView\GDViews.VirtualGridView\GDViews.VirtualGridView.csproj"/>
     <PackageReference Include="Bogus" Version="*"/>
