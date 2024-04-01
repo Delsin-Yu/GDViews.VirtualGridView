@@ -173,7 +173,7 @@ offset_left = 384.0
 offset_top = 160.0
 offset_right = 1112.0
 offset_bottom = 184.0
-text = "移动光标：键盘方向键"
+text = "移动光标：键盘方向键 或 滚轮/Shift+滚轮"
 vertical_alignment = 1
 
 [node name="CheckButton" type="CheckButton" parent="."]

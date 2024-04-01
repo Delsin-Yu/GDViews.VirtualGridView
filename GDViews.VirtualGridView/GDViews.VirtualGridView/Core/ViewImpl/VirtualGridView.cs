@@ -233,6 +233,14 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         _layoutGrid = layoutGrid;
         ExtraArgument = extraArgument;
 
+        _itemContainer.GuiInput += inputEvent =>
+        {
+            using (inputEvent)
+            {
+                VirtualGridView.SimulateScrollWheelNavigation(inputEvent, this);
+            }
+        };
+        
         _collectInvincibleControlHandler = CollectButtonInstance;
         _currentView = new DataView[ViewRows, ViewColumns];
         _nextView = new DataView[ViewRows, ViewColumns];

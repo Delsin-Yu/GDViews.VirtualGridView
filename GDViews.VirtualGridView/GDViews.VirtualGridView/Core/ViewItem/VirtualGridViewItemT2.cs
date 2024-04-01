@@ -65,8 +65,11 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
     {
         using (inputEvent)
         {
-            if(inputEvent.IsReleased()) return;
             if (!AccessInfo(out var info)) return;
+
+            if(VirtualGridView.SimulateScrollWheelNavigation(inputEvent, info.Parent)) return;
+            
+            if(inputEvent.IsReleased()) return;
 
             if (Check(UIInputActionNames.UIDown, EdgeElementType.Down, in info, inputEvent))
                 info.Parent.MoveAndGrabFocus(MoveDirection.Down, info.RowIndex, info.ColumnIndex);
@@ -135,10 +138,12 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         switch ((long)what)
         {
             case NotificationFocusEnter:
+                VirtualGridView.CurrentActiveGridView = info.Parent;
                 info.Parent.FocusTo(info);
                 CallDelegate(_OnFocusEnteredHandler, info, "On Focus Enter");
                 break;
             case NotificationFocusExit:
+                VirtualGridView.CurrentActiveGridView = null;
                 CallDelegate(_OnFocusExitedHandler, info, "On Focus Exit");
                 break;
         }

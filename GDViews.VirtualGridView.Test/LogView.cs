@@ -6,6 +6,8 @@ namespace GodotViews.VirtualGrid.Examples;
 
 public partial class LogView : Node
 {
+    [Export] private ScrollBar _horizontalScrollBar;
+    [Export] private ScrollBar _verticalScrollBar;
     [Export] private PackedScene _prefab;
     [Export] private Control _container;
     [Export] private int _displayAmount;
@@ -64,10 +66,13 @@ public partial class LogView : Node
                 ViewPositioners.CreateSide(),
                 ElementTweeners.CreatePositional(0.15f, TweenSetups.EaseOutSine),
                 ElementFaders.CreateScale(0.25f, TweenSetups.EaseInOutSine)
-            ).WithVerticalDataLayout<LogInfo>()
-            .AddColumnDataSource(DataSetDefinition.Create(_logs, [0]))
+            )
+            .WithVerticalDataLayout<LogInfo>()
+                .AddColumnDataSource(DataSetDefinition.Create(_logs, [0]))
             .WithArgument<LogViewItem, LogView>(_prefab, _container, InfinitLayoutGrids.CreateSimple(_size, _padding))
-            .ConfigureExtraArgument(this)
+                .ConfigureExtraArgument(this)
+                .ConfigureHorizontalScrollBar(_horizontalScrollBar)
+                .ConfigureVerticalScrollBar(_verticalScrollBar)
             .Build();
         
         _virtualGridView.Redraw();
