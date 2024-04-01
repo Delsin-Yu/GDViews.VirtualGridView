@@ -21,6 +21,7 @@ public partial class Example : Node
     [Export] private Button _scramble;
     [Export] private Button _grabData;
     [Export] private Button _grabView;
+    [Export] private Button _killFocus;
 
     [Export] private OptionButton _optionButton;
     [Export] private Slider _duration;
@@ -42,7 +43,7 @@ public partial class Example : Node
 
         var count = 0;
 
-        void Add()
+        string Add()
         {
             var currentCount = count++;
 
@@ -53,6 +54,8 @@ public partial class Example : Node
             dataList3.Add(countStr);
             dataList4.Add(countStr);
             dataList5.Add(countStr);
+
+            return countStr;
         }
 
 
@@ -125,8 +128,8 @@ public partial class Example : Node
         _virtualGridView = VirtualGridView
             .Create(7, 7)
             .WithHandlers(
-                //ViewPositioners.CreateCentered(),
-                ViewPositioners.CreateSide(),
+                ViewPositioners.CreateCentered(),
+                //ViewPositioners.CreateSide(),
                 //ElementTweeners.None,
                 //ElementFaders.None
                 positionalTweener,
@@ -173,7 +176,8 @@ public partial class Example : Node
 
         _grabData.Pressed += () => _virtualGridView.GrabLastFocus(LastFocusType.LastDataFocus);
         _grabView.Pressed += () => _virtualGridView.GrabLastFocus(LastFocusType.LastViewFocus);
-
+        _killFocus.Pressed += () => GetViewport().GuiReleaseFocus();
+        
         _add.Pressed += () =>
         {
             // dataList1.Add(faker.Lorem.Word());
@@ -182,7 +186,7 @@ public partial class Example : Node
             // dataList4.Add(faker.Lorem.Word());
             // dataList5.Add(faker.Lorem.Word());
 
-            Add();
+            var newValue = Add();
 
             _virtualGridView.Redraw();
         };

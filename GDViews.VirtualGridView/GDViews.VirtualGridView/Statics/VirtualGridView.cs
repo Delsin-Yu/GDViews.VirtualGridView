@@ -56,17 +56,15 @@ public static class VirtualGridView
         ref Vector2? mouseStartDragPosition,
         ref readonly Vector2 objectDistance,
         object? gridViewOwner,
-        out MoveDirection? primarySimulatedDirection,
-        out MoveDirection? secondarySimulatedActionName
+        out MoveDirection? simulatedDirection
     )
     {
-        primarySimulatedDirection = null;
-        secondarySimulatedActionName = null;
+        simulatedDirection = null;
 
         if (gridViewOwner is null || gridViewOwner != CurrentActiveGridView || mouseStartDragPosition is null) return;
 
         Vector2 position;
-        if (inputEvent is InputEventMouseMotion { Pressure: > 0f } mouseMotion) position = mouseMotion.Position;
+        if (inputEvent is InputEventMouseMotion { Pressure: > 0f } mouseMotion) position = mouseMotion.GlobalPosition;
         else if (inputEvent is InputEventScreenDrag screenDrag) position = screenDrag.Position;
         else return;
         
@@ -79,13 +77,12 @@ public static class VirtualGridView
         if (diff.X > 0)
         {
             mouseStartDragPosition += new Vector2(objectDistance.X * -sign.X, 0);
-            primarySimulatedDirection = sign.X > 0 ? MoveDirection.Right : MoveDirection.Left;
+            simulatedDirection = sign.X > 0 ? MoveDirection.Right : MoveDirection.Left;
         }
-
-        if (diff.Y > 0)
+        else if (diff.Y > 0)
         {
             mouseStartDragPosition += new Vector2(0, objectDistance.Y * -sign.Y);
-            secondarySimulatedActionName = sign.Y > 0 ? MoveDirection.Down : MoveDirection.Up;
+            simulatedDirection = sign.Y > 0 ? MoveDirection.Down : MoveDirection.Up;
         }
     }
 
@@ -99,7 +96,7 @@ public static class VirtualGridView
             MoveDirection.Right => _uiRight,
             _ => throw new ArgumentOutOfRangeException(nameof(moveDirection), moveDirection, null)
         };
-        TrySimulateInputEvent(eventName);
+        Input.ParseInputEvent(new InputEventAction { Pressed = true, Action = eventName });
     }
 
 
@@ -123,11 +120,7 @@ public static class VirtualGridView
             return;
         }
 
-        var keyModifierMask = mouseButton
-            .GetModifiersMask();
-        var mapVH =
-            keyModifierMask
-                .HasFlag(KeyModifierMask.MaskShift);
+        var mapVH = mouseButton.GetModifiersMask().HasFlag(KeyModifierMask.MaskShift);
 
         switch (mouseButtonButtonIndex)
         {
@@ -144,14 +137,8 @@ public static class VirtualGridView
                 simulatedMoveDirection = MoveDirection.Right;
                 break;
             case MouseButton.Left:
-                mouseStartDragPosition = mouseButton.Position;
+                mouseStartDragPosition = mouseButton.GlobalPosition;
                 break;
         }
-    }
-
-    private static void TrySimulateInputEvent(StringName? actionName)
-    {
-        if (actionName is null) return;
-        Input.ParseInputEvent(new InputEventAction { Pressed = true, Action = actionName });
     }
 }

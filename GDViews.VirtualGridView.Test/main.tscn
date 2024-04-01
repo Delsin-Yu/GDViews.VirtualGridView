@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://bbflxig4up0wr" path="res://view.tscn" id="2_7ef37"]
 [ext_resource type="Script" path="res://RepeatButton.cs" id="3_su4wh"]
 
-[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_up", "_down", "_left", "_right", "_add", "_scramble", "_grabData", "_grabView", "_optionButton", "_duration", "_durationText", "_enableClipChildren")]
+[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_up", "_down", "_left", "_right", "_add", "_scramble", "_grabData", "_grabView", "_killFocus", "_optionButton", "_duration", "_durationText", "_enableClipChildren")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -24,6 +24,7 @@ _add = NodePath("Button5")
 _scramble = NodePath("Button6")
 _grabData = NodePath("Button7")
 _grabView = NodePath("Button8")
+_killFocus = NodePath("Button9")
 _optionButton = NodePath("OptionButton")
 _duration = NodePath("SpinBox")
 _durationText = NodePath("Label")
@@ -127,23 +128,37 @@ custom_minimum_size = Vector2(64, 64)
 layout_mode = 0
 offset_left = 1184.0
 offset_top = 488.0
-offset_right = 1504.0
+offset_right = 1376.0
 offset_bottom = 640.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 30
-text = "Grab Data"
+text = "Grab Data
+Focus"
 
 [node name="Button8" type="Button" parent="."]
 auto_translate_mode = 1
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 0
-offset_left = 1520.0
+offset_left = 1392.0
+offset_top = 488.0
+offset_right = 1632.0
+offset_bottom = 640.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 30
+text = "Grab View
+Focus"
+
+[node name="Button9" type="Button" parent="."]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+offset_left = 1648.0
 offset_top = 488.0
 offset_right = 1840.0
 offset_bottom = 640.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 30
-text = "Grab View"
+text = "Kill Focus"
 
 [node name="OptionButton" type="OptionButton" parent="."]
 layout_mode = 0

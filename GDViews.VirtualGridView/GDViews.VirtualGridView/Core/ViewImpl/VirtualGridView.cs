@@ -109,8 +109,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         var success = FocusToTarget(
             dataPositionRelativeToViewport.Y,
             dataPositionRelativeToViewport.X,
-            out var targetRowIndex,
-            out var targetColumnIndex
+            out var targetColumnIndex,
+            out var targetRowIndex
         );
 
         if (!success) return false;
@@ -275,7 +275,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                 this,
                 out var simulatedDirection
             );
-
+            
             if (simulatedDirection is not null) 
                 ApplyDrag(simulatedDirection.Value);
             
@@ -284,33 +284,33 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                 ref _mouseStartDragPosition,
                 in _cellItemSize,
                 this,
-                out var primarySimulatedDirection,
-                out var secondarySimulatedDirection
+                out simulatedDirection
             );
-
-            if (primarySimulatedDirection is not null) 
-                ApplyDrag(primarySimulatedDirection.Value);
-
-            if (secondarySimulatedDirection is not null) 
-                ApplyDrag(secondarySimulatedDirection.Value);
+            
+            if (simulatedDirection is not null) 
+                ApplyDrag(simulatedDirection.Value);
         }
     }
 
     private void ApplyDrag(MoveDirection moveDirection)
     {
+        var currentFocusPosition = VirtualGridView.CreatePosition(_currentSelectedViewRowIndex, _currentSelectedViewColumnIndex);
         _viewPositioner.GetDragViewPosition(
             _viewportSize,
             moveDirection,
-            VirtualGridView.CreatePosition(_currentSelectedViewRowIndex, _currentSelectedViewColumnIndex),
+            currentFocusPosition,
             out var targetFocusPosition
         );
 
-        _currentView[targetFocusPosition.Y, targetFocusPosition.X]
-            .AssignedButton?.GrabFocus();
-        
+        if (currentFocusPosition != targetFocusPosition)
+        {
+            _currentView[targetFocusPosition.Y, targetFocusPosition.X]
+                .AssignedButton?.GrabFocus();
+        }
+
         VirtualGridView.TryApplyInputSimulation(moveDirection);
     }
-    
+
     private TButtonType GetAndInitializeButtonInstance(TDataType data, int rowIndex, int columnIndex, int dataSetMaxRowIndex, int dataSetMaxColumnIndex)
     {
         if (!_buttonPool.TryPop(out var instance))
