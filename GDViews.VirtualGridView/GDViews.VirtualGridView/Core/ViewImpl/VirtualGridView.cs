@@ -47,6 +47,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     private readonly PackedScene _itemPrefab;
     private readonly Control _itemContainer;
     private readonly IInfiniteLayoutGrid _layoutGrid;
+    private readonly Vector2 _cellItemSize;
+    private readonly Vector2I _viewportSize;
 
     private readonly Stack<TButtonType> _buttonPool;
     private readonly HashSet<TButtonType> _movingOutControls = [];
@@ -60,6 +62,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     private int _currentSelectedViewColumnIndex;
     private NullableData<TDataType> _currentSelectedData;
 
+    private Vector2? _mouseStartDragPosition;
+    
     public int ViewColumnIndex { get; private set; }
     public int ViewRowIndex { get; private set; }
     public int ViewColumns { get; }
@@ -118,15 +122,14 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     internal bool FocusToTarget(int viewportRowIndex, int viewportColumnIndex, out int targetRowIndex, out int targetColumnIndex)
     {
-        var viewportSize = VirtualGridView.CreatePosition(ViewRows, ViewColumns);
         var dataPositionRelativeToViewport = VirtualGridView.CreatePosition(viewportRowIndex, viewportColumnIndex);
         _viewPositioner.GetTargetPosition(
-            viewportSize,
+            _viewportSize,
             dataPositionRelativeToViewport,
             out var targetDataPosition
         );
 
-        if (targetDataPosition < Vector2I.Zero || targetDataPosition >= viewportSize)
+        if (targetDataPosition < Vector2I.Zero || targetDataPosition >= _viewportSize)
         {
             targetRowIndex = -1;
             targetColumnIndex = -1;
@@ -231,19 +234,15 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         _itemPrefab = itemPrefab;
         _itemContainer = itemContainer;
         _layoutGrid = layoutGrid;
+        _cellItemSize = layoutGrid.ItemSize * 0.75f;
         ExtraArgument = extraArgument;
 
-        _itemContainer.GuiInput += inputEvent =>
-        {
-            using (inputEvent)
-            {
-                VirtualGridView.SimulateScrollWheelNavigation(inputEvent, this);
-            }
-        };
+        _itemContainer.GuiInput += ProcessScrollWheelAndDragInput;
         
         _collectInvincibleControlHandler = CollectButtonInstance;
         _currentView = new DataView[ViewRows, ViewColumns];
         _nextView = new DataView[ViewRows, ViewColumns];
+        _viewportSize = VirtualGridView.CreatePosition(ViewRows, ViewColumns);
 
         for (var rowIndex = 0; rowIndex < ViewRows; rowIndex++)
         for (var columnIndex = 0; columnIndex < ViewColumns; columnIndex++)
@@ -265,6 +264,52 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             itemContainer.AddChild(instance, @internal: Node.InternalMode.Front);
         }
     }
+
+    private void ProcessScrollWheelAndDragInput(InputEvent inputEvent)
+    {
+        using (inputEvent)
+        {
+            VirtualGridView.SimulateScrollWheelNavigation(
+                inputEvent,
+                ref _mouseStartDragPosition,
+                this,
+                out var simulatedDirection
+            );
+
+            if (simulatedDirection is not null) 
+                ApplyDrag(simulatedDirection.Value);
+            
+            VirtualGridView.SimulateMouseDragNavigation(
+                inputEvent,
+                ref _mouseStartDragPosition,
+                in _cellItemSize,
+                this,
+                out var primarySimulatedDirection,
+                out var secondarySimulatedDirection
+            );
+
+            if (primarySimulatedDirection is not null) 
+                ApplyDrag(primarySimulatedDirection.Value);
+
+            if (secondarySimulatedDirection is not null) 
+                ApplyDrag(secondarySimulatedDirection.Value);
+        }
+    }
+
+    private void ApplyDrag(MoveDirection moveDirection)
+    {
+        _viewPositioner.GetDragViewPosition(
+            _viewportSize,
+            moveDirection,
+            VirtualGridView.CreatePosition(_currentSelectedViewRowIndex, _currentSelectedViewColumnIndex),
+            out var targetFocusPosition
+        );
+
+        _currentView[targetFocusPosition.Y, targetFocusPosition.X]
+            .AssignedButton?.GrabFocus();
+        
+        VirtualGridView.TryApplyInputSimulation(moveDirection);
+    }
     
     private TButtonType GetAndInitializeButtonInstance(TDataType data, int rowIndex, int columnIndex, int dataSetMaxRowIndex, int dataSetMaxColumnIndex)
     {
@@ -276,9 +321,9 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         else
         {
             instance.Show();
-            instance.FocusMode = Control.FocusModeEnum.All;
-            instance.MouseFilter = Control.MouseFilterEnum.Stop;
         }
+        instance.FocusMode = Control.FocusModeEnum.All;
+        instance.MouseFilter = Control.MouseFilterEnum.Pass;
 
         instance.DrawGridItem(ConstructInfo(rowIndex, columnIndex, dataSetMaxRowIndex, dataSetMaxColumnIndex, data));
 

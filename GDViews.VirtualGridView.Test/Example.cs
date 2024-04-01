@@ -9,6 +9,8 @@ public partial class Example : Node
 {
     [Export] private PackedScene _packedScene;
     [Export] private Control _container;
+    [Export] private Vector2 _size;
+    [Export] private Vector2 _padding;
 
     [Export] private Button _up;
     [Export] private Button _down;
@@ -121,7 +123,7 @@ public partial class Example : Node
         _duration.Value = 0.25f;
 
         _virtualGridView = VirtualGridView
-            .Create(10, 10)
+            .Create(7, 7)
             .WithHandlers(
                 //ViewPositioners.CreateCentered(),
                 ViewPositioners.CreateSide(),
@@ -150,8 +152,8 @@ public partial class Example : Node
                 _packedScene,
                 _container,
                 InfinitLayoutGrids.CreateSimple(
-                    new(64, 64),
-                    new(10, 10)
+                    _size,
+                    _padding
                 )
             )
             .Build();

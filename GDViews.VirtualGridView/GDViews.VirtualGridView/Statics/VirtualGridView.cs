@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using System;
+using Godot;
 
 namespace GodotViews.VirtualGrid;
 
@@ -43,39 +44,114 @@ public static class VirtualGridView
     
     internal static Vector2I CreatePosition(int rowIndex, int columnIndex) => new(columnIndex, rowIndex);
     
-    private static readonly StringName _uiUp = "ui_up";
-    private static readonly StringName _uiDown = "ui_down";
-    private static readonly StringName _uiLeft = "ui_left";
-    private static readonly StringName _uiRight = "ui_right";
+    internal static readonly StringName _uiUp = "ui_up";
+    internal static readonly StringName _uiDown = "ui_down";
+    internal static readonly StringName _uiLeft = "ui_left";
+    internal static readonly StringName _uiRight = "ui_right";
 
     internal static object? CurrentActiveGridView { private get; set; }
-    
-    internal static bool SimulateScrollWheelNavigation(InputEvent inputEvent, object? gridViewOwner)
+
+    internal static void SimulateMouseDragNavigation(
+        InputEvent inputEvent,
+        ref Vector2? mouseStartDragPosition,
+        ref readonly Vector2 objectDistance,
+        object? gridViewOwner,
+        out MoveDirection? primarySimulatedDirection,
+        out MoveDirection? secondarySimulatedActionName
+    )
     {
-        if (gridViewOwner is null || gridViewOwner != CurrentActiveGridView) return false;
+        primarySimulatedDirection = null;
+        secondarySimulatedActionName = null;
+
+        if (gridViewOwner is null || gridViewOwner != CurrentActiveGridView || mouseStartDragPosition is null) return;
+
+        Vector2 position;
+        if (inputEvent is InputEventMouseMotion { Pressure: > 0f } mouseMotion) position = mouseMotion.Position;
+        else if (inputEvent is InputEventScreenDrag screenDrag) position = screenDrag.Position;
+        else return;
         
-        if (inputEvent is not InputEventMouseButton mouseButton) return false;
+        var startDragPosition = mouseStartDragPosition.Value;
+        var mouseTravelDistance = startDragPosition - position;
+        var sign = mouseTravelDistance.Sign();
+        var absDistance = mouseTravelDistance.Abs();
+        var diff = absDistance - objectDistance;
 
-        if (!mouseButton.Pressed) return false;
+        if (diff.X > 0)
+        {
+            mouseStartDragPosition += new Vector2(objectDistance.X * -sign.X, 0);
+            primarySimulatedDirection = sign.X > 0 ? MoveDirection.Right : MoveDirection.Left;
+        }
 
+        if (diff.Y > 0)
+        {
+            mouseStartDragPosition += new Vector2(0, objectDistance.Y * -sign.Y);
+            secondarySimulatedActionName = sign.Y > 0 ? MoveDirection.Down : MoveDirection.Up;
+        }
+    }
+
+    internal static void TryApplyInputSimulation(MoveDirection moveDirection)
+    {
+        var eventName = (moveDirection) switch
+        {
+            MoveDirection.Up => _uiUp,
+            MoveDirection.Down => _uiDown,
+            MoveDirection.Left => _uiLeft,
+            MoveDirection.Right => _uiRight,
+            _ => throw new ArgumentOutOfRangeException(nameof(moveDirection), moveDirection, null)
+        };
+        TrySimulateInputEvent(eventName);
+    }
+
+
+    internal static void SimulateScrollWheelNavigation(
+        InputEvent inputEvent,
+        ref Vector2? mouseStartDragPosition,
+        object? gridViewOwner,
+        out MoveDirection? simulatedMoveDirection
+    )
+    {
+        simulatedMoveDirection = null;
+        if (gridViewOwner is null || gridViewOwner != CurrentActiveGridView) return;
+
+        if (inputEvent is not InputEventMouseButton mouseButton) return;
+        
+        var mouseButtonButtonIndex = mouseButton.ButtonIndex;
+
+        if (!mouseButton.Pressed)
+        {
+            if (mouseButtonButtonIndex == MouseButton.Left) mouseStartDragPosition = null;
+            return;
+        }
+
+        var keyModifierMask = mouseButton
+            .GetModifiersMask();
         var mapVH =
-            mouseButton
-                .GetModifiersMask()
+            keyModifierMask
                 .HasFlag(KeyModifierMask.MaskShift);
 
-        var actionName = mouseButton.ButtonIndex switch
+        switch (mouseButtonButtonIndex)
         {
-            MouseButton.WheelUp => mapVH ? _uiLeft : _uiUp,
-            MouseButton.WheelDown => mapVH ? _uiRight : _uiDown,
-            MouseButton.WheelLeft => _uiLeft,
-            MouseButton.WheelRight => _uiRight,
-            _ => null
-        };
+            case MouseButton.WheelUp:
+                simulatedMoveDirection = mapVH ? MoveDirection.Left : MoveDirection.Up;
+                break;
+            case MouseButton.WheelDown:
+                simulatedMoveDirection = mapVH ? MoveDirection.Right : MoveDirection.Down;
+                break;
+            case MouseButton.WheelLeft:
+                simulatedMoveDirection = MoveDirection.Left;
+                break;
+            case MouseButton.WheelRight:
+                simulatedMoveDirection = MoveDirection.Right;
+                break;
+            case MouseButton.Left:
+                mouseStartDragPosition = mouseButton.Position;
+                break;
+        }
+    }
 
-        if (actionName is null) return false;
-
+    private static void TrySimulateInputEvent(StringName? actionName)
+    {
+        if (actionName is null) return;
         Input.ParseInputEvent(new InputEventAction { Pressed = true, Action = actionName });
-        
-        return true;
     }
 }

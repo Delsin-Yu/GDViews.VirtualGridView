@@ -67,8 +67,6 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         {
             if (!AccessInfo(out var info)) return;
 
-            if(VirtualGridView.SimulateScrollWheelNavigation(inputEvent, info.Parent)) return;
-            
             if(inputEvent.IsReleased()) return;
 
             if (Check(UIInputActionNames.UIDown, EdgeElementType.Down, in info, inputEvent))
