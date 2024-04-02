@@ -5,7 +5,11 @@ namespace GodotViews.VirtualGrid;
 public interface IVirtualGridView<TDataType, TButtonType, TExtraArgument> where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
 {
     void Redraw();
-    void Move(MoveDirection moveDirection);
+    
+    IElementPositioner ElementPositioner { get; set; }
+    IElementTweener ElementTweener { get; set; }
+    IElementFader ElementFader { get; set; }
+    
     bool GrabLastFocus(LastFocusType lastFocusType);
     bool GrabFocus(IViewFocusFinder focusFinder);
     bool GrabFocus(IDataFocusFinder<TDataType> focusFinder);

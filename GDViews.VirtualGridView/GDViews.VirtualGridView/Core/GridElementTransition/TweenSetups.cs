@@ -50,4 +50,8 @@ public static class TweenSetups
     public static readonly TweenSetup EaseInBounce = new(Tween.EaseType.In, Tween.TransitionType.Bounce);
     public static readonly TweenSetup EaseOutBounce = new(Tween.EaseType.Out, Tween.TransitionType.Bounce);
     public static readonly TweenSetup EaseInOutBounce = new(Tween.EaseType.InOut, Tween.TransitionType.Bounce);
+    
+    public static TweenSetup Default { get; set; } = EaseOutQuad;
+
+    internal static TweenSetup CurrentOrDefault(TweenSetup? current) => current ?? Default;
 }

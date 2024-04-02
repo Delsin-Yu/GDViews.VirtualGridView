@@ -2,9 +2,9 @@
 
 namespace GodotViews.VirtualGrid;
 
-public static partial class ViewPositioners
+public static partial class ElementPositioners
 {
-    private class CenteredViewPositioner : IViewPositioner
+    private class CenteredElementPositioner : IElementPositioner
     {
         public void GetTargetPosition(Vector2I viewportSize, Vector2I dataPositionRelativeToViewport, out Vector2I targetDataPosition)
         {

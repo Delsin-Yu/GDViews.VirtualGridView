@@ -3,7 +3,10 @@
 public static partial class ElementFaders
 {
     public static IElementFader None { get; } = new NonFaderImpl();
-    public static IGodotTweenFader CreateFade(float duration, TweenSetup tweenSetup) => new FadeFader(duration, tweenSetup);
-    public static IGodotTweenFader CreateScale(float duration, TweenSetup tweenSetup) => new ScaleFader(duration, tweenSetup);
-    public static IGodotTweenFader CreateScaleRotate(float duration, TweenSetup tweenSetup) => new ScaleRotateFader(duration, tweenSetup);
+    public static IGodotTweenFader CreateFade(float duration, TweenSetup? tweenSetup = null) => 
+        new FadeFader(duration, TweenSetups.CurrentOrDefault(tweenSetup));
+    public static IGodotTweenFader CreateScale(float duration, TweenSetup? tweenSetup = null) => 
+        new ScaleFader(duration, TweenSetups.CurrentOrDefault(tweenSetup));
+    public static IGodotTweenFader CreateScaleRotate(float duration, TweenSetup? tweenSetup = null) => 
+        new ScaleRotateFader(duration, TweenSetups.CurrentOrDefault(tweenSetup));
 }

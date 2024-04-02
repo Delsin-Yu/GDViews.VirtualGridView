@@ -148,9 +148,9 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
                 ref var current = ref viewSpan[i - columnOffset];
                 
                 if (i >= 0 && dataSet.TryGetGridElement(localIndex, i, out var element))
-                    current = new(true, element);
+                    current = NullableData.Create(element);
                 else
-                    current = NullableData<T>.Null;
+                    current = NullableData.Null<T>();
             }
 
             return viewSpan;
@@ -194,16 +194,16 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
 
                 if (i < 0 || dataMap.Length <= i)
                 {
-                    current = NullableData<T>.Null;
+                    current = NullableData.Null<T>();
                     continue;
                 }
 
                 var (dataSet, localIndex) = dataMap[i];
 
                 if (actualRow >= 0 && dataSet.TryGetGridElement(localIndex, actualRow, out var element))
-                    current = new(true, element);
+                    current = NullableData.Create(element);
                 else
-                    current = NullableData<T>.Null;
+                    current = NullableData.Null<T>();
             }
 
             return viewSpan;

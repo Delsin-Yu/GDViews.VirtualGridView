@@ -16,5 +16,10 @@ public static partial class ElementFaders
         public void KillTween(Control control)
         {
         }
+
+        public void Show(Control control)
+        {
+            
+        }
     }
 }

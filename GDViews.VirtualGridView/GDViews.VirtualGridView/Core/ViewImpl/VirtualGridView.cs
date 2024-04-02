@@ -33,10 +33,6 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         public override string ToString() => $"Button: {AssignedButton?.Name ?? "Null"}, Data: {Data}";
     }
 
-    private readonly IViewPositioner _viewPositioner;
-    private readonly IElementTweener _elementTweener;
-    private readonly IElementFader _elementFader;
-
     private readonly ScrollBar? _horizontalScrollBar;
     private readonly ScrollBar? _verticalScrollBar;
     private readonly int _maxViewColumnIndex;
@@ -69,6 +65,9 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     public int ViewColumns { get; }
     public int ViewRows { get; }
     public TExtraArgument? ExtraArgument { get; }
+    public IElementPositioner ElementPositioner { get; set; }
+    public IElementTweener ElementTweener { get; set; }
+    public IElementFader ElementFader { get; set; }
 
     public bool GrabLastFocus(LastFocusType lastFocusType)
     {
@@ -114,8 +113,12 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         );
 
         if (!success) return false;
+
+        var selectedView = _currentView[targetRowIndex, targetColumnIndex].AssignedButton;
+
+        if (selectedView is null) return false;
         
-        _currentView[targetRowIndex, targetColumnIndex].AssignedButton!.GrabFocus();
+        selectedView.GrabFocus();
         
         return true;
     }
@@ -123,7 +126,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     internal bool FocusToTarget(int viewportRowIndex, int viewportColumnIndex, out int targetRowIndex, out int targetColumnIndex)
     {
         var dataPositionRelativeToViewport = VirtualGridView.CreatePosition(viewportRowIndex, viewportColumnIndex);
-        _viewPositioner.GetTargetPosition(
+        ElementPositioner.GetTargetPosition(
             _viewportSize,
             dataPositionRelativeToViewport,
             out var targetDataPosition
@@ -205,7 +208,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     internal VirtualGridViewImpl(int viewportRows,
         int viewportColumns,
-        IViewPositioner viewPositioner,
+        IElementPositioner elementPositioner,
         IElementTweener elementTweener,
         IElementFader elementFader,
         ScrollBar? horizontalScrollBar,
@@ -223,9 +226,9 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         _maxViewRowIndex = ViewRows - 1;
         _maxViewColumnIndex = ViewColumns - 1;
         
-        _elementTweener = elementTweener;
-        _elementFader = elementFader;
-        _viewPositioner = viewPositioner;
+        ElementTweener = elementTweener;
+        ElementFader = elementFader;
+        ElementPositioner = elementPositioner;
 
         _horizontalScrollBar = horizontalScrollBar;
         _verticalScrollBar = verticalScrollBar;
@@ -247,8 +250,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         for (var rowIndex = 0; rowIndex < ViewRows; rowIndex++)
         for (var columnIndex = 0; columnIndex < ViewColumns; columnIndex++)
         {
-            _currentView[rowIndex, columnIndex] = new() { Data = NullableData<TDataType>.Null };
-            _nextView[rowIndex, columnIndex] = new() { Data = NullableData<TDataType>.Null };
+            _currentView[rowIndex, columnIndex] = new() { Data = NullableData.Null<TDataType>() };
+            _nextView[rowIndex, columnIndex] = new() { Data = NullableData.Null<TDataType>() };
         }
 
         ViewColumnIndex = 0;
@@ -295,7 +298,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     private void ApplyDrag(MoveDirection moveDirection)
     {
         var currentFocusPosition = VirtualGridView.CreatePosition(_currentSelectedViewRowIndex, _currentSelectedViewColumnIndex);
-        _viewPositioner.GetDragViewPosition(
+        ElementPositioner.GetDragViewPosition(
             _viewportSize,
             moveDirection,
             currentFocusPosition,
@@ -324,7 +327,6 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         }
         instance.FocusMode = Control.FocusModeEnum.All;
         instance.MouseFilter = Control.MouseFilterEnum.Pass;
-
         instance.DrawGridItem(ConstructInfo(rowIndex, columnIndex, dataSetMaxRowIndex, dataSetMaxColumnIndex, data));
 
         return instance;
@@ -334,7 +336,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     {
         _currentSelectedViewRowIndex = info.RowIndex;
         _currentSelectedViewColumnIndex = info.ColumnIndex;
-        _currentSelectedData = new(true, info.Data);
+        _currentSelectedData = NullableData.Create<TDataType>(info.Data!);
         FocusToTarget(
             _currentSelectedViewRowIndex,
             _currentSelectedViewColumnIndex,
@@ -345,6 +347,9 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     
     private void CollectButtonInstance(Control button)
     {
+        ElementTweener.KillTween(button);
+        ElementFader.KillTween(button);
+        ElementFader.Show(button);
         var typedButton = (TButtonType)button;
         typedButton.CallDisappear();
         _movingOutControls.Remove(typedButton);
@@ -353,7 +358,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     }
 
     public void Redraw() => Redraw(out _, out _);
-    
+
+
     private void Redraw(out int dataSetMaxRowIndex, out int dataSetMaxColumnIndex)
     {
         {
@@ -394,11 +400,11 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                 if (!currentViewDataIsNull)
                 {
                     var assignedButton = currentViewItem.AssignedButton!;
-                    _elementTweener.KillTween(assignedButton);
+                    ElementTweener.KillTween(assignedButton);
                     _movingOutControls.Add(assignedButton);
-                    _elementFader.Disappear(assignedButton, _collectInvincibleControlHandler);
+                    ElementFader.Disappear(assignedButton, _collectInvincibleControlHandler);
                     currentViewItem.AssignedButton = null;
-                    currentViewItem.Data = NullableData<TDataType>.Null;
+                    currentViewItem.Data = NullableData.Null<TDataType>();
                 }
 
                 if (currentDataIsNull) continue;
@@ -409,8 +415,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                 var button = GetAndInitializeButtonInstance(unwrappedData, rowIndex, columnIndex, dataSetMaxRowIndex, dataSetMaxColumnIndex);
                 button.Position = _layoutGrid.GetGridElementPosition(VirtualGridView.CreatePosition(rowIndex, columnIndex));
                 button.CallAppear();
-                _elementTweener.KillTween(button);
-                _elementFader.Appear(button);
+                ElementTweener.KillTween(button);
+                ElementFader.Appear(button);
                 currentViewItem.AssignedButton = button;
             }
         }
@@ -506,8 +512,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
         while (_pendingRemove.TryPop(out var movingOutControl))
         {
-            _elementTweener.KillTween(movingOutControl);
-            _elementFader.KillTween(movingOutControl);
+            ElementTweener.KillTween(movingOutControl);
+            ElementFader.KillTween(movingOutControl);
             CollectButtonInstance(movingOutControl);
         }
 
@@ -538,17 +544,15 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                             currentViewItem.Data.Unwrap()
                         )
                     );
-                    _elementFader.KillTween(currentButton);
-                    _elementTweener.MoveTo(currentButton, _layoutGrid.GetGridElementPosition(SwapXY(targetGridPosition)));
+                    ElementTweener.MoveTo(currentButton, _layoutGrid.GetGridElementPosition(SwapXY(targetGridPosition)));
                     break;
                 case EDGE_OUT:
                     targetGridPosition = isRow ? new(movingOutLineIndex, columnIndex) : new(rowIndex, movingOutLineIndex);
                     currentButton.CallMoveOut();
                     currentButton.FocusMode = Control.FocusModeEnum.None;
                     currentButton.MouseFilter = Control.MouseFilterEnum.Ignore;
-                    _elementFader.KillTween(currentButton);
                     _movingOutControls.Add(currentButton);
-                    _elementTweener.MoveOut(currentButton, _layoutGrid.GetGridElementPosition(SwapXY(targetGridPosition)), _collectInvincibleControlHandler);
+                    ElementTweener.MoveOut(currentButton, _layoutGrid.GetGridElementPosition(SwapXY(targetGridPosition)), _collectInvincibleControlHandler);
                     break;
                 default:
                     throw new ArgumentException(nameof(movementType));
@@ -599,8 +603,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
                         newButton.Position = _layoutGrid.GetGridElementPosition(emulatedStartPosition);
                         newButton.CallMoveIn();
-                        _elementFader.KillTween(newButton);
-                        _elementTweener.MoveIn(newButton, _layoutGrid.GetGridElementPosition(new(columnIndex, rowIndex)));
+                        ElementFader.KillTween(newButton);
+                        ElementTweener.MoveIn(newButton, _layoutGrid.GetGridElementPosition(new(columnIndex, rowIndex)));
                         break;
                     default:
                         throw new ArgumentException(nameof(movementType));
@@ -612,7 +616,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
         foreach (var dataView in _nextView)
         {
-            dataView.Data = NullableData<TDataType>.Null;
+            dataView.Data = NullableData.Null<TDataType>();
             dataView.AssignedButton = null;
         }
 

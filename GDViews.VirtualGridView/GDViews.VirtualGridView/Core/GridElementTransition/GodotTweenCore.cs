@@ -4,23 +4,24 @@ using Godot;
 
 namespace GodotViews.VirtualGrid;
 
-internal interface ITweenCoreUser<in TTweenType>
+internal interface ITweenCoreUser<in TTweenType, TCachedArgument>
 {
     bool IsTweenSupported(TTweenType tweenType);
-    void InitializeTween(TTweenType tweenType, in Vector2? targetPosition, Control control, Tween tween);
+    void ResetControl(Control control, TCachedArgument previousTarget);
+    TCachedArgument InitializeTween(TTweenType tweenType, in Vector2? targetPosition, Control control, Tween tween);
 }
 
-internal class GodotTweenCore<TTweenType>(ITweenCoreUser<TTweenType> tweenCoreUser)
+internal class GodotTweenCore<TTweenType, TCachedArgument>(ITweenCoreUser<TTweenType, TCachedArgument> tweenCoreUser)
 {
     private readonly Dictionary<Control, Tween> _activeTween = new();
+    private readonly Dictionary<Control, TCachedArgument> _cachedArguments = [];
 
     public void KillAndCreateNewTween(
         TTweenType tweenType,
         Control control,
         in Vector2? targetPosition,
         Action<Control>? onFinish,
-        string methodName,
-        Action<Control>? onFinishSecondary = null
+        string methodName
     )
     {
         KillTween(control);
@@ -28,14 +29,13 @@ internal class GodotTweenCore<TTweenType>(ITweenCoreUser<TTweenType> tweenCoreUs
         if (!tweenCoreUser.IsTweenSupported(tweenType))
         {
             onFinish?.Invoke(control);
-            onFinishSecondary?.Invoke(control);
             return;
         }
 
         var runningTween = control.CreateTween();
         _activeTween[control] = runningTween;
 
-        tweenCoreUser.InitializeTween(tweenType, targetPosition, control, runningTween);
+        _cachedArguments[control] = tweenCoreUser.InitializeTween(tweenType, targetPosition, control, runningTween);
 
         runningTween
             .TweenCallback(
@@ -44,9 +44,8 @@ internal class GodotTweenCore<TTweenType>(ITweenCoreUser<TTweenType> tweenCoreUs
                     {
                         var controlName = control.Name;
                         if (onFinish != null) DelegateRunner.RunProtected(onFinish, control, "On Finish #1", controlName, methodName);
-                        if (onFinishSecondary != null) DelegateRunner.RunProtected(onFinishSecondary, control, "On Finish #2", controlName, methodName);
-                        if (!_activeTween.Remove(control, out var tween)) return;
-                        tween.Kill();
+                        if (_activeTween.Remove(control, out var tween)) tween.Kill();
+                        if (_cachedArguments.Remove(control, out var previousTarget)) tweenCoreUser.ResetControl(control, previousTarget);
                     }
                 )
             )
@@ -55,8 +54,27 @@ internal class GodotTweenCore<TTweenType>(ITweenCoreUser<TTweenType> tweenCoreUs
 
     public void KillTween(Control control)
     {
-        if (!_activeTween.Remove(control, out var runningTween)) return;
-        runningTween.Kill();
-        runningTween.Dispose();
+        NullableData<TCachedArgument> cachedArgument;
+        bool ret;
+        if (!_activeTween.Remove(control, out var runningTween))
+        {
+            cachedArgument = NullableData.Null<TCachedArgument>();
+            ret = false;
+        }
+        else
+        {
+            runningTween.Kill();
+            runningTween.Dispose();
+
+            if (!_cachedArguments.Remove(control, out var previousTarget))
+                cachedArgument = NullableData.Null<TCachedArgument>();
+            else
+                cachedArgument = NullableData.Create(previousTarget);
+        
+            ret = true;
+        }
+
+        if (ret && cachedArgument.TryUnwrap(out var data)) 
+            tweenCoreUser.ResetControl(control, data);
     }
 }

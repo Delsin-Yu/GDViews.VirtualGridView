@@ -39,7 +39,7 @@ internal class FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
         return new VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument>(
             viewAlignmentBuilder.ViewportRows,
             viewAlignmentBuilder.ViewportColumns,
-            dataLayoutSelectionBuilder.ViewPositioner,
+            dataLayoutSelectionBuilder.ElementPositioner,
             dataLayoutSelectionBuilder.ElementTweener,
             dataLayoutSelectionBuilder.ElementFader,
             _horizontalScrollBar,

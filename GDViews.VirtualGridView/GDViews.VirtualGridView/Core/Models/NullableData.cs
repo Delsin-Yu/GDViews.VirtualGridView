@@ -1,7 +1,14 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 
 namespace GodotViews.VirtualGrid;
+
+internal static class NullableData
+{
+    public static NullableData<T> Null<T>() => new(false, default);
+    public static NullableData<T> Create<T>(T data) => new(true, data); 
+}
 
 internal readonly struct NullableData<T>(bool hasValue, T? value)
 {
@@ -9,11 +16,9 @@ internal readonly struct NullableData<T>(bool hasValue, T? value)
     {
         foreach (ref var element in array)
         {
-            element = Null;
+            element = NullableData.Null<T>();
         }
     }
-    
-    public static NullableData<T> Null { get; } = new(false, default);
     
     public readonly bool IsNull = !hasValue;
 

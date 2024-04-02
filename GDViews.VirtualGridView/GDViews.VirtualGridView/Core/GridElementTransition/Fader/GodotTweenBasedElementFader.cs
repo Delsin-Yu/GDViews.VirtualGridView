@@ -3,7 +3,7 @@ using Godot;
 
 namespace GodotViews.VirtualGrid;
 
-public abstract class GodotTweenCoreBasedElementFader : IElementFader, ITweenCoreUser<GodotTweenCoreBasedElementFader.FadeType>
+public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IElementFader, ITweenCoreUser<GodotTweenCoreBasedElementFader<TCachedArgument>.FadeType, TCachedArgument>
 {
     public enum FadeType
     {
@@ -11,7 +11,7 @@ public abstract class GodotTweenCoreBasedElementFader : IElementFader, ITweenCor
         Appear
     }
     
-    private readonly GodotTweenCore<FadeType> _tweenCore;
+    private readonly GodotTweenCore<FadeType, TCachedArgument> _tweenCore;
 
     protected GodotTweenCoreBasedElementFader()
     {
@@ -25,13 +25,12 @@ public abstract class GodotTweenCoreBasedElementFader : IElementFader, ITweenCor
     public void Appear(Control control) => _tweenCore.KillAndCreateNewTween(FadeType.Appear, control, Vector2.Zero, null, "Appear");
 
     /// <inheritdoc/> 
-    public void KillTween(Control control)
-    {
-        _tweenCore.KillTween(control);
-        OnKillTween(control);
-    }
+    public void KillTween(Control control) => _tweenCore.KillTween(control);
 
-    public abstract void InitializeTween(FadeType fadeType, in Vector2? targetPosition, Control control, Tween tween);
+    /// <inheritdoc/> 
+    public abstract void Show(Control control);
+
+    public abstract void ResetControl(Control control, TCachedArgument previousTarget);
+    public abstract TCachedArgument InitializeTween(FadeType fadeType, in Vector2? targetPosition, Control control, Tween tween);
     public abstract bool IsTweenSupported(FadeType fadeType);
-    protected virtual void OnKillTween(Control control) { }
 }

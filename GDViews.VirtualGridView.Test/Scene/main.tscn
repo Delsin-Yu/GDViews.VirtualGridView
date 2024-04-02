@@ -1,0 +1,246 @@
+[gd_scene load_steps=5 format=3 uid="uid://73yxo01kqtsi"]
+
+[ext_resource type="Script" path="res://Scripts/Main.cs" id="1_wuctx"]
+[ext_resource type="PackedScene" uid="uid://bbflxig4up0wr" path="res://Prefab/view.tscn" id="2_7ef37"]
+[ext_resource type="PackedScene" uid="uid://djj3jan54wgsy" path="res://Prefab/data_set_control.tscn" id="3_2ams4"]
+
+[sub_resource type="Theme" id="Theme_p8tds"]
+BoxContainer/constants/separation = 10
+Button/font_sizes/font_size = 30
+Label/font_sizes/font_size = 30
+MarginContainer/constants/margin_bottom = 20
+MarginContainer/constants/margin_left = 20
+MarginContainer/constants/margin_right = 20
+MarginContainer/constants/margin_top = 20
+PopupMenu/font_sizes/font_size = 25
+
+[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_dataSetController1", "_dataSetController2", "_dataSetController3", "_dataSetController4", "_dataSetController5", "_grabData", "_grabView", "_killFocus", "_tweenType", "_faderType", "_tweenerType", "_positionerType", "_duration", "_durationText", "_enableClipChildren")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_p8tds")
+script = ExtResource("1_wuctx")
+_packedScene = ExtResource("2_7ef37")
+_container = NodePath("MarginContainer/HBoxContainer/DataView/ItemContainer")
+_size = Vector2(120, 120)
+_padding = Vector2(10, 10)
+_dataSetController1 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl")
+_dataSetController2 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl2")
+_dataSetController3 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl3")
+_dataSetController4 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl4")
+_dataSetController5 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl5")
+_grabData = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/SelectLastDataBtn")
+_grabView = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/SelectLastPositionBtn")
+_killFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/RemoveFocusBtn")
+_tweenType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Tween")
+_faderType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Fader")
+_tweenerType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Tweener")
+_positionerType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Positioner")
+_duration = NodePath("MarginContainer/HBoxContainer/ControlPanel/AnimationDuration/AnimationTimeSpinBox")
+_durationText = NodePath("MarginContainer/HBoxContainer/ControlPanel/AnimationDuration/AnimationTimeValue")
+_enableClipChildren = NodePath("MarginContainer/HBoxContainer/ControlPanel/MaskToggle")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="DataView" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Tutorial" type="Label" parent="MarginContainer/HBoxContainer/DataView"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_vertical = 6
+text = "移动光标：[键盘方向键] 或 [滚轮/Shift+滚轮] 或 [拖拽]"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ItemContainer" type="Panel" parent="MarginContainer/HBoxContainer/DataView"]
+clip_contents = true
+custom_minimum_size = Vector2(900, 900)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="ControlPanel" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="GridContainer" type="GridContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
+layout_mode = 2
+columns = 4
+
+[node name="TweenTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+layout_mode = 2
+text = "动画补间"
+
+[node name="Tween" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+
+[node name="PositionerTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+text = "布局类型"
+
+[node name="Positioner" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+
+[node name="TweenerTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+text = "过渡类型"
+
+[node name="Tweener" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+
+[node name="FaderTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+text = "渐隐类型"
+
+[node name="Fader" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+
+[node name="AnimationDuration" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
+layout_mode = 2
+
+[node name="AnimationTimeTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/AnimationDuration"]
+auto_translate_mode = 1
+layout_mode = 2
+text = "动画时长"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="AnimationTimeSpinBox" type="HSlider" parent="MarginContainer/HBoxContainer/ControlPanel/AnimationDuration"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+max_value = 2.0
+step = 0.05
+
+[node name="AnimationTimeValue" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/AnimationDuration"]
+layout_mode = 2
+text = "0.25"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="MaskToggle" type="CheckButton" parent="MarginContainer/HBoxContainer/ControlPanel"]
+layout_mode = 2
+focus_mode = 0
+text = "启用蒙版"
+flat = true
+
+[node name="BackingListControl" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="DataSetControl" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear") instance=ExtResource("3_2ams4")]
+layout_mode = 2
+_num = NodePath("MarginContainer/VBoxContainer/DataSet1")
+_add1 = NodePath("MarginContainer/VBoxContainer/Add1")
+_add10 = NodePath("MarginContainer/VBoxContainer/Add10")
+_remove1 = NodePath("MarginContainer/VBoxContainer/Remove1")
+_remove10 = NodePath("MarginContainer/VBoxContainer/Remove10")
+_scramble = NodePath("MarginContainer/VBoxContainer/Scramble")
+_clear = NodePath("MarginContainer/VBoxContainer/Clear")
+
+[node name="DataSetControl2" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear") instance=ExtResource("3_2ams4")]
+layout_mode = 2
+_num = NodePath("MarginContainer/VBoxContainer/DataSet1")
+_add1 = NodePath("MarginContainer/VBoxContainer/Add1")
+_add10 = NodePath("MarginContainer/VBoxContainer/Add10")
+_remove1 = NodePath("MarginContainer/VBoxContainer/Remove1")
+_remove10 = NodePath("MarginContainer/VBoxContainer/Remove10")
+_scramble = NodePath("MarginContainer/VBoxContainer/Scramble")
+_clear = NodePath("MarginContainer/VBoxContainer/Clear")
+
+[node name="DataSetControl3" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear") instance=ExtResource("3_2ams4")]
+layout_mode = 2
+_num = NodePath("MarginContainer/VBoxContainer/DataSet1")
+_add1 = NodePath("MarginContainer/VBoxContainer/Add1")
+_add10 = NodePath("MarginContainer/VBoxContainer/Add10")
+_remove1 = NodePath("MarginContainer/VBoxContainer/Remove1")
+_remove10 = NodePath("MarginContainer/VBoxContainer/Remove10")
+_scramble = NodePath("MarginContainer/VBoxContainer/Scramble")
+_clear = NodePath("MarginContainer/VBoxContainer/Clear")
+
+[node name="DataSetControl4" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear") instance=ExtResource("3_2ams4")]
+layout_mode = 2
+_num = NodePath("MarginContainer/VBoxContainer/DataSet1")
+_add1 = NodePath("MarginContainer/VBoxContainer/Add1")
+_add10 = NodePath("MarginContainer/VBoxContainer/Add10")
+_remove1 = NodePath("MarginContainer/VBoxContainer/Remove1")
+_remove10 = NodePath("MarginContainer/VBoxContainer/Remove10")
+_scramble = NodePath("MarginContainer/VBoxContainer/Scramble")
+_clear = NodePath("MarginContainer/VBoxContainer/Clear")
+
+[node name="DataSetControl5" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear") instance=ExtResource("3_2ams4")]
+layout_mode = 2
+_num = NodePath("MarginContainer/VBoxContainer/DataSet1")
+_add1 = NodePath("MarginContainer/VBoxContainer/Add1")
+_add10 = NodePath("MarginContainer/VBoxContainer/Add10")
+_remove1 = NodePath("MarginContainer/VBoxContainer/Remove1")
+_remove10 = NodePath("MarginContainer/VBoxContainer/Remove10")
+_scramble = NodePath("MarginContainer/VBoxContainer/Scramble")
+_clear = NodePath("MarginContainer/VBoxContainer/Clear")
+
+[node name="FocusControl" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+
+[node name="SelectLastDataBtn" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "选中上次数据"
+
+[node name="SelectLastPositionBtn" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "选中上次位置"
+
+[node name="RemoveFocusBtn" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "移除焦点"

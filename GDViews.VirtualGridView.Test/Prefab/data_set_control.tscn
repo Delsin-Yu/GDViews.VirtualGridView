@@ -1,0 +1,77 @@
+[gd_scene load_steps=2 format=3 uid="uid://djj3jan54wgsy"]
+
+[ext_resource type="Script" path="res://Scripts/DataSetController.cs" id="1_mhvjj"]
+
+[node name="DataSetControl" type="PanelContainer" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear")]
+auto_translate_mode = 1
+size_flags_horizontal = 3
+script = ExtResource("1_mhvjj")
+_num = NodePath("MarginContainer/VBoxContainer/DataSet1")
+_add1 = NodePath("MarginContainer/VBoxContainer/Add1")
+_add10 = NodePath("MarginContainer/VBoxContainer/Add10")
+_remove1 = NodePath("MarginContainer/VBoxContainer/Remove1")
+_remove10 = NodePath("MarginContainer/VBoxContainer/Remove10")
+_scramble = NodePath("MarginContainer/VBoxContainer/Scramble")
+_clear = NodePath("MarginContainer/VBoxContainer/Clear")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+auto_translate_mode = 1
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+
+[node name="DataSet1" type="Label" parent="MarginContainer/VBoxContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_vertical = 6
+text = "数据集1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Add1" type="Button" parent="MarginContainer/VBoxContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 0
+text = "添加1项"
+
+[node name="Add10" type="Button" parent="MarginContainer/VBoxContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 0
+text = "添加10项"
+
+[node name="Remove1" type="Button" parent="MarginContainer/VBoxContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 0
+text = "移除1项"
+
+[node name="Remove10" type="Button" parent="MarginContainer/VBoxContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 0
+text = "移除10项"
+
+[node name="Scramble" type="Button" parent="MarginContainer/VBoxContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 0
+text = "打乱"
+
+[node name="Clear" type="Button" parent="MarginContainer/VBoxContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 0
+text = "清空"
