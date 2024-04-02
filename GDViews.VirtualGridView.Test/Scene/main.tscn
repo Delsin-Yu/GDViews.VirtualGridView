@@ -61,6 +61,7 @@ alignment = 1
 
 [node name="DataView" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 alignment = 1
 
 [node name="Tutorial" type="Label" parent="MarginContainer/HBoxContainer/DataView"]

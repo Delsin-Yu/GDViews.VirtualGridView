@@ -58,8 +58,9 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     private int _currentSelectedViewColumnIndex;
     private NullableData<TDataType> _currentSelectedData;
 
-    private Vector2? _mouseStartDragPosition;
-    
+    private Vector2 _startDragPosition;
+    private bool _isDragging;
+
     public int ViewColumnIndex { get; private set; }
     public int ViewRowIndex { get; private set; }
     public int ViewColumns { get; }
@@ -241,6 +242,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         ExtraArgument = extraArgument;
 
         _itemContainer.GuiInput += ProcessScrollWheelAndDragInput;
+        _itemContainer.MouseExited += () => _isDragging = false;
         
         _collectInvincibleControlHandler = CollectButtonInstance;
         _currentView = new DataView[ViewRows, ViewColumns];
@@ -272,46 +274,113 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     {
         using (inputEvent)
         {
-            VirtualGridView.SimulateScrollWheelNavigation(
-                inputEvent,
-                ref _mouseStartDragPosition,
-                this,
-                out var simulatedDirection
+            if (this != VirtualGridView.CurrentActiveGridView) return;
+
+            MoveDirection simulatedMoveDirection;
+            
+            switch (inputEvent)
+            {
+                case InputEventMouseButton mouseButton:
+
+                    var mouseButtonButtonIndex = mouseButton.ButtonIndex;
+                    if (!mouseButton.Pressed)
+                    {
+                        if (mouseButtonButtonIndex == MouseButton.Left) _isDragging = false;
+                        return;
+                    }
+
+                    var mapVH = mouseButton.GetModifiersMask().HasFlag(KeyModifierMask.MaskShift);
+                    switch (mouseButtonButtonIndex)
+                    {
+                        case MouseButton.WheelUp:
+                            simulatedMoveDirection = mapVH ? MoveDirection.Left : MoveDirection.Up;
+                            break;
+                        case MouseButton.WheelDown:
+                            simulatedMoveDirection = mapVH ? MoveDirection.Right : MoveDirection.Down;
+                            break;
+                        case MouseButton.WheelLeft:
+                            simulatedMoveDirection = MoveDirection.Left;
+                            break;
+                        case MouseButton.WheelRight:
+                            simulatedMoveDirection = MoveDirection.Right;
+                            break;
+                        case MouseButton.Left:
+                            _startDragPosition = mouseButton.GlobalPosition;
+                            _isDragging = true;
+                            return;
+                        default:
+                            return;
+                    }
+
+                    break;
+                case InputEventMouseMotion mouseMotion:
+                    if(!VirtualGridView.SkipCheckPressure && mouseMotion.Pressure == 0f) return;
+                    if (_isDragging == false) return;
+                    if (!TryGetMoveDirection(
+                            ref _startDragPosition,
+                            mouseMotion.GlobalPosition,
+                            _cellItemSize,
+                            out simulatedMoveDirection
+                        )) return;
+                    break;
+                default: return;
+            }
+
+            var currentFocusPosition = VirtualGridView.CreatePosition(
+                _currentSelectedViewRowIndex,
+                _currentSelectedViewColumnIndex
             );
             
-            if (simulatedDirection is not null) 
-                ApplyDrag(simulatedDirection.Value);
-            
-            VirtualGridView.SimulateMouseDragNavigation(
-                inputEvent,
-                ref _mouseStartDragPosition,
-                in _cellItemSize,
-                this,
-                out simulatedDirection
+            ElementPositioner.GetDragViewPosition(
+                _viewportSize,
+                simulatedMoveDirection,
+                currentFocusPosition,
+                out var targetFocusPosition
             );
+
+            if (currentFocusPosition != targetFocusPosition)
+            {
+                _currentView[targetFocusPosition.Y, targetFocusPosition.X]
+                    .AssignedButton?.GrabFocus();
+            }
+
+            var eventName = simulatedMoveDirection switch
+            {
+                MoveDirection.Up => VirtualGridView._uiUp,
+                MoveDirection.Down => VirtualGridView._uiDown,
+                MoveDirection.Left => VirtualGridView._uiLeft,
+                MoveDirection.Right => VirtualGridView._uiRight,
+                _ => throw new InvalidOperationException()
+            };
             
-            if (simulatedDirection is not null) 
-                ApplyDrag(simulatedDirection.Value);
+            Input.ParseInputEvent(new InputEventAction { Pressed = true, Action = eventName });
         }
     }
 
-    private void ApplyDrag(MoveDirection moveDirection)
+    private static bool TryGetMoveDirection(ref Vector2 startDragPosition, Vector2 currentPosition, Vector2 objectDistance, out MoveDirection simulateDirection)
     {
-        var currentFocusPosition = VirtualGridView.CreatePosition(_currentSelectedViewRowIndex, _currentSelectedViewColumnIndex);
-        ElementPositioner.GetDragViewPosition(
-            _viewportSize,
-            moveDirection,
-            currentFocusPosition,
-            out var targetFocusPosition
-        );
+        var mouseTravelDistance = startDragPosition - currentPosition;
+        var sign = mouseTravelDistance.Sign();
+        var absDistance = mouseTravelDistance.Abs();
+        var diff = absDistance - objectDistance;
 
-        if (currentFocusPosition != targetFocusPosition)
+        
+        if (diff.X > 0)
         {
-            _currentView[targetFocusPosition.Y, targetFocusPosition.X]
-                .AssignedButton?.GrabFocus();
+            startDragPosition += new Vector2(objectDistance.X * -sign.X, 0);
+            simulateDirection = sign.X > 0 ? MoveDirection.Right : MoveDirection.Left;
+            return true;
         }
 
-        VirtualGridView.TryApplyInputSimulation(moveDirection);
+        if (diff.Y > 0)
+        {
+            startDragPosition += new Vector2(0, objectDistance.Y * -sign.Y);
+            simulateDirection = sign.Y > 0 ? MoveDirection.Down : MoveDirection.Up;
+            return true;
+        }
+
+        simulateDirection = (MoveDirection)(-1);
+        return false;
     }
 
     private TButtonType GetAndInitializeButtonInstance(TDataType data, int rowIndex, int columnIndex, int dataSetMaxRowIndex, int dataSetMaxColumnIndex)
