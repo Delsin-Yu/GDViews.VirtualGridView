@@ -18,11 +18,11 @@ public enum FocusDirection
     
 }
 
-public struct ReadOnly2DArray(object[,] backing, int viewRows, int viewColumns, Func<object, bool> backingResolver)
+public readonly struct ReadOnly2DArray(object[,] backing, int viewRows, int viewColumns, Func<object, bool> backingResolver)
 {
-    public bool this[int columnIndex, int rowIndex] => backingResolver(backing[rowIndex, columnIndex]);
-    public int ViewColumns { get; } = viewRows;
-    public int ViewRows { get; } = viewColumns;
+    public bool this[int columnIndex, int rowIndex] => backingResolver(backing[columnIndex, rowIndex]);
+    public readonly int ViewColumns = viewColumns;
+    public readonly int ViewRows = viewRows;
 }
 
 internal interface IVirtualGridViewParent<TDataType, TExtraArgument>

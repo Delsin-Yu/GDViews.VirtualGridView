@@ -14,7 +14,7 @@ MarginContainer/constants/margin_right = 20
 MarginContainer/constants/margin_top = 20
 PopupMenu/font_sizes/font_size = 25
 
-[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_dataSetController1", "_dataSetController2", "_dataSetController3", "_dataSetController4", "_dataSetController5", "_grabData", "_grabView", "_killFocus", "_tweenType", "_faderType", "_tweenerType", "_positionerType", "_duration", "_durationText", "_enableClipChildren")]
+[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_dataSetController1", "_dataSetController2", "_dataSetController3", "_dataSetController4", "_dataSetController5", "_grabTopLeftFocus", "_grabTopRightFocus", "_grabBottomLeftFocus", "_grabBottomRightFocus", "_grabLeftTopFocus", "_grabRightTopFocus", "_grabLeftBottomFocus", "_grabRightBottomFocus", "_killFocus", "_tweenType", "_faderType", "_tweenerType", "_positionerType", "_duration", "_durationText", "_enableClipChildren")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,8 +32,14 @@ _dataSetController2 = NodePath("MarginContainer/HBoxContainer/ControlPanel/Backi
 _dataSetController3 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl3")
 _dataSetController4 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl4")
 _dataSetController5 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl5")
-_grabData = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/SelectLastDataBtn")
-_grabView = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/SelectLastPositionBtn")
+_grabTopLeftFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/TL")
+_grabTopRightFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/TR")
+_grabBottomLeftFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/BL")
+_grabBottomRightFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/BR")
+_grabLeftTopFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/LT")
+_grabRightTopFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/RT")
+_grabLeftBottomFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/LB")
+_grabRightBottomFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/RB")
 _killFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/RemoveFocusBtn")
 _tweenType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Tween")
 _faderType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Fader")
@@ -222,22 +228,6 @@ _clear = NodePath("MarginContainer/VBoxContainer/Clear")
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 
-[node name="SelectLastDataBtn" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
-size_flags_horizontal = 3
-focus_mode = 0
-text = "TopLeft"
-
-[node name="SelectLastPositionBtn" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
-size_flags_horizontal = 3
-focus_mode = 0
-text = "LeftTop"
-
 [node name="RemoveFocusBtn" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1
 custom_minimum_size = Vector2(64, 64)
@@ -245,3 +235,67 @@ layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
 text = "移除焦点"
+
+[node name="TL" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "TL"
+clip_text = true
+
+[node name="TR" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "TR"
+clip_text = true
+
+[node name="BL" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "BL"
+clip_text = true
+
+[node name="BR" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "BR"
+clip_text = true
+
+[node name="LT" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "LT"
+clip_text = true
+
+[node name="RT" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "RT"
+clip_text = true
+
+[node name="LB" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "LB"
+clip_text = true
+
+[node name="RB" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "RB"
+clip_text = true

@@ -22,8 +22,16 @@ public partial class Main : Node, IDataSetHandler
     [Export] private DataSetController _dataSetController4;
     [Export] private DataSetController _dataSetController5;
 
-    [Export] private Button _grabData;
-    [Export] private Button _grabView;
+    [Export] private Button _grabTopLeftFocus;
+    [Export] private Button _grabTopRightFocus;
+    [Export] private Button _grabBottomLeftFocus;
+    [Export] private Button _grabBottomRightFocus;
+    [Export] private Button _grabLeftTopFocus;
+    [Export] private Button _grabRightTopFocus;
+    [Export] private Button _grabLeftBottomFocus;
+    [Export] private Button _grabRightBottomFocus;
+    
+    
     [Export] private Button _killFocus;
 
     [Export] private OptionButton _tweenType;
@@ -138,8 +146,14 @@ public partial class Main : Node, IDataSetHandler
         DataBindings.Bind(_listOfTweenerTypes, _tweenerType, x => CurrentTweener = x, tweenerDefaultSelection);
         DataBindings.Bind(_listOfPositionerTypes, _positionerType, x => CurrentPositioner = x, positionerDefaultSelection);
         DataBindings.Bind(_enableClipChildren, on => _container.ClipContents = on, true);
-        DataBindings.Bind(_grabData, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.TopLeft));
-        DataBindings.Bind(_grabView, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.LeftTop));
+        DataBindings.Bind(_grabTopLeftFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.TopLeft));
+        DataBindings.Bind(_grabTopRightFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.TopRight));
+        DataBindings.Bind(_grabBottomLeftFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.BottomLeft));
+        DataBindings.Bind(_grabBottomRightFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.BottomRight));
+        DataBindings.Bind(_grabLeftTopFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.LeftTop));
+        DataBindings.Bind(_grabRightTopFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.RightTop));
+        DataBindings.Bind(_grabLeftBottomFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.LeftBottom));
+        DataBindings.Bind(_grabRightBottomFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.RightBottom));
         DataBindings.Bind(_killFocus, () => GetViewport().GuiReleaseFocus());
 
         _virtualGridView = VirtualGridView

@@ -24,7 +24,7 @@ public enum LastFocusType
 
 public interface IViewFocusFinder
 {
-    public bool TryResolveFocus(ReadOnly2DArray currentView, out int rowIndex, out int columnIndex);
+    public bool TryResolveFocus(ref readonly ReadOnly2DArray currentView, out int rowIndex, out int columnIndex);
 }
 
 public interface IDataFocusFinder<TDataType>
