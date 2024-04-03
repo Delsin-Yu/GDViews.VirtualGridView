@@ -150,17 +150,17 @@ public partial class Main : Node, IDataSetHandler
         DataBindings.Bind(_listOfTweenerTypes, _tweenerType, x => CurrentTweener = x, tweenerDefaultSelection);
         DataBindings.Bind(_listOfPositionerTypes, _positionerType, x => CurrentPositioner = x, positionerDefaultSelection);
         DataBindings.Bind(_enableClipChildren, on => _container.ClipContents = on, true);
-        DataBindings.Bind(_grabTopLeftFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.TopLeft));
-        DataBindings.Bind(_grabTopRightFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.TopRight));
-        DataBindings.Bind(_grabBottomLeftFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.BottomLeft));
-        DataBindings.Bind(_grabBottomRightFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.BottomRight));
-        DataBindings.Bind(_grabLeftTopFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.LeftTop));
-        DataBindings.Bind(_grabRightTopFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.RightTop));
-        DataBindings.Bind(_grabLeftBottomFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.LeftBottom));
-        DataBindings.Bind(_grabRightBottomFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.RightBottom));
-        DataBindings.Bind(_grabCenterClockwiseFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.CenterClockwise));
-        DataBindings.Bind(_grabCenterAnticlockwiseFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.CenterAnticlockwise));
-        DataBindings.Bind(_grabCenterUpDownLeftRightFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.CenterUpDownLeftRight));
+        DataBindings.Bind(_grabTopLeftFocus, () => _virtualGridView.GrabFocus(ViewFocusFinderPresets.TopLeft));
+        DataBindings.Bind(_grabTopRightFocus, () => _virtualGridView.GrabFocus(ViewFocusFinderPresets.TopRight));
+        DataBindings.Bind(_grabBottomLeftFocus, () => _virtualGridView.GrabFocus(ViewFocusFinderPresets.BottomLeft));
+        DataBindings.Bind(_grabBottomRightFocus, () => _virtualGridView.GrabFocus(ViewFocusFinderPresets.BottomRight));
+        DataBindings.Bind(_grabLeftTopFocus, () => _virtualGridView.GrabFocus(ViewFocusFinderPresets.LeftTop));
+        DataBindings.Bind(_grabRightTopFocus, () => _virtualGridView.GrabFocus(ViewFocusFinderPresets.RightTop));
+        DataBindings.Bind(_grabLeftBottomFocus, () => _virtualGridView.GrabFocus(ViewFocusFinderPresets.LeftBottom));
+        DataBindings.Bind(_grabRightBottomFocus, () => _virtualGridView.GrabFocus(ViewFocusFinderPresets.RightBottom));
+        DataBindings.Bind(_grabCenterClockwiseFocus, () => _virtualGridView.GrabFocus(ViewFocusFinderPresets.CenterClockwise));
+        DataBindings.Bind(_grabCenterAnticlockwiseFocus, () => _virtualGridView.GrabFocus(ViewFocusFinderPresets.CenterAnticlockwise));
+        DataBindings.Bind(_grabCenterUpDownLeftRightFocus, () => _virtualGridView.GrabFocus(ViewFocusFinderPresets.CenterUpDownLeftRight));
         DataBindings.Bind(_killFocus, () => GetViewport().GuiReleaseFocus());
 
         _virtualGridView = VirtualGridView

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Godot;
+using GodotViews.Core.FocusFinder;
 
 namespace GodotViews.VirtualGrid;
 
@@ -182,15 +183,17 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     }
     
 
-    public bool GrabFocus(IViewFocusFinder focusFinder)
+    public bool GrabFocus(IViewFocusFinder focusFinder, StartPositionHandler startPositionHandler, SearchDirection searchDirection)
     {
         var wrapper = new ReadOnly2DArray(_currentView, ViewRows, ViewColumns, BackingResolver);
-        if (!focusFinder.TryResolveFocus(
-                in wrapper,
-                out var rowIndex,
-                out var columnIndex
-            )) return false;
-        return TryGrabFocusCore(rowIndex, columnIndex);
+        var span = searchDirection.GetSpan();
+        return focusFinder.TryResolveFocus(
+            in wrapper,
+            in span,
+            startPositionHandler,
+            out var rowIndex,
+            out var columnIndex
+        ) && TryGrabFocusCore(rowIndex, columnIndex);
     }
 
     public bool GrabFocus<TArgument>(IArgumentViewFocusFinder<TArgument> focusFinder, TArgument argument)

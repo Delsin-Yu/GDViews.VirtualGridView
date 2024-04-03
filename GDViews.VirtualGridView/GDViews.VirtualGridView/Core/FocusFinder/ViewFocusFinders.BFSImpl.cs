@@ -5,6 +5,8 @@ using GodotViews.VirtualGrid;
 
 namespace GodotViews.Core.FocusFinder;
 
+public delegate Vector2I StartPositionHandler(ref readonly ReadOnly2DArray currentView);
+
 public static partial class ViewFocusFinders
 {
     internal static class BFSSearch
@@ -69,18 +71,21 @@ public static partial class ViewFocusFinders
         }
     }
 
-    internal delegate Vector2I GetStartHandler(ref readonly ReadOnly2DArray currentView);
-    
-    internal class BFSViewFocusFinder(Vector2I[] neighborOffsetsCollection, GetStartHandler getStartHandler) : IViewFocusFinder
+
+    internal class BFSViewFocusFinder : IViewFocusFinder
     {
-        public bool TryResolveFocus(ref readonly ReadOnly2DArray currentView, out int rowIndex, out int columnIndex)
+        public bool TryResolveFocus(
+            ref readonly ReadOnly2DArray currentView,
+            ref readonly ReadOnlySpan<Vector2I> searchDirection,
+            StartPositionHandler startPositionHandler,
+            out int rowIndex,
+            out int columnIndex)
         {
-            var start = getStartHandler(in currentView);
-            var neighborOffsetsSpan = (ReadOnlySpan<Vector2I>)neighborOffsetsCollection.AsSpan();
+            var start = startPositionHandler(in currentView);
             return BFSSearch.BFSCore(
                 in start,
                 in currentView,
-                in neighborOffsetsSpan,
+                in searchDirection,
                 out rowIndex,
                 out columnIndex
             );
