@@ -7,6 +7,8 @@
 [sub_resource type="Theme" id="Theme_p8tds"]
 BoxContainer/constants/separation = 10
 Button/font_sizes/font_size = 30
+GridContainer/constants/h_separation = 10
+GridContainer/constants/v_separation = 10
 Label/font_sizes/font_size = 30
 MarginContainer/constants/margin_bottom = 20
 MarginContainer/constants/margin_left = 20
@@ -48,9 +50,9 @@ _tweenType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/
 _faderType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Fader")
 _tweenerType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Tweener")
 _positionerType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Positioner")
-_duration = NodePath("MarginContainer/HBoxContainer/ControlPanel/AnimationDuration/AnimationTimeSpinBox")
-_durationText = NodePath("MarginContainer/HBoxContainer/ControlPanel/AnimationDuration/AnimationTimeValue")
-_enableClipChildren = NodePath("MarginContainer/HBoxContainer/ControlPanel/MaskToggle")
+_duration = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer/AnimationDuration/AnimationTimeSpinBox")
+_durationText = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer/AnimationDuration/AnimationTimeValue")
+_enableClipChildren = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer/MaskToggle")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -66,17 +68,17 @@ theme_override_constants/margin_bottom = 40
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
 layout_mode = 2
+size_flags_horizontal = 4
 alignment = 1
 
 [node name="DataView" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_vertical = 4
 alignment = 1
 
 [node name="Tutorial" type="Label" parent="MarginContainer/HBoxContainer/DataView"]
 auto_translate_mode = 1
 layout_mode = 2
-size_flags_vertical = 6
 text = "移动光标：[键盘方向键] 或 [滚轮/Shift+滚轮] 或 [拖拽]"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -87,10 +89,10 @@ custom_minimum_size = Vector2(900, 900)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+size_flags_stretch_ratio = 5.0
 
 [node name="ControlPanel" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 3
 
 [node name="GridContainer" type="GridContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
 layout_mode = 2
@@ -142,17 +144,21 @@ layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
 
-[node name="AnimationDuration" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
 layout_mode = 2
 
-[node name="AnimationTimeTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/AnimationDuration"]
+[node name="AnimationDuration" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AnimationTimeTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer/AnimationDuration"]
 auto_translate_mode = 1
 layout_mode = 2
 text = "动画时长"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="AnimationTimeSpinBox" type="HSlider" parent="MarginContainer/HBoxContainer/ControlPanel/AnimationDuration"]
+[node name="AnimationTimeSpinBox" type="HSlider" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer/AnimationDuration"]
 custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -160,13 +166,13 @@ focus_mode = 0
 max_value = 2.0
 step = 0.05
 
-[node name="AnimationTimeValue" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/AnimationDuration"]
+[node name="AnimationTimeValue" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer/AnimationDuration"]
 layout_mode = 2
 text = "0.25"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="MaskToggle" type="CheckButton" parent="MarginContainer/HBoxContainer/ControlPanel"]
+[node name="MaskToggle" type="CheckButton" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
 text = "启用蒙版"
@@ -175,6 +181,7 @@ flat = true
 [node name="BackingListControl" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
 layout_mode = 2
 size_flags_vertical = 3
+size_flags_stretch_ratio = 3.0
 theme_override_constants/separation = 0
 
 [node name="DataSetControl" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear") instance=ExtResource("3_2ams4")]
@@ -227,102 +234,114 @@ _remove10 = NodePath("MarginContainer/VBoxContainer/Remove10")
 _scramble = NodePath("MarginContainer/VBoxContainer/Scramble")
 _clear = NodePath("MarginContainer/VBoxContainer/Clear")
 
-[node name="FocusControl" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
-custom_minimum_size = Vector2(0, 120)
+[node name="FocusControl" type="GridContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
 layout_mode = 2
-
-[node name="RemoveFocusBtn" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
-size_flags_horizontal = 3
-focus_mode = 0
-text = "移除焦点"
+size_flags_vertical = 3
+columns = 4
 
 [node name="TL" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 focus_mode = 0
-text = "TL"
+text = "上/左"
 clip_text = true
 
 [node name="TR" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 focus_mode = 0
-text = "TR"
+text = "上/右"
 clip_text = true
 
 [node name="BL" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 focus_mode = 0
-text = "BL"
+text = "下/左"
 clip_text = true
 
 [node name="BR" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 focus_mode = 0
-text = "BR"
+text = "下/右"
 clip_text = true
 
 [node name="LT" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 focus_mode = 0
-text = "LT"
+text = "左/上"
 clip_text = true
 
 [node name="RT" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 focus_mode = 0
-text = "RT"
+text = "右/上"
 clip_text = true
 
 [node name="LB" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 focus_mode = 0
-text = "LB"
+text = "左/下"
 clip_text = true
 
 [node name="RB" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 focus_mode = 0
-text = "RB"
+text = "右/下"
 clip_text = true
 
 [node name="CCW" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 focus_mode = 0
-text = "CW"
+text = "中/顺时针"
 clip_text = true
 
 [node name="CACW" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 focus_mode = 0
-text = "AW"
+text = "中/逆时针"
 clip_text = true
 
 [node name="CUDLR" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 focus_mode = 0
-text = "C"
+text = "中/上下左右"
 clip_text = true
+
+[node name="RemoveFocusBtn" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 0
+text = "移除焦点"
