@@ -14,7 +14,7 @@ MarginContainer/constants/margin_right = 20
 MarginContainer/constants/margin_top = 20
 PopupMenu/font_sizes/font_size = 25
 
-[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_dataSetController1", "_dataSetController2", "_dataSetController3", "_dataSetController4", "_dataSetController5", "_grabTopLeftFocus", "_grabTopRightFocus", "_grabBottomLeftFocus", "_grabBottomRightFocus", "_grabLeftTopFocus", "_grabRightTopFocus", "_grabLeftBottomFocus", "_grabRightBottomFocus", "_killFocus", "_tweenType", "_faderType", "_tweenerType", "_positionerType", "_duration", "_durationText", "_enableClipChildren")]
+[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_dataSetController1", "_dataSetController2", "_dataSetController3", "_dataSetController4", "_dataSetController5", "_grabTopLeftFocus", "_grabTopRightFocus", "_grabBottomLeftFocus", "_grabBottomRightFocus", "_grabLeftTopFocus", "_grabRightTopFocus", "_grabLeftBottomFocus", "_grabRightBottomFocus", "_grabCenterClockwiseFocus", "_grabCenterAnticlockwiseFocus", "_grabCenterUpDownLeftRightFocus", "_killFocus", "_tweenType", "_faderType", "_tweenerType", "_positionerType", "_duration", "_durationText", "_enableClipChildren")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -40,6 +40,9 @@ _grabLeftTopFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusCo
 _grabRightTopFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/RT")
 _grabLeftBottomFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/LB")
 _grabRightBottomFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/RB")
+_grabCenterClockwiseFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/CCW")
+_grabCenterAnticlockwiseFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/CACW")
+_grabCenterUpDownLeftRightFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/CUDLR")
 _killFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/RemoveFocusBtn")
 _tweenType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Tween")
 _faderType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Fader")
@@ -298,4 +301,28 @@ layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
 text = "RB"
+clip_text = true
+
+[node name="CCW" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "CW"
+clip_text = true
+
+[node name="CACW" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "AW"
+clip_text = true
+
+[node name="CUDLR" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "C"
 clip_text = true

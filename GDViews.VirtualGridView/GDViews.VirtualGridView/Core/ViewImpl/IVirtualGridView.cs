@@ -11,8 +11,12 @@ public interface IVirtualGridView<TDataType, TButtonType, TExtraArgument> where 
     IElementTweener ElementTweener { get; set; }
     IElementFader ElementFader { get; set; }
     
+    int ViewColumns { get; }
+    int ViewRows { get; }
+    
     bool GrabFocus();
     bool GrabFocus(IViewFocusFinder focusFinder);
+    bool GrabFocus<TArgument>(IArgumentViewFocusFinder<TArgument> focusFinder, TArgument argument);
     bool GrabFocus(IDataFocusFinder<TDataType> focusFinder);
 }
 
@@ -25,6 +29,11 @@ public enum LastFocusType
 public interface IViewFocusFinder
 {
     public bool TryResolveFocus(ref readonly ReadOnly2DArray currentView, out int rowIndex, out int columnIndex);
+}
+
+public interface IArgumentViewFocusFinder<TArgument>
+{
+    public bool TryResolveFocus(ref readonly TArgument argument, ref readonly ReadOnly2DArray currentView, out int rowIndex, out int columnIndex);
 }
 
 public interface IDataFocusFinder<TDataType>

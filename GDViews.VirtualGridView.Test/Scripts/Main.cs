@@ -31,6 +31,10 @@ public partial class Main : Node, IDataSetHandler
     [Export] private Button _grabLeftBottomFocus;
     [Export] private Button _grabRightBottomFocus;
     
+    [Export] private Button _grabCenterClockwiseFocus;
+    [Export] private Button _grabCenterAnticlockwiseFocus;
+    [Export] private Button _grabCenterUpDownLeftRightFocus;
+    
     
     [Export] private Button _killFocus;
 
@@ -140,20 +144,23 @@ public partial class Main : Node, IDataSetHandler
         _currentTweener = _listOfTweenerTypes[tweenerDefaultSelection].Tweener;
         _currentPositioner = _listOfPositionerTypes[positionerDefaultSelection].Positioner;
 
-        DataBindings.Bind(_duration, value => CurrentDuration = value);
+        DataBindings.Bind(_duration, value => CurrentDuration = value, _currentDuration);
         DataBindings.Bind(_listOfTweens, _tweenType, x => CurrentTweenSetup = x, tweenSetupDefaultSelection);
         DataBindings.Bind(_listOfFaderTypes, _faderType, x => CurrentFader = x, faderDefaultSelection);
         DataBindings.Bind(_listOfTweenerTypes, _tweenerType, x => CurrentTweener = x, tweenerDefaultSelection);
         DataBindings.Bind(_listOfPositionerTypes, _positionerType, x => CurrentPositioner = x, positionerDefaultSelection);
         DataBindings.Bind(_enableClipChildren, on => _container.ClipContents = on, true);
-        DataBindings.Bind(_grabTopLeftFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.TopLeft));
-        DataBindings.Bind(_grabTopRightFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.TopRight));
-        DataBindings.Bind(_grabBottomLeftFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.BottomLeft));
-        DataBindings.Bind(_grabBottomRightFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.BottomRight));
-        DataBindings.Bind(_grabLeftTopFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.LeftTop));
-        DataBindings.Bind(_grabRightTopFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.RightTop));
-        DataBindings.Bind(_grabLeftBottomFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.LeftBottom));
-        DataBindings.Bind(_grabRightBottomFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.Directional.RightBottom));
+        DataBindings.Bind(_grabTopLeftFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.TopLeft));
+        DataBindings.Bind(_grabTopRightFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.TopRight));
+        DataBindings.Bind(_grabBottomLeftFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.BottomLeft));
+        DataBindings.Bind(_grabBottomRightFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.BottomRight));
+        DataBindings.Bind(_grabLeftTopFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.LeftTop));
+        DataBindings.Bind(_grabRightTopFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.RightTop));
+        DataBindings.Bind(_grabLeftBottomFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.LeftBottom));
+        DataBindings.Bind(_grabRightBottomFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.RightBottom));
+        DataBindings.Bind(_grabCenterClockwiseFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.CenterClockwise));
+        DataBindings.Bind(_grabCenterAnticlockwiseFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.CenterAnticlockwise));
+        DataBindings.Bind(_grabCenterUpDownLeftRightFocus, () => _virtualGridView.GrabFocus(ViewFocusFinders.CenterUpDownLeftRight));
         DataBindings.Bind(_killFocus, () => GetViewport().GuiReleaseFocus());
 
         _virtualGridView = VirtualGridView
@@ -195,9 +202,14 @@ public partial class Main : Node, IDataSetHandler
 
 public static class DataBindings
 {
-    public static void Bind(Range range, Action<float> valueChangedHandler) => range.ValueChanged += value => valueChangedHandler((float)value);
+    public static void Bind(Range range, Action<float> valueChangedHandler, float defaultValue)
+    {
+        range.ValueChanged += value => valueChangedHandler((float)value);
+        range.SetValueNoSignal(defaultValue);
+    }
 
-    public static void Bind(Button button, Action onPressedHandler) => button.Pressed += onPressedHandler;
+    public static void Bind(Button button, Action onPressedHandler) => 
+        button.Pressed += onPressedHandler;
 
     public static void Bind<T>((string, T)[] list, OptionButton optionButton, Action<T> setValueHandler, int defaultSelection)
     {

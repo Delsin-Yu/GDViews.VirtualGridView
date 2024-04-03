@@ -184,13 +184,25 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     public bool GrabFocus(IViewFocusFinder focusFinder)
     {
+        var wrapper = new ReadOnly2DArray(_currentView, ViewRows, ViewColumns, BackingResolver);
         if (!focusFinder.TryResolveFocus(
-                new(_currentView, ViewRows, ViewColumns, BackingResolver),
+                in wrapper,
                 out var rowIndex,
                 out var columnIndex
             )) return false;
-        Console.WriteLine((rowIndex, columnIndex));
         return TryGrabFocusCore(rowIndex, columnIndex);
+    }
+
+    public bool GrabFocus<TArgument>(IArgumentViewFocusFinder<TArgument> focusFinder, TArgument argument)
+    {
+        var wrapper = new ReadOnly2DArray(_currentView, ViewRows, ViewColumns, BackingResolver);
+        if (!focusFinder.TryResolveFocus(
+                in argument,
+                in wrapper,
+                out var rowIndex,
+                out var columnIndex
+            )) return false;
+        return TryGrabFocusCore(rowIndex, columnIndex);    
     }
 
     private static bool BackingResolver(object obj) => !((DataView)obj).Data.IsNull;
