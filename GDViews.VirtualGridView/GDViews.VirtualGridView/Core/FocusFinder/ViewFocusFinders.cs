@@ -16,7 +16,7 @@ public readonly struct SearchDirection
     internal ReadOnlySpan<Vector2I> GetSpan() => _backing.AsSpan();
 }
 
-public static partial class SearchDirections
+public static class SearchDirections
 {
     private static readonly Vector2I SearchRight = new(0, 1);
     private static readonly Vector2I SearchDown = new(1, 0);
@@ -61,11 +61,11 @@ public static partial class SearchDirections
 
 public static class StartPositions
 {
-    private static Vector2I TopLeftHandler(ref readonly ReadOnly2DArray view) => Vector2I.Zero;
-    private static Vector2I TopRightHandler(ref readonly ReadOnly2DArray view) => new(0, view.ViewColumns - 1);
-    private static Vector2I BottomLeftHandler(ref readonly ReadOnly2DArray view) => new(view.ViewRows - 1, 0);
-    private static Vector2I BottomRightHandler(ref readonly ReadOnly2DArray view) => new(view.ViewRows - 1, view.ViewColumns - 1);
-    private static Vector2I CenterHandler(ref readonly ReadOnly2DArray currentView) => new Vector2I(currentView.ViewRows, currentView.ViewColumns) / 2;
+    private static Vector2I TopLeftHandler(ref readonly ReadOnlyViewArray view) => Vector2I.Zero;
+    private static Vector2I TopRightHandler(ref readonly ReadOnlyViewArray view) => new(0, view.ViewColumns - 1);
+    private static Vector2I BottomLeftHandler(ref readonly ReadOnlyViewArray view) => new(view.ViewRows - 1, 0);
+    private static Vector2I BottomRightHandler(ref readonly ReadOnlyViewArray view) => new(view.ViewRows - 1, view.ViewColumns - 1);
+    private static Vector2I CenterHandler(ref readonly ReadOnlyViewArray currentView) => new Vector2I(currentView.ViewRows, currentView.ViewColumns) / 2;
 
     public static StartPositionHandler TopLeft { get; } = TopLeftHandler;
     public static StartPositionHandler TopRight { get; } = TopRightHandler;

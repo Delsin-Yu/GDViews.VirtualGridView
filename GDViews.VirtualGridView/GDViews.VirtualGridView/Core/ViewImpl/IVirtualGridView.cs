@@ -30,16 +30,16 @@ public enum LastFocusType
 
 public interface IViewFocusFinder
 {
-    public bool TryResolveFocus(ref readonly ReadOnly2DArray currentView, ref readonly ReadOnlySpan<Vector2I> searchDirection, StartPositionHandler startPositionHandler, out int rowIndex, out int columnIndex);
+    public bool TryResolveFocus(ref readonly ReadOnlyViewArray currentView, ref readonly ReadOnlySpan<Vector2I> searchDirection, StartPositionHandler startPositionHandler, out int rowIndex, out int columnIndex);
 }
 
 public interface IArgumentViewFocusFinder<TArgument>
 {
-    public bool TryResolveFocus(ref readonly TArgument argument, ref readonly ReadOnly2DArray currentView, out int rowIndex, out int columnIndex);
+    public bool TryResolveFocus(ref readonly TArgument argument, ref readonly ReadOnlyViewArray currentView, out int rowIndex, out int columnIndex);
 }
 public interface IArgumentViewFocusFinder<TArgument1, TArgument2>
 {
-    public bool TryResolveFocus(ref readonly TArgument1 argument, ref readonly TArgument2 argument2, ref readonly ReadOnly2DArray currentView, out int rowIndex, out int columnIndex);
+    public bool TryResolveFocus(ref readonly TArgument1 argument, ref readonly TArgument2 argument2, ref readonly ReadOnlyViewArray currentView, out int rowIndex, out int columnIndex);
 }
 
 public interface IDataFocusFinder<TDataType>

@@ -5,14 +5,14 @@ using GodotViews.VirtualGrid;
 
 namespace GodotViews.Core.FocusFinder;
 
-public delegate Vector2I StartPositionHandler(ref readonly ReadOnly2DArray currentView);
+public delegate Vector2I StartPositionHandler(ref readonly ReadOnlyViewArray currentView);
 
 public static partial class ViewFocusFinders
 {
     internal static class BFSSearch
     {
         private static bool IsValid(
-            ref readonly ReadOnly2DArray currentView,
+            ref readonly ReadOnlyViewArray currentView,
             ref readonly Vector2I candidate,
             ref int rowIndex,
             ref int columnIndex
@@ -31,7 +31,7 @@ public static partial class ViewFocusFinders
         private static readonly Queue<Vector2I> _pending = [];
         private static readonly HashSet<Vector2I> _visited = [];
 
-        public static bool BFSCore(ref readonly Vector2I start, ref readonly ReadOnly2DArray currentView, ref readonly ReadOnlySpan<Vector2I> neighborOffsetCollection, out int rowIndex, out int columnIndex)
+        public static bool BFSCore(ref readonly Vector2I start, ref readonly ReadOnlyViewArray currentView, ref readonly ReadOnlySpan<Vector2I> neighborOffsetCollection, out int rowIndex, out int columnIndex)
         {
             var result = BFSCoreImpl(in start, in currentView, in neighborOffsetCollection, out rowIndex, out columnIndex);
             _pending.Clear();
@@ -41,7 +41,7 @@ public static partial class ViewFocusFinders
 
         private static bool BFSCoreImpl(
             ref readonly Vector2I start,
-            ref readonly ReadOnly2DArray currentView,
+            ref readonly ReadOnlyViewArray currentView,
             ref readonly ReadOnlySpan<Vector2I> neighborOffsetCollection,
             out int rowIndex,
             out int columnIndex
@@ -75,7 +75,7 @@ public static partial class ViewFocusFinders
     internal class BFSViewFocusFinder : IViewFocusFinder
     {
         public bool TryResolveFocus(
-            ref readonly ReadOnly2DArray currentView,
+            ref readonly ReadOnlyViewArray currentView,
             ref readonly ReadOnlySpan<Vector2I> searchDirection,
             StartPositionHandler startPositionHandler,
             out int rowIndex,
