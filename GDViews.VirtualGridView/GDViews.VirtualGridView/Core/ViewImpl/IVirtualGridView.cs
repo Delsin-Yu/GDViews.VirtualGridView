@@ -1,4 +1,5 @@
 ﻿using System;
+using Godot;
 
 namespace GodotViews.VirtualGrid;
 
@@ -10,7 +11,7 @@ public interface IVirtualGridView<TDataType, TButtonType, TExtraArgument> where 
     IElementTweener ElementTweener { get; set; }
     IElementFader ElementFader { get; set; }
     
-    bool GrabLastFocus(LastFocusType lastFocusType);
+    bool GrabFocus();
     bool GrabFocus(IViewFocusFinder focusFinder);
     bool GrabFocus(IDataFocusFinder<TDataType> focusFinder);
 }
@@ -23,7 +24,7 @@ public enum LastFocusType
 
 public interface IViewFocusFinder
 {
-    public bool ResolveFocus(int rowIndex, int columnIndex, int rowCount, int columnCount);
+    public bool TryResolveFocus(ReadOnly2DArray currentView, out int rowIndex, out int columnIndex);
 }
 
 public interface IDataFocusFinder<TDataType>

@@ -22,49 +22,63 @@ public partial class DataSetController : Node
 
     public override void _Ready()
     {
-        _add1.Pressed += () =>
+        DataBindings.Bind(_add1, Add1);
+        DataBindings.Bind(_add10, Add10);
+        DataBindings.Bind(_remove1, Remove1);
+        DataBindings.Bind(_remove10, Remove10);
+        DataBindings.Bind(_scramble, Scramble);
+        DataBindings.Bind(_clear, Clear);
+    }
+
+    private void Clear()
+    {
+        _backingSet.Clear();
+        _handler.NotifyUpdate();
+    }
+
+    private void Scramble()
+    {
+        var rawData = _backingSet.ToArray();
+        _backingSet.Clear();
+        _backingSet.AddRange(rawData.OrderBy(x => Guid.NewGuid()));
+        _handler.NotifyUpdate();
+    }
+
+    private void Remove10()
+    {
+        if (_backingSet.Count == 0) return;
+        for (var i = 0; i < 10; i++)
+        {
+            if (_backingSet.Count == 0) break;
+            _backingSet.RemoveAt(Random.Shared.Next(0, _backingSet.Count));
+        }
+
+        _handler.NotifyUpdate();
+    }
+
+    private void Remove1()
+    {
+        if (_backingSet.Count == 0) return;
+        _backingSet.RemoveAt(_backingSet.Count - 1);
+        _handler.NotifyUpdate();
+    }
+
+    private void Add10()
+    {
+        for (var i = 0; i < 10; i++)
         {
             var newElement = _handler.CreateElement(_dataSetIndex, _backingSet);
             _backingSet.Add(newElement);
-            _handler.NotifyUpdate();
-        };
-        _add10.Pressed += () =>
-        {
-            for (var i = 0; i < 10; i++)
-            {
-                var newElement = _handler.CreateElement(_dataSetIndex, _backingSet);
-                _backingSet.Add(newElement);
-            }
-            _handler.NotifyUpdate();
-        };
-        _remove1.Pressed += () =>
-        {
-            if(_backingSet.Count == 0) return;
-            _backingSet.RemoveAt(_backingSet.Count - 1);
-            _handler.NotifyUpdate();
-        };
-        _remove10.Pressed += () =>
-        {
-            if(_backingSet.Count == 0) return;
-            for (var i = 0; i < 10; i++)
-            {
-                if(_backingSet.Count == 0) break;
-                _backingSet.RemoveAt(Random.Shared.Next(0, _backingSet.Count));
-            }
-            _handler.NotifyUpdate();
-        };
-        _scramble.Pressed += () =>
-        {
-            var rawData = _backingSet.ToArray();
-            _backingSet.Clear();
-            _backingSet.AddRange(rawData.OrderBy(x => Guid.NewGuid()));
-            _handler.NotifyUpdate();
-        };
-        _clear.Pressed += () =>
-        {
-            _backingSet.Clear();
-            _handler.NotifyUpdate();
-        };
+        }
+
+        _handler.NotifyUpdate();
+    }
+
+    private void Add1()
+    {
+        var newElement = _handler.CreateElement(_dataSetIndex, _backingSet);
+        _backingSet.Add(newElement);
+        _handler.NotifyUpdate();
     }
 
     public void Initialize(List<Main.DataModel> set, IDataSetHandler handler, int setId)

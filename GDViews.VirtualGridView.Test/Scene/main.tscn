@@ -228,7 +228,7 @@ custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
-text = "选中上次数据"
+text = "TopLeft"
 
 [node name="SelectLastPositionBtn" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1
@@ -236,7 +236,7 @@ custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
-text = "选中上次位置"
+text = "LeftTop"
 
 [node name="RemoveFocusBtn" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
 auto_translate_mode = 1

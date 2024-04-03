@@ -13,6 +13,18 @@ public enum MoveDirection
     Right
 }
 
+public enum FocusDirection
+{
+    
+}
+
+public struct ReadOnly2DArray(object[,] backing, int viewRows, int viewColumns, Func<object, bool> backingResolver)
+{
+    public bool this[int columnIndex, int rowIndex] => backingResolver(backing[rowIndex, columnIndex]);
+    public int ViewColumns { get; } = viewRows;
+    public int ViewRows { get; } = viewColumns;
+}
+
 internal interface IVirtualGridViewParent<TDataType, TExtraArgument>
 {
     TExtraArgument? ExtraArgument { get; }
@@ -71,50 +83,46 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     public IElementTweener ElementTweener { get; set; }
     public IElementFader ElementFader { get; set; }
 
-    public bool GrabLastFocus(LastFocusType lastFocusType)
+    public bool GrabFocus()
     {
-        Vector2I dataPositionRelativeToViewport;
-        switch (lastFocusType)
-        {
-            case LastFocusType.LastViewFocus:
+        var lastSelectionData = GetLastDataFocusAbsolutePosition();
 
-                dataPositionRelativeToViewport = VirtualGridView.CreatePosition(
-                    _currentSelectedViewRowIndex,
-                    _currentSelectedViewColumnIndex
-                );
-                break;
-            case LastFocusType.LastDataFocus:
+        if (lastSelectionData is null) return false;
 
-                var lastSelectionData = GetLastDataFocusAbsolutePosition();
+        var (rowIndex, columnOffset, rowOffset, spanIndex) = lastSelectionData.Value;
 
-                if (lastSelectionData is null) return false;
+        var absoluteDataPosition = VirtualGridView.CreatePosition(
+            rowIndex + rowOffset,
+            columnOffset + spanIndex
+        );
 
-                var (rowIndex, columnOffset, rowOffset, spanIndex) = lastSelectionData.Value;
+        var currentViewOffset = VirtualGridView.CreatePosition(
+            ViewRowIndex,
+            ViewColumnIndex
+        );
 
-                var absoluteDataPosition = VirtualGridView.CreatePosition(
-                    rowIndex + rowOffset,
-                    columnOffset + spanIndex
-                );
+        var dataPositionRelativeToViewport = absoluteDataPosition - currentViewOffset;
 
-                var currentViewOffset = VirtualGridView.CreatePosition(
-                    ViewRowIndex,
-                    ViewColumnIndex
-                );
+        if (TryGrabFocusCore(dataPositionRelativeToViewport.Y, dataPositionRelativeToViewport.X)) return true;
 
-                dataPositionRelativeToViewport = absoluteDataPosition - currentViewOffset;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(lastFocusType), lastFocusType, null);
-        }
+        if (TryGrabFocusCore(_currentSelectedViewRowIndex, _currentSelectedViewColumnIndex)) return true;
 
+        return TryGrabFocusCore(0, 0);
+    }
+
+    private bool TryGrabFocusCore(int rowIndex, int columnIndex)
+    {
         var success = FocusToTarget(
-            dataPositionRelativeToViewport.Y,
-            dataPositionRelativeToViewport.X,
+            rowIndex,
+            columnIndex,
             out var targetColumnIndex,
             out var targetRowIndex
         );
 
-        if (!success) return false;
+        if (!success)
+        {
+            return false;
+        }
 
         var selectedView = _currentView[targetRowIndex, targetColumnIndex].AssignedButton;
 
@@ -172,8 +180,20 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
         return default;
     }
+    
 
-    public bool GrabFocus(IViewFocusFinder focusFinder) => throw new NotImplementedException();
+    public bool GrabFocus(IViewFocusFinder focusFinder)
+    {
+        if (!focusFinder.TryResolveFocus(
+                new(_currentView, ViewRows, ViewColumns, BackingResolver),
+                out var rowIndex,
+                out var columnIndex
+            )) return false;
+        Console.WriteLine((rowIndex, columnIndex));
+        return TryGrabFocusCore(rowIndex, columnIndex);
+    }
+
+    private static bool BackingResolver(object obj) => !((DataView)obj).Data.IsNull;
 
     public bool GrabFocus(IDataFocusFinder<TDataType> focusFinder) => throw new NotImplementedException();
 
