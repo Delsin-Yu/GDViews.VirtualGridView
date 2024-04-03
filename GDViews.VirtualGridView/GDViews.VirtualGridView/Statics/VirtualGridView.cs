@@ -51,5 +51,4 @@ public static class VirtualGridView
     internal static readonly StringName _uiRight = "ui_right";
 
     internal static object? CurrentActiveGridView { get; set; }
-    internal static bool SkipCheckPressure { get; } = OS.GetName() is "Android" or "iOS";
 }
