@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using Bogus;
+using Range = Godot.Range;
 
 namespace GodotViews.VirtualGrid.Examples;
 
@@ -129,47 +131,25 @@ public partial class Main : Node, IDataSetHandler
         _currentTweener = _listOfTweenerTypes[tweenerDefaultSelection].Tweener;
         _currentPositioner = _listOfPositionerTypes[positionerDefaultSelection].Positioner;
 
-        // Hook Duration
-        _duration.ValueChanged += value => CurrentDuration = (float)value;
-
-        // Hook TweenType
-        foreach (var (name, _) in _listOfTweens) _tweenType.AddItem(name);
-        _tweenType.ItemSelected += index => CurrentTweenSetup = _listOfTweens[index].TweenSetup;
-        _tweenType.Selected = tweenSetupDefaultSelection;
-        
-        // Hook FaderType
-        foreach (var (name, _) in _listOfFaderTypes) _faderType.AddItem(name);
-        _faderType.ItemSelected += index => CurrentFader = _listOfFaderTypes[index].Fader;
-        _faderType.Selected = faderDefaultSelection;
-        
-        // Hook TweenerType
-        foreach (var (name, _) in _listOfTweenerTypes) _tweenerType.AddItem(name);
-        _tweenerType.ItemSelected += index => CurrentTweener = _listOfTweenerTypes[index].Tweener;
-        _tweenerType.Selected = tweenerDefaultSelection;
-        
-        // Hook PositionerType
-        foreach (var (name, _) in _listOfPositionerTypes) _positionerType.AddItem(name);
-        _positionerType.ItemSelected += index => CurrentPositioner = _listOfPositionerTypes[index].Positioner;
-        _positionerType.Selected = positionerDefaultSelection;
-        
-        // Hook ClipChildren
-        _enableClipChildren.Toggled += on => { _container.ClipContents = on; };
-        _enableClipChildren.ButtonPressed = true;
-
-        // Hook Other Buttons
-        _grabData.Pressed += () => _virtualGridView.GrabLastFocus(LastFocusType.LastDataFocus);
-        _grabView.Pressed += () => _virtualGridView.GrabLastFocus(LastFocusType.LastViewFocus);
-        _killFocus.Pressed += () => GetViewport().GuiReleaseFocus();
+        HookRange(_duration, value => CurrentDuration = value);
+        HookOptionButton(_listOfTweens, _tweenType, x => CurrentTweenSetup = x, tweenSetupDefaultSelection);
+        HookOptionButton(_listOfFaderTypes, _faderType, x => CurrentFader = x, faderDefaultSelection);
+        HookOptionButton(_listOfTweenerTypes, _tweenerType, x => CurrentTweener = x, tweenerDefaultSelection);
+        HookOptionButton(_listOfPositionerTypes, _positionerType, x => CurrentPositioner = x, positionerDefaultSelection);
+        HookCheckButton(_enableClipChildren, on => _container.ClipContents = on, true);
+        HookButton(_grabData, () => _virtualGridView.GrabLastFocus(LastFocusType.LastDataFocus));
+        HookButton(_grabView, () => _virtualGridView.GrabLastFocus(LastFocusType.LastViewFocus));
+        HookButton(_killFocus, () => GetViewport().GuiReleaseFocus());
 
         _virtualGridView = VirtualGridView
             .Create(7, 7)
             .WithHandlers(CurrentPositioner, CurrentTweener, CurrentFader)
             .WithVerticalDataLayout<DataModel>()
-            .AddColumnDataSource(DataSetDefinition.Create(dataSet1, [0, 1]))
-            .AddColumnDataSource(DataSetDefinition.Create(dataSet2, [2, 3]))
-            .AddColumnDataSource(DataSetDefinition.Create(dataSet3, [4]))
-            .AddColumnDataSource(DataSetDefinition.Create(dataSet4, [5]))
-            .AddColumnDataSource(DataSetDefinition.Create(dataSet5, [6]))
+                .AddColumnDataSource(DataSetDefinition.Create(dataSet1, [0, 1]))
+                .AddColumnDataSource(DataSetDefinition.Create(dataSet2, [2, 3]))
+                .AddColumnDataSource(DataSetDefinition.Create(dataSet3, [4]))
+                .AddColumnDataSource(DataSetDefinition.Create(dataSet4, [5]))
+                .AddColumnDataSource(DataSetDefinition.Create(dataSet5, [6]))
             .WithArgument<View>(
                 _packedScene,
                 _container,
@@ -185,6 +165,24 @@ public partial class Main : Node, IDataSetHandler
         
         _virtualGridView.Redraw();
         _virtualGridView.GrabLastFocus(LastFocusType.LastViewFocus);
+        return;
+
+        static void HookRange(Range range, Action<float> valueChangedHandler) => range.ValueChanged += value => valueChangedHandler((float)value);
+
+        static void HookButton(Button button, Action onPressedHandler) => button.Pressed += onPressedHandler;
+
+        static void HookOptionButton<T>((string, T)[] list, OptionButton optionButton, Action<T> setValueHandler, int defaultSelection)
+        {
+            foreach (var (name, _) in list) optionButton.AddItem(name);
+            optionButton.ItemSelected += index => setValueHandler(list[index].Item2);
+            optionButton.Selected = defaultSelection;
+        }
+        
+        static void HookCheckButton(CheckButton button, BaseButton.ToggledEventHandler onToggleHandler, bool defaultValue)
+        {
+            button.Toggled += onToggleHandler;
+            button.ButtonPressed = defaultValue;
+        }
     }
 
     public DataModel CreateElement(int dataSetIndex, IReadOnlyList<DataModel> dataSet)
