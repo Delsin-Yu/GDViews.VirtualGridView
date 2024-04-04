@@ -5,31 +5,6 @@ using GodotViews.Core.FocusFinder;
 
 namespace GodotViews.VirtualGrid;
 
-internal enum MoveDirection
-{
-    Up,
-    Down,
-    Left,
-    Right
-}
-
-
-public readonly struct ReadOnlyViewArray(object[,] backing, int viewRows, int viewColumns, Func<object, bool> backingResolver)
-{
-    public bool this[int columnIndex, int rowIndex] => backingResolver(backing[columnIndex, rowIndex]);
-    public readonly int ViewColumns = viewColumns;
-    public readonly int ViewRows = viewRows;
-}
-
-internal interface IVirtualGridViewParent<TDataType, TExtraArgument>
-{
-    TExtraArgument? ExtraArgument { get; }
-    void FocusTo(VirtualGridViewItem<TDataType, TExtraArgument>.CurrentInfo info);
-    void MoveAndGrabFocus(MoveDirection moveDirection, int rowIndex, int columnIndex);
-}
-
-public record struct DataSetDefinition<TDataType>(IDynamicGridViewer<TDataType> DataSet, IReadOnlyList<int> DataSpan);
-
 internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     IVirtualGridViewParent<TDataType, TExtraArgument>,
     IVirtualGridView<TDataType, TButtonType, TExtraArgument> where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
@@ -41,9 +16,6 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         public override string ToString() => $"Button: {AssignedButton?.Name ?? "Null"}, Data: {Data}";
     }
     
-    private record struct ViewData(int RowIndex, int ColumnOffset, int RowOffset, int SpanIndex);
-
-
     private readonly ScrollBar? _horizontalScrollBar;
     private readonly ScrollBar? _verticalScrollBar;
     private readonly int _maxViewColumnIndex;
@@ -51,6 +23,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     private readonly IDataInspector<TDataType> _dataInspector;
     private readonly IEqualityComparer<TDataType> _equalityComparer;
+    private readonly Func<TDataType, TDataType, bool> _equalityComparerEquals;
     private readonly PackedScene _itemPrefab;
     private readonly Control _itemContainer;
     private readonly Viewport _containerViewport;
@@ -72,9 +45,29 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     private Vector2 _startDragPosition;
     private bool _isDragging;
+    private int _viewRowIndex;
+    private int _viewColumnIndex;
 
-    public int ViewColumnIndex { get; private set; }
-    public int ViewRowIndex { get; private set; }
+    public int ViewColumnIndex
+    {
+        get => _viewColumnIndex;
+        private set
+        {
+            _viewColumnIndex = value;
+            Console.WriteLine($"{ViewColumnIndex}, {ViewRowIndex}");
+        }
+    }
+
+    public int ViewRowIndex
+    {
+        get => _viewRowIndex;
+        private set
+        {
+            _viewRowIndex = value;
+            Console.WriteLine($"{ViewColumnIndex}, {ViewRowIndex}");
+        }
+    }
+
     public int ViewColumns { get; }
     public int ViewRows { get; }
     public TExtraArgument? ExtraArgument { get; }
@@ -84,19 +77,20 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     public bool GrabFocus() =>
         _currentSelectedData.TryUnwrap(out var currentSelectedData) &&
-            TryGetDataPositionRelativeToViewport(_equalityComparer, out var relativeDataPosition, currentSelectedData) &&
-            TryGrabFocusCore(relativeDataPosition.Y, relativeDataPosition.X) ||
+        TryGetDataPositionRelativeToViewport(_equalityComparerEquals, out var relativeRowIndex, out var relativeColumnIndex, currentSelectedData) &&
+        TryGrabFocusCore(relativeRowIndex, relativeColumnIndex) ||
         TryGrabFocusCore(_currentSelectedViewRowIndex, _currentSelectedViewColumnIndex) ||
         TryGrabFocusCore(0, 0);
 
-    private bool TryGetDataPositionRelativeToViewport(IEqualityComparer<TDataType> comparer, out Vector2I relativeDataPosition, TDataType data)
+    private bool TryGetDataPositionRelativeToViewport(Func<TDataType, TDataType, bool> comparer, out int rowIndex, out int columnIndex, TDataType data)
     {
-        relativeDataPosition = Vector2I.Zero;
-        if (!SearchForData(out var matchedViewData)) return false;
-        var (matchedRowIndex, matchedColumnOffset, matchedRowOffset, matchedSpanIndex) = matchedViewData;
+        rowIndex = -1;
+        columnIndex = -1;
+        if (!VirtualGridView.SearchForData(_dataInspector, ViewRows, ViewColumns, out var matchedViewData, comparer, data)) return false;
+        var (matchedRowIndex, matchedColumnOffset, matchedRowOffset, matchColumnIndex) = matchedViewData;
         var absoluteDataPosition = VirtualGridView.CreatePosition(
-            matchedRowIndex + matchedRowOffset,
-            matchedColumnOffset + matchedSpanIndex
+            matchedRowOffset + matchedRowIndex,
+            matchedColumnOffset + matchColumnIndex
         );
 
         var currentViewOffset = VirtualGridView.CreatePosition(
@@ -104,46 +98,22 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             ViewColumnIndex
         );
 
-        relativeDataPosition = absoluteDataPosition - currentViewOffset;
+        var relativeDataPosition = absoluteDataPosition - currentViewOffset;
 
-        return true;
+        rowIndex = relativeDataPosition.Y;
+        columnIndex = relativeDataPosition.X;
         
-        bool SearchForData(out ViewData viewData)
-        {
-            _dataInspector.GetDataSetMetrics(out var rows, out var columns);
-            for (var rowOffset = 0; rowOffset < rows; rowOffset += ViewRows)
-            for (var columnOffset = 0; columnOffset < columns; columnOffset += ViewColumns)
-            for (var rowIndex = 0; rowIndex + rowOffset < rows; rowIndex++)
-            {
-                var columnSpan = _dataInspector.InspectViewColumn(rowIndex, columnOffset, rowOffset);
-                for (var spanIndex = 0; spanIndex < columnSpan.Length; spanIndex++)
-                {
-                    var cellData = columnSpan[spanIndex];
-                    if (!cellData.TryUnwrap(out var cellDataValue)) continue;
-                    if (!comparer.Equals(data, cellDataValue)) continue;
-                    viewData = new(rowIndex, columnOffset, rowOffset, spanIndex);
-                    return true;
-                }
-            }
-
-            viewData = default;
-            return false;
-        }
+        return true;
     }
-
-    private bool TryGrabFocusCore(int rowIndex, int columnIndex)
+    
+    private bool TryGrabFocusCore(int relativeRowIndex, int relativeColumnIndex)
     {
-        var success = FocusToTarget(
-            rowIndex,
-            columnIndex,
+        FocusToTarget(
+            relativeRowIndex,
+            relativeColumnIndex,
             out var targetColumnIndex,
             out var targetRowIndex
         );
-
-        if (!success)
-        {
-            return false;
-        }
 
         var selectedView = _currentView[targetRowIndex, targetColumnIndex].AssignedButton;
 
@@ -154,7 +124,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         return true;
     }
 
-    private bool FocusToTarget(int viewportRowIndex, int viewportColumnIndex, out int targetRowIndex, out int targetColumnIndex)
+    private void FocusToTarget(int viewportRowIndex, int viewportColumnIndex, out int targetRowIndex, out int targetColumnIndex)
     {
         var dataPositionRelativeToViewport = VirtualGridView.CreatePosition(viewportRowIndex, viewportColumnIndex);
         ElementPositioner.GetTargetPosition(
@@ -162,18 +132,18 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             dataPositionRelativeToViewport,
             out var targetDataPosition
         );
-
-        if (targetDataPosition < Vector2I.Zero || targetDataPosition >= _viewportSize)
+        
+        var offset = dataPositionRelativeToViewport - targetDataPosition;
+        
+        if (targetDataPosition.X < 0 || targetDataPosition.Y < 0 || targetDataPosition.X >= _viewportSize.X || targetDataPosition.Y >= _viewportSize.Y)
         {
-            targetRowIndex = -1;
-            targetColumnIndex = -1;
-            return false;
+            var fixedTargetPosition = targetDataPosition.Clamp(Vector2I.Zero, _viewportSize - Vector2I.One);
+            offset += targetDataPosition - fixedTargetPosition;
+            targetDataPosition = fixedTargetPosition;
         }
 
-        var offset = dataPositionRelativeToViewport - targetDataPosition;
-        (targetRowIndex, targetColumnIndex) = targetDataPosition;
         ApplyMovementOffset(offset);
-        return true;
+        (targetRowIndex, targetColumnIndex) = targetDataPosition;
     }
 
 
@@ -185,28 +155,44 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             in wrapper,
             in span,
             startPositionHandler,
-            out var rowIndex,
-            out var columnIndex
-        ) && TryGrabFocusCore(rowIndex, columnIndex);
-    }
-
-    public bool GrabFocus<TArgument>(IArgumentViewFocusFinder<TArgument> focusFinder, TArgument argument)
-    {
-        var wrapper = new ReadOnlyViewArray(_currentView, ViewRows, ViewColumns, BackingResolver);
-        if (!focusFinder.TryResolveFocus(
-                in argument,
-                in wrapper,
-                out var rowIndex,
-                out var columnIndex
-            )) return false;
-        return TryGrabFocusCore(rowIndex, columnIndex);    
+            out var viewRowIndex,
+            out var viewColumnIndex
+        ) && TryGrabFocusCore(viewRowIndex, viewColumnIndex);
     }
 
     private static bool BackingResolver(object obj) => !((DataView)obj).Data.IsNull;
 
-    public bool GrabFocus(IDataFocusFinder<TDataType> focusFinder)
+    public bool GrabFocus(IEqualityDataFocusFinder focusFinder, in TDataType matchingArgument)
     {
-        
+        var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
+        return focusFinder.TryResolveFocus(
+            in matchingArgument,
+            in wrapper,
+            out var dataSetRowIndex,
+            out var dataSetColumnIndex
+        ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
+    }
+
+    public bool GrabFocus(IPredicateDataFocusFinder focusFinder, Predicate<TDataType> matchingArgument)
+    {
+        var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
+        return focusFinder.TryResolveFocus(
+            in matchingArgument,
+            in wrapper,
+            out var dataSetRowIndex,
+            out var dataSetColumnIndex
+        ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
+    }
+    
+    public bool GrabFocus<TMatchingArgument>(IDataFocusFinder<TMatchingArgument> focusFinder, in TMatchingArgument matchingArgument)
+    {
+        var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
+        return focusFinder.TryResolveFocus(
+            in matchingArgument,
+            in wrapper,
+            out var rowIndex,
+            out var columnIndex
+        ) && TryGrabFocusCore(rowIndex, columnIndex);
     }
 
     private VirtualGridViewItem<TDataType, TExtraArgument>.CurrentInfo ConstructInfo(
@@ -269,6 +255,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         _verticalScrollBar = verticalScrollBar;
         _dataInspector = dataInspector;
         _equalityComparer = equalityComparer;
+        _equalityComparerEquals = equalityComparer.Equals;
         _itemPrefab = itemPrefab;
         _itemContainer = itemContainer;
         _layoutGrid = layoutGrid;

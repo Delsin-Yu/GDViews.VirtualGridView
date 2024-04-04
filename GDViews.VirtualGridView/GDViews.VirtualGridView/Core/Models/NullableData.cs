@@ -12,7 +12,7 @@ internal static class NullableData
 
 internal readonly struct NullableData<T>(bool hasValue, T? value)
 {
-    public static void Clear(ref readonly Span<NullableData<T>> array)
+    internal static void Clear(ref readonly Span<NullableData<T>> array)
     {
         foreach (ref var element in array)
         {

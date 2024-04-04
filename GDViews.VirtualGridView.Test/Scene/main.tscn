@@ -10,19 +10,22 @@ Button/font_sizes/font_size = 30
 GridContainer/constants/h_separation = 10
 GridContainer/constants/v_separation = 10
 Label/font_sizes/font_size = 30
+LineEdit/font_sizes/font_size = 30
 MarginContainer/constants/margin_bottom = 20
 MarginContainer/constants/margin_left = 20
 MarginContainer/constants/margin_right = 20
 MarginContainer/constants/margin_top = 20
+OptionButton/font_sizes/font_size = 25
 PopupMenu/font_sizes/font_size = 25
 
-[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_dataSetController1", "_dataSetController2", "_dataSetController3", "_dataSetController4", "_dataSetController5", "_grabTopLeftFocus", "_grabTopRightFocus", "_grabBottomLeftFocus", "_grabBottomRightFocus", "_grabLeftTopFocus", "_grabRightTopFocus", "_grabLeftBottomFocus", "_grabRightBottomFocus", "_grabCenterClockwiseFocus", "_grabCenterAnticlockwiseFocus", "_grabCenterUpDownLeftRightFocus", "_killFocus", "_tweenType", "_faderType", "_tweenerType", "_positionerType", "_duration", "_durationText", "_enableClipChildren")]
+[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_dataSetController1", "_dataSetController2", "_dataSetController3", "_dataSetController4", "_dataSetController5", "_grabByViewPosition", "_grabByMatching", "_grabByPattern", "_killFocus", "_tweenType", "_faderType", "_tweenerType", "_positionerType", "_startPositionsType", "_searchDirectionsType", "_searchDataSet", "_searchDataSetIndex", "_matchPattern", "_duration", "_durationText", "_enableClipChildren")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(1.00056, 1)
 theme = SubResource("Theme_p8tds")
 script = ExtResource("1_wuctx")
 _packedScene = ExtResource("2_7ef37")
@@ -34,22 +37,19 @@ _dataSetController2 = NodePath("MarginContainer/HBoxContainer/ControlPanel/Backi
 _dataSetController3 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl3")
 _dataSetController4 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl4")
 _dataSetController5 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl5")
-_grabTopLeftFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/TL")
-_grabTopRightFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/TR")
-_grabBottomLeftFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/BL")
-_grabBottomRightFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/BR")
-_grabLeftTopFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/LT")
-_grabRightTopFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/RT")
-_grabLeftBottomFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/LB")
-_grabRightBottomFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/RB")
-_grabCenterClockwiseFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/CCW")
-_grabCenterAnticlockwiseFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/CACW")
-_grabCenterUpDownLeftRightFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/CUDLR")
-_killFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/FocusControl/RemoveFocusBtn")
+_grabByViewPosition = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByPosition/GrabByViewPosition")
+_grabByMatching = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue/GrabByMatch")
+_grabByPattern = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByPattern/GrabByMatch")
+_killFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/RemoveFocusBtn2")
 _tweenType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Tween")
 _faderType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Fader")
 _tweenerType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Tweener")
 _positionerType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Positioner")
+_startPositionsType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByPosition/GrabByViewPositionStart")
+_searchDirectionsType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByPosition/GrabByViewPositionDirection")
+_searchDataSet = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue/DataSet")
+_searchDataSetIndex = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue/SpinBox")
+_matchPattern = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByPattern/LineEdit")
 _duration = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer/AnimationDuration/AnimationTimeSpinBox")
 _durationText = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer/AnimationDuration/AnimationTimeValue")
 _enableClipChildren = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer/MaskToggle")
@@ -68,12 +68,13 @@ theme_override_constants/margin_bottom = 40
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
 alignment = 1
 
 [node name="DataView" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 6
 size_flags_vertical = 4
+size_flags_stretch_ratio = 15.0
 alignment = 1
 
 [node name="Tutorial" type="Label" parent="MarginContainer/HBoxContainer/DataView"]
@@ -93,6 +94,8 @@ size_flags_stretch_ratio = 5.0
 
 [node name="ControlPanel" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 6
+alignment = 1
 
 [node name="GridContainer" type="GridContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
 layout_mode = 2
@@ -103,7 +106,6 @@ layout_mode = 2
 text = "动画补间"
 
 [node name="Tween" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
-custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
@@ -115,7 +117,6 @@ text = "布局类型"
 
 [node name="Positioner" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
 auto_translate_mode = 1
-custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
@@ -127,7 +128,6 @@ text = "过渡类型"
 
 [node name="Tweener" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
 auto_translate_mode = 1
-custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
@@ -139,7 +139,6 @@ text = "渐隐类型"
 
 [node name="Fader" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
 auto_translate_mode = 1
-custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
@@ -177,6 +176,116 @@ layout_mode = 2
 focus_mode = 0
 text = "启用蒙版"
 flat = true
+
+[node name="GrabByPosition" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
+layout_mode = 2
+
+[node name="Text" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition"]
+auto_translate_mode = 1
+layout_mode = 2
+text = "选中以"
+
+[node name="GrabByViewPositionStart" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition"]
+layout_mode = 2
+focus_mode = 0
+
+[node name="Text2" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition"]
+auto_translate_mode = 1
+layout_mode = 2
+text = "为起点往"
+
+[node name="GrabByViewPositionDirection" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition"]
+auto_translate_mode = 1
+layout_mode = 2
+focus_mode = 0
+
+[node name="Text3" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition"]
+auto_translate_mode = 1
+layout_mode = 2
+text = "的目标"
+
+[node name="GrabByViewPosition" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.0
+focus_mode = 0
+text = "执行"
+
+[node name="GrabByExactValue" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
+auto_translate_mode = 1
+layout_mode = 2
+
+[node name="Text" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue"]
+auto_translate_mode = 1
+layout_mode = 2
+text = "匹配并选中"
+
+[node name="DataSet" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue"]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+focus_mode = 0
+
+[node name="Text2" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue"]
+auto_translate_mode = 1
+layout_mode = 2
+text = "中ID为"
+
+[node name="SpinBox" type="SpinBox" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue"]
+layout_mode = 2
+mouse_force_pass_scroll_events = false
+rounded = true
+custom_arrow_step = 1.0
+
+[node name="Text3" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue"]
+auto_translate_mode = 1
+layout_mode = 2
+text = "的目标"
+
+[node name="GrabByMatch" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.0
+focus_mode = 0
+text = "执行"
+
+[node name="GrabByPattern" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
+auto_translate_mode = 1
+layout_mode = 2
+
+[node name="Text" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPattern"]
+auto_translate_mode = 1
+layout_mode = 2
+text = "匹配名称中包含"
+
+[node name="LineEdit" type="LineEdit" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPattern"]
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 1
+
+[node name="Text3" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPattern"]
+auto_translate_mode = 1
+layout_mode = 2
+text = "的目标"
+
+[node name="GrabByMatch" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPattern"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.0
+focus_mode = 0
+text = "执行"
+
+[node name="RemoveFocusBtn2" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "移除焦点"
 
 [node name="BackingListControl" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
 layout_mode = 2
@@ -233,115 +342,3 @@ _remove1 = NodePath("MarginContainer/VBoxContainer/Remove1")
 _remove10 = NodePath("MarginContainer/VBoxContainer/Remove10")
 _scramble = NodePath("MarginContainer/VBoxContainer/Scramble")
 _clear = NodePath("MarginContainer/VBoxContainer/Clear")
-
-[node name="FocusControl" type="GridContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
-layout_mode = 2
-size_flags_vertical = 3
-columns = 4
-
-[node name="TL" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-focus_mode = 0
-text = "上/左"
-clip_text = true
-
-[node name="TR" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-focus_mode = 0
-text = "上/右"
-clip_text = true
-
-[node name="BL" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-focus_mode = 0
-text = "下/左"
-clip_text = true
-
-[node name="BR" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-focus_mode = 0
-text = "下/右"
-clip_text = true
-
-[node name="LT" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-focus_mode = 0
-text = "左/上"
-clip_text = true
-
-[node name="RT" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-focus_mode = 0
-text = "右/上"
-clip_text = true
-
-[node name="LB" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-focus_mode = 0
-text = "左/下"
-clip_text = true
-
-[node name="RB" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-focus_mode = 0
-text = "右/下"
-clip_text = true
-
-[node name="CCW" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-focus_mode = 0
-text = "中/顺时针"
-clip_text = true
-
-[node name="CACW" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-focus_mode = 0
-text = "中/逆时针"
-clip_text = true
-
-[node name="CUDLR" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-focus_mode = 0
-text = "中/上下左右"
-clip_text = true
-
-[node name="RemoveFocusBtn" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/FocusControl"]
-auto_translate_mode = 1
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-focus_mode = 0
-text = "移除焦点"

@@ -4,6 +4,8 @@
 
 [node name="DataSetControl" type="PanelContainer" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear")]
 auto_translate_mode = 1
+offset_right = 85.0
+offset_bottom = 243.0
 size_flags_horizontal = 3
 script = ExtResource("1_mhvjj")
 _num = NodePath("MarginContainer/VBoxContainer/DataSet1")

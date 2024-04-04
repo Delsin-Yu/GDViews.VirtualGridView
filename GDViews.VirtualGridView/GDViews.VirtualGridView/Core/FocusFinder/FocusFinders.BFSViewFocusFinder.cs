@@ -7,7 +7,7 @@ namespace GodotViews.Core.FocusFinder;
 
 public delegate Vector2I StartPositionHandler(ref readonly ReadOnlyViewArray currentView);
 
-public static partial class ViewFocusFinders
+public static partial class FocusFinders
 {
     internal static class BFSSearch
     {
@@ -62,6 +62,13 @@ public static partial class ViewFocusFinders
                 {
                     var neighborPosition = candidate + neighborOffset;
                     if (_visited.Contains(neighborPosition)) continue;
+
+                    if (neighborPosition.X < 0 ||
+                        neighborPosition.X >= currentView.ViewRows ||
+                        neighborPosition.Y < 0 ||
+                        neighborPosition.Y >= currentView.ViewColumns)
+                        continue;
+
                     if (IsValid(in currentView, in neighborPosition, ref rowIndex, ref columnIndex)) return true;
                     _pending.Enqueue(neighborPosition);
                 }
@@ -71,23 +78,22 @@ public static partial class ViewFocusFinders
         }
     }
 
-
-    internal class BFSViewFocusFinder : IViewFocusFinder
+    private class BFSViewFocusFinder : IViewFocusFinder
     {
         public bool TryResolveFocus(
             ref readonly ReadOnlyViewArray currentView,
             ref readonly ReadOnlySpan<Vector2I> searchDirection,
             StartPositionHandler startPositionHandler,
-            out int rowIndex,
-            out int columnIndex)
+            out int viewRowIndex,
+            out int viewColumnIndex)
         {
             var start = startPositionHandler(in currentView);
             return BFSSearch.BFSCore(
                 in start,
                 in currentView,
                 in searchDirection,
-                out rowIndex,
-                out columnIndex
+                out viewRowIndex,
+                out viewColumnIndex
             );
         }
     }

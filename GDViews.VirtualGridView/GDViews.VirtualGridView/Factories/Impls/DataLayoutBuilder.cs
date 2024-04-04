@@ -10,6 +10,7 @@ internal interface IDataInspector<T>
 {
     void GetDataSetMetrics(out int rows, out int columns);
     ReadOnlySpan<NullableData<T>> InspectViewColumn(int rowIndex, int columnOffset, int rowOffset);
+    NullableData<T> InspectViewCell(int rowIndex, int columnOffset, int rowOffset, int columnIndex);
 }
 
 internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayoutSelectionBuilder, IEqualityComparer<TDataType>? equalityComparer, bool reverseLocalLayout, bool isHorizontalDataLayout) : IHorizontalDataLayoutBuilder<TDataType>, IVerticalDataLayoutBuilder<TDataType>
@@ -155,6 +156,28 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
 
             return viewSpan;
         }
+
+        public NullableData<T> InspectViewCell(int rowIndex, int columnOffset, int rowOffset, int columnIndex)
+        {
+            var viewSpan = _view.AsSpan();
+            NullableData<T>.Clear(ref viewSpan);
+
+            var actualRow = rowOffset + rowIndex;
+
+            if (actualRow < 0 || dataMap.Length <= actualRow)
+                return NullableData.Null<T>();
+
+            var dstColumnIndex = columnOffset + viewColumns;
+
+            var (dataSet, localIndex) = dataMap[actualRow];
+
+            var i = columnOffset + columnIndex;
+            
+            if (i >= 0 && i < dstColumnIndex && dataSet.TryGetGridElement(localIndex, i, out var element))
+                return NullableData.Create(element);
+            
+            return NullableData.Null<T>();
+        }
     }
 
     private class VerticalDataInspector<T>(AnnotatedDataSet<T>[] dataMap, int viewColumns, int viewRows) : IDataInspector<T>
@@ -207,6 +230,30 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
             }
 
             return viewSpan;
+        }
+
+        public NullableData<T> InspectViewCell(int rowIndex, int columnOffset, int rowOffset, int columnIndex)
+        {
+            var viewSpan = _view.AsSpan();
+            NullableData<T>.Clear(ref viewSpan);
+
+            if (dataMap.Length <= columnOffset)
+                return NullableData.Null<T>();
+
+            var actualRow = rowOffset + rowIndex;
+
+            var dstColumnIndex = columnOffset + viewColumns;
+
+            var i = columnOffset + columnIndex;
+
+            if (i >= dstColumnIndex || i < 0 || dataMap.Length <= i) return NullableData.Null<T>();
+
+            var (dataSet, localIndex) = dataMap[i];
+
+            if (actualRow >= 0 && dataSet.TryGetGridElement(localIndex, actualRow, out var element))
+                return NullableData.Create(element);
+         
+            return NullableData.Null<T>();
         }
     }
 }

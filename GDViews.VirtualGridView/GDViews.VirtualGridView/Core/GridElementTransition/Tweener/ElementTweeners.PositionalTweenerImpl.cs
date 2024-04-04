@@ -5,7 +5,7 @@ namespace GodotViews.VirtualGrid;
 
 public static partial class ElementTweeners
 {
-    private class PositionalTweenerImpl(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedElementTweener<Vector2>, IGodotTweenTweener
+    private class PanTweenerImpl(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedElementTweener<Vector2>, IGodotTweenTweener
     {
         public float Duration { get; set; } = duration;
         public TweenSetup TweenSetup { get; set; } = tweenSetup;
