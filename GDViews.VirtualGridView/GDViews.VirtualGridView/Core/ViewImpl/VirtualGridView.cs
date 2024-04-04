@@ -113,7 +113,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             _dataInspector.GetDataSetMetrics(out var rows, out var columns);
             for (var rowOffset = 0; rowOffset < rows; rowOffset += ViewRows)
             for (var columnOffset = 0; columnOffset < columns; columnOffset += ViewColumns)
-            for (var rowIndex = 0; rowIndex < ViewRows; rowIndex++)
+            for (var rowIndex = 0; rowIndex + rowOffset < rows; rowIndex++)
             {
                 var columnSpan = _dataInspector.InspectViewColumn(rowIndex, columnOffset, rowOffset);
                 for (var spanIndex = 0; spanIndex < columnSpan.Length; spanIndex++)
