@@ -80,7 +80,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         TryGetDataPositionRelativeToViewport(_equalityComparerEquals, out var relativeRowIndex, out var relativeColumnIndex, currentSelectedData) &&
         TryGrabFocusCore(relativeRowIndex, relativeColumnIndex) ||
         TryGrabFocusCore(_currentSelectedViewRowIndex, _currentSelectedViewColumnIndex) ||
-        GrabFocus(FocusFinders.ByPosition, StartPositions.TopLeft, SearchDirections.FourWayClockwise);
+        GrabFocus(FocusFinders.ByPosition, StartPositions.TopLeft, SearchDirections.RightDown);
 
     private bool TryGetDataPositionRelativeToViewport(Func<TDataType, TDataType, bool> comparer, out int rowIndex, out int columnIndex, TDataType data)
     {
