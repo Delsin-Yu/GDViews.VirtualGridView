@@ -31,7 +31,7 @@ internal class FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
         return this;
     }
     
-    public IVirtualGridView<TDataType, TButtonType, TExtraArgument> Build()
+    public IVirtualGridView<TDataType> Build()
     {
         var dataLayoutSelectionBuilder = dataLayoutBuilder.DataLayoutSelectionBuilder;
         var viewAlignmentBuilder = dataLayoutSelectionBuilder.ViewHandlerBuilder;

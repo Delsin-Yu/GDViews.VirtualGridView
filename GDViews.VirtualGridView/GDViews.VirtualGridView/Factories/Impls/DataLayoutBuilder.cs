@@ -8,7 +8,7 @@ namespace GodotViews.VirtualGrid;
 
 internal interface IDataInspector<T>
 {
-    void GetDataSetMetrics(out int rows, out int columns);
+    void GetDataSetCurrentMetrics(out int rows, out int columns);
     ReadOnlySpan<NullableData<T>> InspectViewColumn(int rowIndex, int columnOffset, int rowOffset);
     NullableData<T> InspectViewCell(int rowIndex, int columnOffset, int rowOffset, int columnIndex);
 }
@@ -115,12 +115,17 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
     {
         private readonly NullableData<T>[] _view = new NullableData<T>[viewColumns];
 
-        public void GetDataSetMetrics(out int rows, out int columns)
+        public void GetDataSetCurrentMetrics(out int rows, out int columns)
         {
-            rows = dataMap.Length;
+            rows = 0;
+            foreach (ref readonly var mapRow in dataMap.AsSpan())
+            {
+                if (!mapRow.DataSet.TryGetGridElement(mapRow.LocalIndex, 0, out _)) continue;
+                rows++;
+            }
             columns = dataMap.Max(x => x.DataSet.GetDynamicMetric());
         }
-        
+
         /*
          * [0] DataSet1 <====> [0]
          * [1] DataSet1 <====> [1]
@@ -184,12 +189,17 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
     {
         private readonly NullableData<T>[] _view = new NullableData<T>[viewColumns];
 
-        public void GetDataSetMetrics(out int rows, out int columns)
+        public void GetDataSetCurrentMetrics(out int rows, out int columns)
         {
             rows = dataMap.Max(x => x.DataSet.GetDynamicMetric());
-            columns = dataMap.Length;
+            columns = 0;
+            foreach (ref readonly var mapColumn in dataMap.AsSpan())
+            {
+                if (!mapColumn.DataSet.TryGetGridElement(mapColumn.LocalIndex, 0, out _)) continue;
+                columns++;
+            }
         }
-        
+
         /*
          * [0] [1] [2] [3] [4] [5]
          * DS1 DS1 DS2 DS1 DS2 DS1

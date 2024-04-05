@@ -41,7 +41,7 @@ public partial class Main : Node, IDataSetHandler
 
     [Export] private CheckButton _enableClipChildren;
 
-    private IVirtualGridView<DataModel, View, NoExtraArgument> _virtualGridView;
+    private IVirtualGridView<DataModel> _virtualGridView;
 
     private TweenSetup _currentTweenSetup;
     private IElementFader _currentFader;

@@ -16,7 +16,7 @@ public readonly struct ReadOnlyDataArray<TDataType>
         _dataInspector = dataInspector;
         _viewRows = viewRows;
         _viewColumns = viewColumns;
-        _dataInspector.GetDataSetMetrics(out DataSetRows, out DataSetColumns);
+        _dataInspector.GetDataSetCurrentMetrics(out DataSetRows, out DataSetColumns);
     }
 
     public bool TryGetData<TMatchArgument>(Func<TDataType, TMatchArgument, bool> matchHandler, TMatchArgument matchArgument, out int absoluteRowIndex, out int absoluteColumnIndex)

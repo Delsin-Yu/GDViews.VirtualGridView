@@ -7,7 +7,7 @@ namespace GodotViews.VirtualGrid;
 
 internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     IVirtualGridViewParent<TDataType, TExtraArgument>,
-    IVirtualGridView<TDataType, TButtonType, TExtraArgument> where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
+    IVirtualGridView<TDataType> where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
 {
     private class DataView
     {
@@ -45,28 +45,10 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     private Vector2 _startDragPosition;
     private bool _isDragging;
-    private int _viewRowIndex;
-    private int _viewColumnIndex;
 
-    public int ViewColumnIndex
-    {
-        get => _viewColumnIndex;
-        private set
-        {
-            _viewColumnIndex = value;
-            Console.WriteLine($"{ViewColumnIndex}, {ViewRowIndex}");
-        }
-    }
+    public int ViewColumnIndex { get; private set; }
 
-    public int ViewRowIndex
-    {
-        get => _viewRowIndex;
-        private set
-        {
-            _viewRowIndex = value;
-            Console.WriteLine($"{ViewColumnIndex}, {ViewRowIndex}");
-        }
-    }
+    public int ViewRowIndex { get; private set; }
 
     public int ViewColumns { get; }
     public int ViewRows { get; }
@@ -413,7 +395,13 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         return false;
     }
 
-    private TButtonType GetAndInitializeButtonInstance(TDataType data, int rowIndex, int columnIndex, int dataSetMaxRowIndex, int dataSetMaxColumnIndex)
+    private TButtonType GetAndInitializeButtonInstance(
+        TDataType data,
+        int rowIndex,
+        int columnIndex,
+        int dataSetMaxRowIndex,
+        int dataSetMaxColumnIndex
+    )
     {
         if (!_buttonPool.TryPop(out var instance))
         {
@@ -463,7 +451,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     private void Redraw(out int dataSetMaxRowIndex, out int dataSetMaxColumnIndex)
     {
         {
-            _dataInspector.GetDataSetMetrics(out var rows, out var columns);
+            _dataInspector.GetDataSetCurrentMetrics(out var rows, out var columns);
             dataSetMaxRowIndex = rows - 1;
             dataSetMaxColumnIndex = columns - 1;
         }

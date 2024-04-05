@@ -55,7 +55,7 @@ public static class VirtualGridView
 
     internal static bool SearchForData<TDataType, TMatchArgument>(IDataInspector<TDataType> dataInspector, int viewRows, int viewColumns, out ViewData viewData, Func<TDataType, TMatchArgument, bool> comparer, TMatchArgument matchArgument)
     {
-        dataInspector.GetDataSetMetrics(out var rows, out var columns);
+        dataInspector.GetDataSetCurrentMetrics(out var rows, out var columns);
         for (var rowOffset = 0; rowOffset < rows; rowOffset += viewRows)
         for (var columnOffset = 0; columnOffset < columns; columnOffset += viewColumns)
         {

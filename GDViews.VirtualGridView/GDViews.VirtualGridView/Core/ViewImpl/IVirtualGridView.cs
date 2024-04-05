@@ -3,8 +3,7 @@ using GodotViews.Core.FocusFinder;
 
 namespace GodotViews.VirtualGrid;
 
-public interface IVirtualGridView<TDataType, TButtonType, TExtraArgument>
-    where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
+public interface IVirtualGridView<TDataType>
 {
     void Redraw();
 
