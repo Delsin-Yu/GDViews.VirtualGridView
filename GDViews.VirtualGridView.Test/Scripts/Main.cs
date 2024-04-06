@@ -196,8 +196,8 @@ public partial class Main : Node, IDataSetHandler
 
         DataBindings.Bind(_grabByViewPosition, instance => instance._virtualGridView.GrabFocus(FocusPresets.ViewPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
         DataBindings.Bind(_grabByDataPosition, instance => instance._virtualGridView.GrabFocus(FocusPresets.DataPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
-        DataBindings.Bind(_grabByMatching, instance => instance._virtualGridView.GrabFocus(FocusFiners.Value, instance._currentDataSet[(int)instance._searchDataSetIndex.Value]), this);
-        DataBindings.Bind(_grabByPattern, instance => instance._virtualGridView.GrabFocus(FocusFiners.Predicate, x => x.Message.Contains(instance._matchPattern.Text, StringComparison.OrdinalIgnoreCase)), this);
+        DataBindings.Bind(_grabByMatching, instance => instance._virtualGridView.GrabFocus(FocusPresets.Value, instance._currentDataSet[(int)instance._searchDataSetIndex.Value]), this);
+        DataBindings.Bind(_grabByPattern, instance => instance._virtualGridView.GrabFocus(FocusPresets.Predicate, x => x.Message.Contains(instance._matchPattern.Text, StringComparison.OrdinalIgnoreCase)), this);
         DataBindings.Bind(_killFocus, instance => instance.GetViewport().GuiReleaseFocus(), this);
 
         _virtualGridView = VirtualGridView

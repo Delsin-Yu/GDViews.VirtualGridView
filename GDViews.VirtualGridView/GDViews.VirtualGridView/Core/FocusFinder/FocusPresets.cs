@@ -12,6 +12,9 @@ public static class ViewCorner
 
 public static class FocusPresets
 {
+    public static IEqualityDataFocusFinder Value => FocusFiners.Value;
+    public static IPredicateDataFocusFinder Predicate => FocusFiners.Predicate;
+    
     public static readonly DataFocusFinderPreset<Vector2I> DataPosition = new(FocusFiners.DataPosition, StartHandlers.DataPosition);
     public static readonly DataFocusFinderPreset TopLeftData = new(DataPosition, ViewCorner.TopLeft, SearchDirections.RightDown);
     public static readonly DataFocusFinderPreset TopRightData = new(DataPosition, ViewCorner.TopRight, SearchDirections.LeftDown);
