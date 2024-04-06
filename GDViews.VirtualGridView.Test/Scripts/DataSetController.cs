@@ -22,12 +22,12 @@ public partial class DataSetController : Node
 
     public override void _Ready()
     {
-        DataBindings.Bind(_add1, Add1);
-        DataBindings.Bind(_add10, Add10);
-        DataBindings.Bind(_remove1, Remove1);
-        DataBindings.Bind(_remove10, Remove10);
-        DataBindings.Bind(_scramble, Scramble);
-        DataBindings.Bind(_clear, Clear);
+        DataBindings.Bind(_add1, instance => instance.Add1(), this);
+        DataBindings.Bind(_add10, instance => instance.Add10(), this);
+        DataBindings.Bind(_remove1, instance => instance.Remove1(), this);
+        DataBindings.Bind(_remove10, instance => instance.Remove10(), this);
+        DataBindings.Bind(_scramble, instance => instance.Scramble(), this);
+        DataBindings.Bind(_clear, instance => instance.Clear(), this);
     }
 
     private void Clear()

@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using Godot;
 using Bogus;
-using Range = Godot.Range;
 
 namespace GodotViews.VirtualGrid.Examples;
 
 public partial class Main : Node, IDataSetHandler
 {
     public record struct DataModel(int Index, int DataSetIndex, string Message);
-    
+
+    #region Exports
+
     [Export] private PackedScene _packedScene;
     [Export] private Control _container;
     [Export] private Vector2 _size;
@@ -41,18 +42,35 @@ public partial class Main : Node, IDataSetHandler
 
     [Export] private CheckButton _enableClipChildren;
 
-    private IVirtualGridView<DataModel> _virtualGridView;
+    #endregion
 
+    #region Fields
+
+    private IVirtualGridView<DataModel> _virtualGridView;
     private TweenSetup _currentTweenSetup;
     private IElementFader _currentFader;
     private IElementTweener _currentTweener;
     private IElementPositioner _currentPositioner;
     private float _currentDuration;
     private List<DataModel> _currentDataSet;
-
     private Vector2I _currentStartPosition;
     private SearchDirection _currentSearchDirection;
-    
+    private readonly Faker _faker = new();
+
+    #endregion
+
+    #region DataSets Field
+
+    private readonly List<DataModel> dataSet1 = [];
+    private readonly List<DataModel> dataSet2 = [];
+    private readonly List<DataModel> dataSet3 = [];
+    private readonly List<DataModel> dataSet4 = [];
+    private readonly List<DataModel> dataSet5 = [];
+
+    #endregion
+
+    #region Properties
+
     private TweenSetup CurrentTweenSetup
     {
         set
@@ -113,16 +131,10 @@ public partial class Main : Node, IDataSetHandler
         }
     }
 
-    private readonly Faker _faker = new();
+    #endregion
 
     public override void _Ready()
     {
-        var dataSet1 = new List<DataModel>();
-        var dataSet2 = new List<DataModel>();
-        var dataSet3 = new List<DataModel>();
-        var dataSet4 = new List<DataModel>();
-        var dataSet5 = new List<DataModel>();
-
         _dataSetController1.Initialize(dataSet1, this, 1);
         _dataSetController2.Initialize(dataSet2, this, 2);
         _dataSetController3.Initialize(dataSet3, this, 3);
@@ -143,7 +155,7 @@ public partial class Main : Node, IDataSetHandler
             using var lineEdit = _searchDataSetIndex.GetLineEdit();
             lineEdit.FocusMode = Control.FocusModeEnum.Click;
         }
-        
+
         _currentDuration = 0.1f;
         _currentTweenSetup = _listOfTweens[tweenSetupDefaultSelection].TweenSetup;
         _currentFader = _listOfFaderTypes[faderDefaultSelection].Data;
@@ -161,58 +173,32 @@ public partial class Main : Node, IDataSetHandler
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        DataBindings.Bind(_duration, value => CurrentDuration = value, _currentDuration);
-        DataBindings.Bind(_listOfTweens, _tweenType, x => CurrentTweenSetup = x, tweenSetupDefaultSelection);
-        DataBindings.Bind(_listOfFaderTypes, _faderType, x => CurrentFader = x, faderDefaultSelection);
-        DataBindings.Bind(_listOfTweenerTypes, _tweenerType, x => CurrentTweener = x, tweenerDefaultSelection);
-        DataBindings.Bind(_listOfPositionerTypes, _positionerType, x => CurrentPositioner = x, positionerDefaultSelection);
-        DataBindings.Bind(_listOfStartPositionsTypes, _startPositionsType, x => _currentStartPosition = x, startPositionHandlerDefaultSelection);
-        DataBindings.Bind(_listOfSearchDirectionsTypes, _searchDirectionsType, x => _currentSearchDirection = x, searchDirectionDefaultSelection);
+        DataBindings.Bind(_duration, (value, instance) => instance.CurrentDuration = value, _currentDuration, this);
+        DataBindings.Bind(_listOfTweens, _tweenType, (x, instance) => instance.CurrentTweenSetup = x, tweenSetupDefaultSelection, this);
+        DataBindings.Bind(_listOfFaderTypes, _faderType, (x, instance) => instance.CurrentFader = x, faderDefaultSelection, this);
+        DataBindings.Bind(_listOfTweenerTypes, _tweenerType, (x, instance) => instance.CurrentTweener = x, tweenerDefaultSelection, this);
+        DataBindings.Bind(_listOfPositionerTypes, _positionerType, (x, instance) => instance.CurrentPositioner = x, positionerDefaultSelection, this);
+        DataBindings.Bind(_listOfStartPositionsTypes, _startPositionsType, (x, instance) => instance._currentStartPosition = x, startPositionHandlerDefaultSelection, this);
+        DataBindings.Bind(_listOfSearchDirectionsTypes, _searchDirectionsType, (x, instance) => instance._currentSearchDirection = x, searchDirectionDefaultSelection, this);
         DataBindings.Bind(
             _listOfDataSets,
             _searchDataSet,
-            x =>
+            (x, instance) =>
             {
-                _currentDataSet = GetDataSet(x);
-                _searchDataSetIndex.MaxValue = _currentDataSet.Count - 1;
-                _grabByMatching.Disabled = _currentDataSet.Count == 0;
+                instance._currentDataSet = instance.GetDataSet(x);
+                instance._searchDataSetIndex.MaxValue = instance._currentDataSet.Count - 1;
+                instance._grabByMatching.Disabled = instance._currentDataSet.Count == 0;
             },
-            searchDataSetIdDefaultSelection
+            searchDataSetIdDefaultSelection,
+            this
         );
         DataBindings.Bind(_enableClipChildren, on => _container.ClipContents = on, true);
 
-        DataBindings.Bind(
-            _grabByViewPosition,
-            () => _virtualGridView.GrabFocus(
-                FocusPresets.ViewPosition,
-                _currentStartPosition,
-                _currentSearchDirection
-            )
-        );
-        DataBindings.Bind(
-            _grabByDataPosition,
-            () => _virtualGridView.GrabFocus(
-                FocusPresets.DataPosition,
-                _currentStartPosition,
-                _currentSearchDirection
-            )
-        );
-        DataBindings.Bind(
-            _grabByMatching,
-            () => _virtualGridView.GrabFocus(
-                FocusFiners.Value,
-                _currentDataSet[(int)_searchDataSetIndex.Value]
-            )
-        );
-        DataBindings.Bind(
-            _grabByPattern,
-            () => _virtualGridView.GrabFocus(
-                FocusFiners.Predicate,
-                x => x.Message.Contains(_matchPattern.Text, StringComparison.OrdinalIgnoreCase)
-            )
-        );   
-        
-        DataBindings.Bind(_killFocus, () => GetViewport().GuiReleaseFocus());
+        DataBindings.Bind(_grabByViewPosition, instance => instance._virtualGridView.GrabFocus(FocusPresets.ViewPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
+        DataBindings.Bind(_grabByDataPosition, instance => instance._virtualGridView.GrabFocus(FocusPresets.DataPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
+        DataBindings.Bind(_grabByMatching, instance => instance._virtualGridView.GrabFocus(FocusFiners.Value, instance._currentDataSet[(int)instance._searchDataSetIndex.Value]), this);
+        DataBindings.Bind(_grabByPattern, instance => instance._virtualGridView.GrabFocus(FocusFiners.Predicate, x => x.Message.Contains(instance._matchPattern.Text, StringComparison.OrdinalIgnoreCase)), this);
+        DataBindings.Bind(_killFocus, instance => instance.GetViewport().GuiReleaseFocus(), this);
 
         _virtualGridView = VirtualGridView
             .Create(7, 7)
@@ -237,9 +223,10 @@ public partial class Main : Node, IDataSetHandler
         CurrentTweenSetup = _currentTweenSetup;
 
         NotifyUpdate();
-        return;
+    }
 
-        List<DataModel> GetDataSet(int index) => index switch
+    private List<DataModel> GetDataSet(int index) =>
+        index switch
         {
             0 => dataSet1,
             1 => dataSet2,
@@ -248,12 +235,8 @@ public partial class Main : Node, IDataSetHandler
             4 => dataSet5,
             _ => throw new ArgumentOutOfRangeException()
         };
-    }
 
-    public DataModel CreateElement(int dataSetIndex, IReadOnlyList<DataModel> dataSet)
-    {
-        return new(dataSet.Count, dataSetIndex, _faker.Lorem.Word());
-    }
+    public DataModel CreateElement(int dataSetIndex, IReadOnlyList<DataModel> dataSet) => new(dataSet.Count, dataSetIndex, _faker.Lorem.Word());
 
     public void NotifyUpdate()
     {
@@ -261,30 +244,5 @@ public partial class Main : Node, IDataSetHandler
         _virtualGridView.GrabFocus();
         _searchDataSetIndex.MaxValue = _currentDataSet.Count - 1;
         _grabByMatching.Disabled = _currentDataSet.Count == 0;
-    }
-}
-
-public static class DataBindings
-{
-    public static void Bind(Range range, Action<float> valueChangedHandler, float defaultValue)
-    {
-        range.ValueChanged += value => valueChangedHandler((float)value);
-        range.SetValueNoSignal(defaultValue);
-    }
-
-    public static void Bind(Button button, Action onPressedHandler) => 
-        button.Pressed += onPressedHandler;
-
-    public static void Bind<T>((string, T)[] list, OptionButton optionButton, Action<T> setValueHandler, int defaultSelection)
-    {
-        foreach (var (name, _) in list) optionButton.AddItem(name);
-        optionButton.ItemSelected += index => setValueHandler(list[index].Item2);
-        optionButton.Selected = defaultSelection;
-    }
-        
-    public static void Bind(CheckButton button, BaseButton.ToggledEventHandler onToggleHandler, bool defaultValue)
-    {
-        button.Toggled += onToggleHandler;
-        button.ButtonPressed = defaultValue;
     }
 }
