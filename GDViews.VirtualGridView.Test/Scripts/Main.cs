@@ -192,7 +192,8 @@ public partial class Main : Node, IDataSetHandler
             searchDataSetIdDefaultSelection,
             this
         );
-        DataBindings.Bind(_enableClipChildren, on => _container.ClipContents = on, true);
+
+        DataBindings.Bind(_enableClipChildren, (on, instance) => instance._container.ClipContents = on, true, this);
 
         DataBindings.Bind(_grabByViewPosition, instance => instance._virtualGridView.GrabFocus(FocusPresets.ViewPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
         DataBindings.Bind(_grabByDataPosition, instance => instance._virtualGridView.GrabFocus(FocusPresets.DataPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
