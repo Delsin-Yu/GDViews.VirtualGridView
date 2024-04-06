@@ -3,7 +3,7 @@ using GodotViews.VirtualGrid;
 
 namespace GodotViews.Core.FocusFinder;
 
-public static partial class FocusBy
+public static partial class FocusFiners
 {
     private class PredicateDataFocusFinder : IPredicateDataFocusFinder
     {

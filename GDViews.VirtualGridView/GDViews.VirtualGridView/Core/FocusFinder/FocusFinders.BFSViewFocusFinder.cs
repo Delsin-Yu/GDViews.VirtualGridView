@@ -6,7 +6,7 @@ using GodotViews.VirtualGrid;
 
 namespace GodotViews.Core.FocusFinder;
 
-public static partial class FocusBy
+public static partial class FocusFiners
 {
     private readonly struct MinimalVector2I
     {
@@ -167,13 +167,13 @@ public static partial class FocusBy
         public bool TryResolveFocus(
             ref readonly ReadOnlyViewArray currentView,
             ref readonly ReadOnlySpan<Vector2I> searchDirection,
-            ViewStartPositionHandler<Vector2I> viewStartPositionHandler,
+            IViewStartHandler<Vector2I> viewStartPositionHandler,
             ref readonly Vector2I argument,
             out int viewRowIndex,
             out int viewColumnIndex
         )
         {
-            var start = viewStartPositionHandler(in currentView, argument);
+            var start = viewStartPositionHandler.ResolveStartPosition(in currentView, argument);
             return BFSSearch.BFSCore(
                 in start,
                 in currentView,

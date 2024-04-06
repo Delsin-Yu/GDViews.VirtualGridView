@@ -18,7 +18,7 @@ MarginContainer/constants/margin_top = 20
 OptionButton/font_sizes/font_size = 25
 PopupMenu/font_sizes/font_size = 25
 
-[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_dataSetController1", "_dataSetController2", "_dataSetController3", "_dataSetController4", "_dataSetController5", "_grabByViewPosition", "_grabByMatching", "_grabByPattern", "_killFocus", "_tweenType", "_faderType", "_tweenerType", "_positionerType", "_startPositionsType", "_searchDirectionsType", "_searchDataSet", "_searchDataSetIndex", "_matchPattern", "_duration", "_durationText", "_enableClipChildren")]
+[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_dataSetController1", "_dataSetController2", "_dataSetController3", "_dataSetController4", "_dataSetController5", "_grabByViewPosition", "_grabByDataPosition", "_grabByMatching", "_grabByPattern", "_killFocus", "_tweenType", "_faderType", "_tweenerType", "_positionerType", "_startPositionsType", "_searchDirectionsType", "_searchDataSet", "_searchDataSetIndex", "_matchPattern", "_duration", "_durationText", "_enableClipChildren")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -37,7 +37,8 @@ _dataSetController2 = NodePath("MarginContainer/HBoxContainer/ControlPanel/Backi
 _dataSetController3 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl3")
 _dataSetController4 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl4")
 _dataSetController5 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl5")
-_grabByViewPosition = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByPosition/GrabByViewPosition")
+_grabByViewPosition = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByPosition/VBoxContainer/GrabByViewPosition")
+_grabByDataPosition = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByPosition/VBoxContainer/GrabByDataPosition")
 _grabByMatching = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue/GrabByMatch")
 _grabByPattern = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByPattern/GrabByMatch")
 _killFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/RemoveFocusBtn2")
@@ -180,13 +181,31 @@ flat = true
 [node name="GrabByPosition" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
 layout_mode = 2
 
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition"]
+layout_mode = 2
+
+[node name="GrabByViewPosition" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition/VBoxContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_stretch_ratio = 2.0
+focus_mode = 0
+text = "选中视口中"
+
+[node name="GrabByDataPosition" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition/VBoxContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_stretch_ratio = 2.0
+focus_mode = 0
+text = "选中数据集中"
+
 [node name="Text" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition"]
 auto_translate_mode = 1
 layout_mode = 2
-text = "选中以"
+text = "以"
 
 [node name="GrabByViewPositionStart" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition"]
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 0
 
 [node name="Text2" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition"]
@@ -197,21 +216,13 @@ text = "为起点往"
 [node name="GrabByViewPositionDirection" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition"]
 auto_translate_mode = 1
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 0
 
 [node name="Text3" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition"]
 auto_translate_mode = 1
 layout_mode = 2
-text = "的目标"
-
-[node name="GrabByViewPosition" type="Button" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByPosition"]
-auto_translate_mode = 1
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-size_flags_stretch_ratio = 2.0
-focus_mode = 0
-text = "执行"
+text = "的第一个目标"
 
 [node name="GrabByExactValue" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
 auto_translate_mode = 1

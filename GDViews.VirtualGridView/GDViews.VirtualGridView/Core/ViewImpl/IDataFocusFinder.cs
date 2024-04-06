@@ -29,7 +29,7 @@ public interface IDataFocusFinder<TArgument>
     bool TryResolveFocus<TDataType>(
         ref readonly ReadOnlyDataArray<TDataType> currentView,
         ref readonly ReadOnlySpan<Vector2I> searchDirection,
-        DataStartPositionHandler<TDataType, TArgument> dataStartPositionHandler,
+        IDataStartHandler<TArgument> dataStartPositionHandler,
         ref readonly TArgument argument, 
         out int viewRowIndex,
         out int viewColumnIndex

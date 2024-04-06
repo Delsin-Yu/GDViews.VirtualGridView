@@ -11,25 +11,44 @@ public static class ViewCorner
     public static readonly Vector2I BottomRight = new(-1, -1);
 }
 
-public static class StartFrom
+public interface IViewStartHandler<in TArgument>
 {
-    private static Vector2I PositionHandler(ref readonly ReadOnlyViewArray currentView, Vector2I position) =>
-        new(
-            position.X < 0 ? currentView.ViewRows + position.X : position.X,
-            position.Y < 0 ? currentView.ViewColumns + position.Y : position.Y
-        );  
-    
-    private static Vector2I PositionHandler<TDataType>(ref readonly ReadOnlyDataArray<TDataType> currentView, Vector2I position) =>
-        new(
-            position.X < 0 ? currentView.DataSetRows + position.X : position.X,
-            position.Y < 0 ? currentView.DataSetColumns + position.Y : position.Y
-        );
+    Vector2I ResolveStartPosition(ref readonly ReadOnlyViewArray currentView, TArgument argument);
+}
 
-    private static Vector2I CenterHandler(ref readonly ReadOnlyViewArray currentView, Vector2I offset) => 
-        new Vector2I(currentView.ViewRows, currentView.ViewColumns) / 2 + offset;
+public interface IDataStartHandler<in TArgument>
+{
+    Vector2I ResolveStartPosition<TDataType>(ref readonly ReadOnlyDataArray<TDataType> currentView, TArgument argument);
+}
+
+public static class StartHandlers
+{
+    public static IDataStartHandler<Vector2I> DataPosition { get; } = new DataStartPositionHandler();
+    public static IViewStartHandler<Vector2I> ViewPosition { get; } = new ViewStartPositionHandler();
+    public static IViewStartHandler<Vector2I> ViewCenter { get; } = new ViewCenterStartPositionHandler();
+
+    private class DataStartPositionHandler : IDataStartHandler<Vector2I>
+    {
+        public Vector2I ResolveStartPosition<TDataType>(ref readonly ReadOnlyDataArray<TDataType> currentView, Vector2I position)
+         => new(
+             position.X < 0 ? currentView.DataSetRows + position.X : position.X,
+             position.Y < 0 ? currentView.DataSetColumns + position.Y : position.Y
+         );
+    }
     
-    public static DataStartPositionHandler<TDataType, Vector2I> DataSetPosition<TDataType>() => PositionHandler<TDataType>;
-    public static ViewStartPositionHandler<Vector2I> ViewPosition { get; } = PositionHandler;
-    public static ViewStartPositionHandler<Vector2I> ViewCenter { get; } = CenterHandler;
+    private class ViewCenterStartPositionHandler : IViewStartHandler<Vector2I>
+    {
+        public Vector2I ResolveStartPosition(ref readonly ReadOnlyViewArray currentView, Vector2I argument) => 
+            new Vector2I(currentView.ViewRows, currentView.ViewColumns) / 2 + argument;
+    }
+    
+    private class ViewStartPositionHandler : IViewStartHandler<Vector2I>
+    {
+        public Vector2I ResolveStartPosition(ref readonly ReadOnlyViewArray currentView, Vector2I position) =>
+            new(
+                position.X < 0 ? currentView.ViewRows + position.X : position.X,
+                position.Y < 0 ? currentView.ViewColumns + position.Y : position.Y
+            );
+    }
 
 }

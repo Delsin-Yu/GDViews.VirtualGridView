@@ -62,7 +62,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         TryGetDataPositionRelativeToViewport(_equalityComparerEquals, out var relativeRowIndex, out var relativeColumnIndex, currentSelectedData) &&
         TryGrabFocusCore(relativeRowIndex, relativeColumnIndex) ||
         TryGrabFocusCore(_currentSelectedViewRowIndex, _currentSelectedViewColumnIndex) ||
-        GrabFocus(FocusBy.View, StartFrom.ViewPosition, ViewCorner.TopLeft, SearchDirections.RightDown);
+        GrabFocus(FocusFiners.ViewPosition, StartHandlers.ViewPosition, ViewCorner.TopLeft, SearchDirections.RightDown);
 
     private bool TryGetDataPositionRelativeToViewport(Func<TDataType, TDataType, bool> comparer, out int rowIndex, out int columnIndex, TDataType data)
     {
@@ -129,14 +129,14 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     }
 
 
-    public bool GrabFocus<TArgument>(IViewFocusFinder<TArgument> focusFinder, ViewStartPositionHandler<TArgument> startPositionHandler, TArgument argument, SearchDirection searchDirection)
+    public bool GrabFocus<TArgument>(IViewFocusFinder<TArgument> focusFinder, IViewStartHandler<TArgument> handler, TArgument argument, SearchDirection searchDirection)
     {
         var wrapper = new ReadOnlyViewArray(_currentView, ViewRows, ViewColumns, BackingResolver);
         var span = searchDirection.GetSpan();
         return focusFinder.TryResolveFocus(
             in wrapper,
             in span,
-            startPositionHandler,
+            handler,
             in argument,
             out var viewRowIndex,
             out var viewColumnIndex
@@ -167,7 +167,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
     }
 
-    public bool GrabFocus<TArgument>(IDataFocusFinder<TArgument> focusFinder, DataStartPositionHandler<TDataType, TArgument> startPositionHandler, TArgument matchingArgument, SearchDirection searchDirection)
+    public bool GrabFocus<TArgument>(IDataFocusFinder<TArgument> focusFinder, IDataStartHandler<TArgument> startPositionHandler, TArgument matchingArgument, SearchDirection searchDirection)
     {
         var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
         var span = searchDirection.GetSpan();
@@ -178,7 +178,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             in matchingArgument,
             out var rowIndex,
             out var columnIndex
-        ) && TryGrabFocusCore(rowIndex, columnIndex);
+        ) && TryGrabFocusCore(rowIndex - ViewRowIndex, columnIndex - ViewColumnIndex);
     }
     
     private VirtualGridViewItem<TDataType, TExtraArgument>.CellInfo ConstructInfo(
@@ -657,7 +657,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         // We should either:
         //     Develop a new matching algorithm.
         //     Optimize the hell out of the BFSCore, as accessing cell data involves a lot of calculations.
-        if (!FocusBy.BFSSearch.BFSCore(
+        if (!FocusFiners.BFSSearch.BFSCore(
                 in absoluteStart,
                 in readOnlyDataArray,
                 in searchDirection,
@@ -666,7 +666,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             )) return;
 
         if(!readOnlyDataArray.TryGetData(targetAbsoluteRowIndex, targetAbsoluteColumnIndex, out var data)) return;
-        GrabFocus(FocusBy.DataSetValue, data);
+        GrabFocus(FocusFiners.Value, data);
     }
 
     public void Move(MoveDirection moveDirection)

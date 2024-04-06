@@ -23,6 +23,7 @@ public partial class Main : Node, IDataSetHandler
     [Export] private DataSetController _dataSetController5;
 
     [Export] private Button _grabByViewPosition;
+    [Export] private Button _grabByDataPosition;
     [Export] private Button _grabByMatching;
     [Export] private Button _grabByPattern;
     [Export] private Button _killFocus;
@@ -50,7 +51,7 @@ public partial class Main : Node, IDataSetHandler
     private float _currentDuration;
     private List<DataModel> _currentDataSet;
 
-    private Vector2I _currentStartPositionHandler;
+    private Vector2I _currentStartPosition;
     private SearchDirection _currentSearchDirection;
     
     private TweenSetup CurrentTweenSetup
@@ -149,7 +150,7 @@ public partial class Main : Node, IDataSetHandler
         _currentFader = _listOfFaderTypes[faderDefaultSelection].Data;
         _currentTweener = _listOfTweenerTypes[tweenerDefaultSelection].Data;
         _currentPositioner = _listOfPositionerTypes[positionerDefaultSelection].Data;
-        _currentStartPositionHandler = _listOfStartPositionsTypes[startPositionHandlerDefaultSelection].Data;
+        _currentStartPosition = _listOfStartPositionsTypes[startPositionHandlerDefaultSelection].Data;
         _currentSearchDirection = _listOfSearchDirectionsTypes[searchDirectionDefaultSelection].Data;
         _currentDataSet = _listOfDataSets[searchDataSetIdDefaultSelection].Data switch
         {
@@ -166,7 +167,7 @@ public partial class Main : Node, IDataSetHandler
         DataBindings.Bind(_listOfFaderTypes, _faderType, x => CurrentFader = x, faderDefaultSelection);
         DataBindings.Bind(_listOfTweenerTypes, _tweenerType, x => CurrentTweener = x, tweenerDefaultSelection);
         DataBindings.Bind(_listOfPositionerTypes, _positionerType, x => CurrentPositioner = x, positionerDefaultSelection);
-        DataBindings.Bind(_listOfStartPositionsTypes, _startPositionsType, x => _currentStartPositionHandler = x, startPositionHandlerDefaultSelection);
+        DataBindings.Bind(_listOfStartPositionsTypes, _startPositionsType, x => _currentStartPosition = x, startPositionHandlerDefaultSelection);
         DataBindings.Bind(_listOfSearchDirectionsTypes, _searchDirectionsType, x => _currentSearchDirection = x, searchDirectionDefaultSelection);
         DataBindings.Bind(
             _listOfDataSets,
@@ -184,26 +185,33 @@ public partial class Main : Node, IDataSetHandler
         DataBindings.Bind(
             _grabByViewPosition,
             () => _virtualGridView.GrabFocus(
-                FocusBy.View,
-                StartFrom.ViewPosition,
-                ViewCorner.TopLeft,
+                FocusPresets.ViewPosition,
+                _currentStartPosition,
+                _currentSearchDirection
+            )
+        );
+        DataBindings.Bind(
+            _grabByDataPosition,
+            () => _virtualGridView.GrabFocus(
+                FocusPresets.DataPosition,
+                _currentStartPosition,
                 _currentSearchDirection
             )
         );
         DataBindings.Bind(
             _grabByMatching,
             () => _virtualGridView.GrabFocus(
-                FocusBy.DataSetValue,
+                FocusFiners.Value,
                 _currentDataSet[(int)_searchDataSetIndex.Value]
             )
         );
         DataBindings.Bind(
             _grabByPattern,
             () => _virtualGridView.GrabFocus(
-                FocusBy.DataSetPredicate,
+                FocusFiners.Predicate,
                 x => x.Message.Contains(_matchPattern.Text, StringComparison.OrdinalIgnoreCase)
             )
-        );
+        );   
         
         DataBindings.Bind(_killFocus, () => GetViewport().GuiReleaseFocus());
 
