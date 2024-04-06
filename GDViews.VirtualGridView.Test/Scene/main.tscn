@@ -242,7 +242,7 @@ focus_mode = 0
 [node name="Text2" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue"]
 auto_translate_mode = 1
 layout_mode = 2
-text = "中ID为"
+text = "中下标为"
 
 [node name="SpinBox" type="SpinBox" parent="MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue"]
 layout_mode = 2
