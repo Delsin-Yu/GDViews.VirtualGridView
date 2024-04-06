@@ -63,7 +63,7 @@ public partial class Main
     {
         ("左上", ViewCorner.TopLeft),
         ("右上", ViewCorner.TopRight),
-        ("坐下", ViewCorner.BottomLeft),
+        ("左下", ViewCorner.BottomLeft),
         ("右下", ViewCorner.BottomRight),
         ("中央", Vector2I.Zero),
     };
