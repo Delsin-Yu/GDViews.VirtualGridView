@@ -10,6 +10,14 @@ public interface IPredicateDataFocusFinder
         ref readonly ReadOnlyDataArray<TDataType> currentView,
         out int rowIndex,
         out int columnIndex
+    );   
+    
+    public bool TryResolveFocus<TDataType, TExtraArgument>(
+        ref readonly Func<TDataType, TExtraArgument, bool> predicate,
+        ref readonly ReadOnlyDataArray<TDataType> currentView,
+        in TExtraArgument extraArgument,
+        out int rowIndex,
+        out int columnIndex
     );
 }
 

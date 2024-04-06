@@ -13,10 +13,23 @@ public static partial class FocusFiners
             out int columnIndex
         ) =>
             currentView.TryGetData(
-                (data, predicate) => predicate(data),
+                static (data, predicate) => predicate(data),
                 matchingArgument,
                 out rowIndex,
                 out columnIndex
             );
+
+        public bool TryResolveFocus<TDataType, TExtraArgument>(
+            ref readonly Func<TDataType, TExtraArgument, bool> predicate,
+            ref readonly ReadOnlyDataArray<TDataType> currentView,
+            in TExtraArgument extraArgument,
+            out int rowIndex,
+            out int columnIndex
+        ) =>  currentView.TryGetData(
+            static (data, composite) => composite.predicate(data, composite.extraArgument),
+            (predicate, extraArgument),
+            out rowIndex,
+            out columnIndex
+        );
     }
 }

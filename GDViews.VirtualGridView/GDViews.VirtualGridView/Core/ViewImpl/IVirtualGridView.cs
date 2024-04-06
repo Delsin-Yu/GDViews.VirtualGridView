@@ -52,6 +52,12 @@ public interface IVirtualGridView<TDataType>
         Predicate<TDataType> matchingArgument
     );
 
+    bool GrabFocus<TExtraArgument>(
+        IPredicateDataFocusFinder focusFinder,
+        Func<TDataType, TExtraArgument, bool> matchingArgument,
+        TExtraArgument extraArgument
+    );
+
     bool GrabFocus<TArgument>(
         IDataFocusFinder<TArgument> focusFinder,
         IDataStartHandler<TArgument> startPositionHandler,

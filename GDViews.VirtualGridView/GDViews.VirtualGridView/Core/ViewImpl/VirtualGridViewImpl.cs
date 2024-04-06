@@ -165,6 +165,18 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             out var dataSetColumnIndex
         ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
     }
+    
+    public bool GrabFocus<TMatchingExtraArgument>(IPredicateDataFocusFinder focusFinder, Func<TDataType, TMatchingExtraArgument, bool> matchingArgument, TMatchingExtraArgument extraArgument)
+    {
+        var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
+        return focusFinder.TryResolveFocus(
+            in matchingArgument,
+            in wrapper,
+            extraArgument,
+            out var dataSetRowIndex,
+            out var dataSetColumnIndex
+        ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
+    }
 
     public bool GrabFocus<TArgument>(IDataFocusFinder<TArgument> focusFinder, IDataStartHandler<TArgument> startPositionHandler, TArgument matchingArgument, SearchDirection searchDirection)
     {

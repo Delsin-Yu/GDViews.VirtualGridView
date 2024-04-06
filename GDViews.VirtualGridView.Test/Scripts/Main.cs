@@ -173,13 +173,13 @@ public partial class Main : Node, IDataSetHandler
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        DataBindings.Bind(_duration, (value, instance) => instance.CurrentDuration = value, _currentDuration, this);
-        DataBindings.Bind(_listOfTweens, _tweenType, (x, instance) => instance.CurrentTweenSetup = x, tweenSetupDefaultSelection, this);
-        DataBindings.Bind(_listOfFaderTypes, _faderType, (x, instance) => instance.CurrentFader = x, faderDefaultSelection, this);
-        DataBindings.Bind(_listOfTweenerTypes, _tweenerType, (x, instance) => instance.CurrentTweener = x, tweenerDefaultSelection, this);
-        DataBindings.Bind(_listOfPositionerTypes, _positionerType, (x, instance) => instance.CurrentPositioner = x, positionerDefaultSelection, this);
-        DataBindings.Bind(_listOfStartPositionsTypes, _startPositionsType, (x, instance) => instance._currentStartPosition = x, startPositionHandlerDefaultSelection, this);
-        DataBindings.Bind(_listOfSearchDirectionsTypes, _searchDirectionsType, (x, instance) => instance._currentSearchDirection = x, searchDirectionDefaultSelection, this);
+        DataBindings.Bind(_duration, static (value, instance) => instance.CurrentDuration = value, _currentDuration, this);
+        DataBindings.Bind(_listOfTweens, _tweenType, static (x, instance) => instance.CurrentTweenSetup = x, tweenSetupDefaultSelection, this);
+        DataBindings.Bind(_listOfFaderTypes, _faderType, static (x, instance) => instance.CurrentFader = x, faderDefaultSelection, this);
+        DataBindings.Bind(_listOfTweenerTypes, _tweenerType, static (x, instance) => instance.CurrentTweener = x, tweenerDefaultSelection, this);
+        DataBindings.Bind(_listOfPositionerTypes, _positionerType, static (x, instance) => instance.CurrentPositioner = x, positionerDefaultSelection, this);
+        DataBindings.Bind(_listOfStartPositionsTypes, _startPositionsType, static (x, instance) => instance._currentStartPosition = x, startPositionHandlerDefaultSelection, this);
+        DataBindings.Bind(_listOfSearchDirectionsTypes, _searchDirectionsType, static (x, instance) => instance._currentSearchDirection = x, searchDirectionDefaultSelection, this);
         DataBindings.Bind(
             _listOfDataSets,
             _searchDataSet,
@@ -195,11 +195,11 @@ public partial class Main : Node, IDataSetHandler
 
         DataBindings.Bind(_enableClipChildren, (on, instance) => instance._container.ClipContents = on, true, this);
 
-        DataBindings.Bind(_grabByViewPosition, instance => instance._virtualGridView.GrabFocus(FocusPresets.ViewPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
-        DataBindings.Bind(_grabByDataPosition, instance => instance._virtualGridView.GrabFocus(FocusPresets.DataPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
-        DataBindings.Bind(_grabByMatching, instance => instance._virtualGridView.GrabFocus(FocusPresets.Value, instance._currentDataSet[(int)instance._searchDataSetIndex.Value]), this);
-        DataBindings.Bind(_grabByPattern, instance => instance._virtualGridView.GrabFocus(FocusPresets.Predicate, x => x.Message.Contains(instance._matchPattern.Text, StringComparison.OrdinalIgnoreCase)), this);
-        DataBindings.Bind(_killFocus, instance => instance.GetViewport().GuiReleaseFocus(), this);
+        DataBindings.Bind(_grabByViewPosition, static instance => instance._virtualGridView.GrabFocus(FocusPresets.ViewPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
+        DataBindings.Bind(_grabByDataPosition, static instance => instance._virtualGridView.GrabFocus(FocusPresets.DataPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
+        DataBindings.Bind(_grabByMatching, static instance => instance._virtualGridView.GrabFocus(FocusPresets.Value, instance._currentDataSet[(int)instance._searchDataSetIndex.Value]), this);
+        DataBindings.Bind(_grabByPattern, static instance => instance._virtualGridView.GrabFocus(FocusPresets.Predicate, static (x, instance) => x.Message.Contains(instance._matchPattern.Text, StringComparison.OrdinalIgnoreCase), instance), this);
+        DataBindings.Bind(_killFocus, static instance => instance.GetViewport().GuiReleaseFocus(), this);
 
         _virtualGridView = VirtualGridView
             .Create(7, 7)
