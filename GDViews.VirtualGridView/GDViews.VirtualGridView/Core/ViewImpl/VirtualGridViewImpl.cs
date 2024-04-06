@@ -632,6 +632,11 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         }
     }
 
+    /// <summary>
+    /// This method tries to find the best next candidate
+    /// in the given <paramref name="moveDirection"/>
+    /// of the provided <paramref name="rowIndex"/> and <paramref name="columnIndex"/>.
+    /// </summary>
     public void MoveAndGrabFocus(MoveDirection moveDirection, int rowIndex, int columnIndex)
     {
         ReadOnlySpan<Vector2I> searchDirection = moveDirection switch
@@ -646,6 +651,12 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         var absoluteStart = new Vector2I(ViewRowIndex + rowIndex, ViewColumnIndex + columnIndex) + searchDirection[0];
         var readOnlyDataArray = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
 
+        // TODO: Relying on BFS for searching for matching is stupid,
+        // this leads to serious performance degradation when
+        // the BFS walks through a very long distance.
+        // We should either:
+        //     Develop a new matching algorithm.
+        //     Optimize the hell out of the BFSCore, as accessing cell data involves a lot of calculations.
         if (!FocusBy.BFSSearch.BFSCore(
                 in absoluteStart,
                 in readOnlyDataArray,
