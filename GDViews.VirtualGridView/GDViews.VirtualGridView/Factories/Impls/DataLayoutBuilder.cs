@@ -114,16 +114,23 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
     private class HorizontalDataInspector<T>(AnnotatedDataSet<T>[] dataMap, int viewColumns, int viewRows) : IDataInspector<T>
     {
         private readonly NullableData<T>[] _view = new NullableData<T>[viewColumns];
+        private readonly bool[] _rowCalculationBuffer = new bool[dataMap.Length];
 
         public void GetDataSetCurrentMetrics(out int rows, out int columns)
         {
-            rows = 0;
-            foreach (ref readonly var mapRow in dataMap.AsSpan())
-            {
-                if (!mapRow.DataSet.TryGetGridElement(mapRow.LocalIndex, 0, out _)) continue;
-                rows++;
-            }
             columns = dataMap.Max(x => x.DataSet.GetDynamicMetric());
+
+            var dataMapSpan = dataMap.AsSpan();
+            var bufferSpan = _rowCalculationBuffer.AsSpan();
+            for (var index = 0; index < dataMapSpan.Length; index++)
+            {
+                var mapRow = dataMapSpan[index];
+                bufferSpan[index] = mapRow.DataSet.TryGetGridElement(mapRow.LocalIndex, 0, out _);
+            }
+            rows = bufferSpan.LastIndexOf(true);
+            if (rows != -1) rows++;
+            else rows = 0;
+            bufferSpan.Clear();
         }
 
         /*
@@ -167,18 +174,16 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
             var viewSpan = _view.AsSpan();
             NullableData<T>.Clear(ref viewSpan);
 
-            var actualRow = rowOffset + rowIndex;
+            var actualRow = rowOffset + rowIndex * viewRows;
 
             if (actualRow < 0 || dataMap.Length <= actualRow)
                 return NullableData.Null<T>();
 
-            var dstColumnIndex = columnOffset + viewColumns;
-
             var (dataSet, localIndex) = dataMap[actualRow];
 
-            var i = columnOffset + columnIndex;
+            var i = columnOffset * viewColumns + columnIndex;
             
-            if (i >= 0 && i < dstColumnIndex && dataSet.TryGetGridElement(localIndex, i, out var element))
+            if (i >= 0 && dataSet.TryGetGridElement(localIndex, i, out var element))
                 return NullableData.Create(element);
             
             return NullableData.Null<T>();
@@ -188,16 +193,22 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
     private class VerticalDataInspector<T>(AnnotatedDataSet<T>[] dataMap, int viewColumns, int viewRows) : IDataInspector<T>
     {
         private readonly NullableData<T>[] _view = new NullableData<T>[viewColumns];
+        private readonly bool[] _columnCalculationBuffer = new bool[dataMap.Length];
 
         public void GetDataSetCurrentMetrics(out int rows, out int columns)
         {
             rows = dataMap.Max(x => x.DataSet.GetDynamicMetric());
-            columns = 0;
-            foreach (ref readonly var mapColumn in dataMap.AsSpan())
+            var dataMapSpan = dataMap.AsSpan();
+            var bufferSpan = _columnCalculationBuffer.AsSpan();
+            for (var index = 0; index < dataMapSpan.Length; index++)
             {
-                if (!mapColumn.DataSet.TryGetGridElement(mapColumn.LocalIndex, 0, out _)) continue;
-                columns++;
+                var mapColumn = dataMapSpan[index];
+                bufferSpan[index] = mapColumn.DataSet.TryGetGridElement(mapColumn.LocalIndex, 0, out _);
             }
+            columns = bufferSpan.LastIndexOf(true);
+            if (columns != -1) columns++;
+            else columns = 0;
+            bufferSpan.Clear();
         }
 
         /*
@@ -250,13 +261,11 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
             if (dataMap.Length <= columnOffset)
                 return NullableData.Null<T>();
 
-            var actualRow = rowOffset + rowIndex;
+            var actualRow = rowOffset + rowIndex * viewRows;
 
-            var dstColumnIndex = columnOffset + viewColumns;
+            var i = columnOffset * viewColumns + columnIndex;
 
-            var i = columnOffset + columnIndex;
-
-            if (i >= dstColumnIndex || i < 0 || dataMap.Length <= i) return NullableData.Null<T>();
+            if (i >= dataMap.Length || i < 0 || dataMap.Length <= i) return NullableData.Null<T>();
 
             var (dataSet, localIndex) = dataMap[i];
 

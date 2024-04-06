@@ -62,7 +62,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         TryGetDataPositionRelativeToViewport(_equalityComparerEquals, out var relativeRowIndex, out var relativeColumnIndex, currentSelectedData) &&
         TryGrabFocusCore(relativeRowIndex, relativeColumnIndex) ||
         TryGrabFocusCore(_currentSelectedViewRowIndex, _currentSelectedViewColumnIndex) ||
-        GrabFocus(FocusFinders.ByPosition, StartPositions.TopLeft, SearchDirections.RightDown);
+        GrabFocus(FocusBy.View, StartFrom.ViewPosition, ViewCorner.TopLeft, SearchDirections.RightDown);
 
     private bool TryGetDataPositionRelativeToViewport(Func<TDataType, TDataType, bool> comparer, out int rowIndex, out int columnIndex, TDataType data)
     {
@@ -129,7 +129,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     }
 
 
-    public bool GrabFocus(IViewFocusFinder focusFinder, StartPositionHandler startPositionHandler, SearchDirection searchDirection)
+    public bool GrabFocus<TArgument>(IViewFocusFinder<TArgument> focusFinder, ViewStartPositionHandler<TArgument> startPositionHandler, TArgument argument, SearchDirection searchDirection)
     {
         var wrapper = new ReadOnlyViewArray(_currentView, ViewRows, ViewColumns, BackingResolver);
         var span = searchDirection.GetSpan();
@@ -137,6 +137,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             in wrapper,
             in span,
             startPositionHandler,
+            in argument,
             out var viewRowIndex,
             out var viewColumnIndex
         ) && TryGrabFocusCore(viewRowIndex, viewColumnIndex);
@@ -165,47 +166,69 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             out var dataSetColumnIndex
         ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
     }
-    
-    public bool GrabFocus<TMatchingArgument>(IDataFocusFinder<TMatchingArgument> focusFinder, in TMatchingArgument matchingArgument)
+
+    public bool GrabFocus<TArgument>(IDataFocusFinder<TArgument> focusFinder, DataStartPositionHandler<TDataType, TArgument> startPositionHandler, TArgument matchingArgument, SearchDirection searchDirection)
     {
         var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
+        var span = searchDirection.GetSpan();
         return focusFinder.TryResolveFocus(
-            in matchingArgument,
             in wrapper,
+            in span,
+            startPositionHandler,
+            in matchingArgument,
             out var rowIndex,
             out var columnIndex
         ) && TryGrabFocusCore(rowIndex, columnIndex);
     }
-
-    private VirtualGridViewItem<TDataType, TExtraArgument>.CurrentInfo ConstructInfo(
+    
+    private VirtualGridViewItem<TDataType, TExtraArgument>.CellInfo ConstructInfo(
+        TDataType data,
         int rowIndex,
         int columnIndex,
+        int viewportMinRowIndex,
+        int viewportMinColumnIndex,
+        int dataSetMinRowIndex,
+        int dataSetMinColumnIndex,
+        int viewportMaxRowIndex,
+        int viewportMaxColumnIndex,
         int dataSetMaxRowIndex,
-        int dataSetMaxColumnIndex,
-        TDataType data)
+        int dataSetMaxColumnIndex
+    )
     {
-        var edgeElementType = EdgeElementType.None;
+        var definedViewEdgeType = EdgeType.None;
 
-        if (rowIndex == 0) edgeElementType |= EdgeElementType.Up;
-        if (columnIndex == 0) edgeElementType |= EdgeElementType.Left;
-        if (rowIndex == _maxViewRowIndex) edgeElementType |= EdgeElementType.Down;
-        if (columnIndex == _maxViewColumnIndex) edgeElementType |= EdgeElementType.Right;
+        if (rowIndex == 0) definedViewEdgeType |= EdgeType.Up;
+        if (columnIndex == 0) definedViewEdgeType |= EdgeType.Left;
+        if (rowIndex == ViewRows - 1) definedViewEdgeType |= EdgeType.Down;
+        if (columnIndex == ViewColumns - 1) definedViewEdgeType |= EdgeType.Right;
+
+
+        var viewEdgeType = EdgeType.None;
+
+        if (rowIndex == viewportMinRowIndex) viewEdgeType |= EdgeType.Up;
+        if (columnIndex == viewportMinColumnIndex) viewEdgeType |= EdgeType.Left;
+        if (rowIndex == viewportMaxRowIndex) viewEdgeType |= EdgeType.Down;
+        if (columnIndex == viewportMaxColumnIndex) viewEdgeType |= EdgeType.Right;
 
         var absRowIndex = rowIndex + ViewRowIndex;
         var absColumnIndex = columnIndex + ViewColumnIndex;
 
-        if (absRowIndex == 0) edgeElementType &= ~ EdgeElementType.Up;
-        if (absColumnIndex == 0) edgeElementType &= ~ EdgeElementType.Left;
-        if (absRowIndex == dataSetMaxRowIndex) edgeElementType &= ~ EdgeElementType.Down;
-        if (absColumnIndex == dataSetMaxColumnIndex) edgeElementType &= ~ EdgeElementType.Right;
+        var dataSetEdgeType = EdgeType.None;
+        if (absRowIndex == dataSetMinRowIndex) dataSetEdgeType |= EdgeType.Up;
+        if (absColumnIndex == dataSetMinColumnIndex) dataSetEdgeType |= EdgeType.Left;
+        if (absRowIndex == dataSetMaxRowIndex) dataSetEdgeType |= EdgeType.Down;
+        if (absColumnIndex == dataSetMaxColumnIndex) dataSetEdgeType |= EdgeType.Right;
 
-        return new(
+        var info = new VirtualGridViewItem<TDataType, TExtraArgument>.CellInfo(
             this,
             rowIndex,
             columnIndex,
-            edgeElementType,
+            definedViewEdgeType,
+            viewEdgeType,
+            dataSetEdgeType,
             data
         );
+        return info;
     }
 
     internal VirtualGridViewImpl(
@@ -399,6 +422,12 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         TDataType data,
         int rowIndex,
         int columnIndex,
+        int viewportMinRowIndex,
+        int viewportMinColumnIndex,
+        int dataSetMinRowIndex,
+        int dataSetMinColumnIndex,
+        int viewportMaxRowIndex,
+        int viewportMaxColumnIndex,
         int dataSetMaxRowIndex,
         int dataSetMaxColumnIndex
     )
@@ -415,12 +444,24 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
         instance.FocusMode = Control.FocusModeEnum.All;
         instance.MouseFilter = Control.MouseFilterEnum.Pass;
-        instance.DrawGridItem(ConstructInfo(rowIndex, columnIndex, dataSetMaxRowIndex, dataSetMaxColumnIndex, data));
-
+        instance.DrawGridItem(ConstructInfo(
+            data,
+            rowIndex,
+            columnIndex,
+            viewportMinRowIndex,
+            viewportMinColumnIndex,
+            dataSetMinRowIndex,
+            dataSetMinColumnIndex,
+            viewportMaxRowIndex,
+            viewportMaxColumnIndex,
+            dataSetMaxRowIndex,
+            dataSetMaxColumnIndex
+        ));
+        
         return instance;
     }
 
-    public void FocusTo(VirtualGridViewItem<TDataType, TExtraArgument>.CurrentInfo info)
+    public void FocusTo(VirtualGridViewItem<TDataType, TExtraArgument>.CellInfo info)
     {
         _currentSelectedViewRowIndex = info.RowIndex;
         _currentSelectedViewColumnIndex = info.ColumnIndex;
@@ -445,84 +486,139 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         button.Hide();
     }
 
-    public void Redraw() => Redraw(out _, out _);
+    public void Redraw() =>
+        Redraw(
+            out _, out _, out _, out _,
+            out _, out _, out _, out _
+        );
 
-
-    private void Redraw(out int dataSetMaxRowIndex, out int dataSetMaxColumnIndex)
+    private void Redraw(
+        out int viewportMinRowIndex,
+        out int viewportMinColumnIndex,
+        out int dataSetMinRowIndex,
+        out int dataSetMinColumnIndex,
+        out int viewportMaxRowIndex,
+        out int viewportMaxColumnIndex,
+        out int dataSetMaxRowIndex,
+        out int dataSetMaxColumnIndex
+    )
     {
-        {
-            _dataInspector.GetDataSetCurrentMetrics(out var rows, out var columns);
-            dataSetMaxRowIndex = rows - 1;
-            dataSetMaxColumnIndex = columns - 1;
-        }
+        _dataInspector.GetDataSetCurrentMetrics(out var rows, out var columns);
+        
+        viewportMinRowIndex = Mathf.Max(ViewRows - 1, 0);
+        viewportMinColumnIndex = Mathf.Max(ViewColumns - 1, 0);
+        dataSetMinRowIndex = 0;
+        dataSetMinColumnIndex = 0;
+        
+        viewportMaxRowIndex = 0;
+        viewportMaxColumnIndex = 0;
+        dataSetMaxRowIndex = rows - 1;
+        dataSetMaxColumnIndex = columns - 1;
 
         for (var rowIndex = 0; rowIndex < ViewRows; rowIndex++)
         {
             var span = _dataInspector.InspectViewColumn(rowIndex, ViewColumnIndex, ViewRowIndex);
             for (var columnIndex = 0; columnIndex < ViewColumns; columnIndex++)
             {
-                var currentDataValue = span[columnIndex];
-                var currentViewItem = _currentView[rowIndex, columnIndex];
+                var dataSetValue = span[columnIndex];
+                var oldViewItem = _currentView[rowIndex, columnIndex];
+                var newViewItem = _nextView[rowIndex, columnIndex];
 
-                if (IsMatch(
-                        ref currentDataValue,
-                        ref currentViewItem.Data,
-                        out var currentDataIsNull,
-                        out var currentViewDataIsNull
-                    ))
+                // Current view is null
+                if (oldViewItem.AssignedButton is null)
                 {
-                    if (!currentViewDataIsNull)
-                    {
-                        currentViewItem.AssignedButton!.Info =
-                            ConstructInfo(
-                                rowIndex,
-                                columnIndex,
-                                dataSetMaxRowIndex,
-                                dataSetMaxColumnIndex,
-                                currentDataValue.Unwrap()
-                            );
-                    }
-
-                    continue;
+                    // Set or not set to new value
+                    newViewItem.Data = dataSetValue;
                 }
-
-                if (!currentViewDataIsNull)
+                // Current view is not null
+                else
                 {
-                    var assignedButton = currentViewItem.AssignedButton!;
+                    // Set to new value
+                    newViewItem.Data = dataSetValue;
+                    // If new value is equal to old, set the button as well
+                    if (dataSetValue.IsEqual(oldViewItem.Data, _equalityComparer))
+                    {
+                        newViewItem.AssignedButton = oldViewItem.AssignedButton;
+                    }
+                }
+                
+                if(dataSetValue.IsNull) continue;
+                
+                viewportMinRowIndex = Math.Min(viewportMinRowIndex, rowIndex);
+                viewportMinColumnIndex = Math.Min(viewportMinColumnIndex, columnIndex);
+                viewportMaxRowIndex = Math.Max(viewportMaxRowIndex, rowIndex);
+                viewportMaxColumnIndex = Math.Max(viewportMaxColumnIndex, columnIndex);
+            }
+        }
+        
+        for (var rowIndex = 0; rowIndex < ViewRows; rowIndex++)
+        for (var columnIndex = 0; columnIndex < ViewColumns; columnIndex++)
+        {
+            var currentViewItem = _currentView[rowIndex, columnIndex];
+            var nextViewItem = _nextView[rowIndex, columnIndex];
+
+            // Initialize new item or empty
+            if (nextViewItem.AssignedButton == null)
+            {
+                // Collect current button
+                if (currentViewItem.AssignedButton != null)
+                {
+                    var assignedButton = currentViewItem.AssignedButton;
                     ElementTweener.KillTween(assignedButton);
                     _movingOutControls.Add(assignedButton);
                     ElementFader.Disappear(assignedButton, _collectInvincibleControlHandler);
-                    currentViewItem.AssignedButton = null;
-                    currentViewItem.Data = NullableData.Null<TDataType>();
+                    nextViewItem.AssignedButton = null;
                 }
 
-                if (currentDataIsNull) continue;
+                if (nextViewItem.Data.TryUnwrap(out var newData))
+                {
+                    var buttonInstance = GetAndInitializeButtonInstance(
+                        newData,
+                        rowIndex,
+                        columnIndex,
+                        viewportMinRowIndex,
+                        viewportMinColumnIndex,
+                        dataSetMinRowIndex,
+                        dataSetMinColumnIndex,
+                        viewportMaxRowIndex,
+                        viewportMaxColumnIndex,
+                        dataSetMaxRowIndex,
+                        dataSetMaxColumnIndex
+                    );
 
-                currentViewItem.Data = currentDataValue;
-
-                var unwrappedData = currentDataValue.Unwrap();
-                var button = GetAndInitializeButtonInstance(unwrappedData, rowIndex, columnIndex, dataSetMaxRowIndex, dataSetMaxColumnIndex);
-                button.Position = _layoutGrid.GetGridElementPosition(VirtualGridView.CreatePosition(rowIndex, columnIndex));
-                button.CallAppear();
-                ElementTweener.KillTween(button);
-                ElementFader.Appear(button);
-                currentViewItem.AssignedButton = button;
+                    buttonInstance.Position = _layoutGrid.GetGridElementPosition(VirtualGridView.CreatePosition(rowIndex, columnIndex));
+                    buttonInstance.CallAppear();
+                    ElementTweener.KillTween(buttonInstance);
+                    ElementFader.Appear(buttonInstance);
+                    nextViewItem.AssignedButton = buttonInstance;
+                }
+            }
+            // No change
+            else
+            {
+                nextViewItem.AssignedButton!.Info = ConstructInfo(
+                    nextViewItem.Data.Unwrap(),
+                    rowIndex,
+                    columnIndex,
+                    viewportMinRowIndex,
+                    viewportMinColumnIndex,
+                    dataSetMinRowIndex,
+                    dataSetMinColumnIndex,
+                    viewportMaxRowIndex,
+                    viewportMaxColumnIndex,
+                    dataSetMaxRowIndex,
+                    dataSetMaxColumnIndex
+                );
             }
         }
-    }
+        
+        (_currentView, _nextView) = (_nextView, _currentView);
 
-    private bool IsMatch(ref readonly NullableData<TDataType> a, ref readonly NullableData<TDataType> b, out bool aIsNull, out bool bIsNull)
-    {
-        aIsNull = a.IsNull;
-        bIsNull = b.IsNull;
-
-        if (aIsNull == bIsNull)
+        foreach (var dataView in _nextView)
         {
-            if (aIsNull) return true;
-            return _equalityComparer.Equals(a.Unwrap(), b.Unwrap());
+            dataView.Data = NullableData.Null<TDataType>();
+            dataView.AssignedButton = null;
         }
-
-        return false;
     }
 
     private void ApplyMovementOffset(Vector2I offset)
@@ -538,13 +634,42 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     public void MoveAndGrabFocus(MoveDirection moveDirection, int rowIndex, int columnIndex)
     {
-        Move(moveDirection);
-        _currentView[rowIndex, columnIndex].AssignedButton?.GrabFocus();
+        ReadOnlySpan<Vector2I> searchDirection = moveDirection switch
+        {
+            MoveDirection.Up => [SearchDirections.SearchUp, SearchDirections.SearchLeft, SearchDirections.SearchRight],
+            MoveDirection.Down => [SearchDirections.SearchDown, SearchDirections.SearchRight, SearchDirections.SearchLeft],
+            MoveDirection.Left => [SearchDirections.SearchLeft, SearchDirections.SearchUp, SearchDirections.SearchDown],
+            MoveDirection.Right => [SearchDirections.SearchRight, SearchDirections.SearchUp, SearchDirections.SearchDown],
+            _ => throw new ArgumentOutOfRangeException(nameof(moveDirection), moveDirection, null)
+        };
+        
+        var absoluteStart = new Vector2I(ViewRowIndex + rowIndex, ViewColumnIndex + columnIndex) + searchDirection[0];
+        var readOnlyDataArray = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
+
+        if (!FocusBy.BFSSearch.BFSCore(
+                in absoluteStart,
+                in readOnlyDataArray,
+                in searchDirection,
+                out var targetAbsoluteRowIndex,
+                out var targetAbsoluteColumnIndex
+            )) return;
+
+        if(!readOnlyDataArray.TryGetData(targetAbsoluteRowIndex, targetAbsoluteColumnIndex, out var data)) return;
+        GrabFocus(FocusBy.DataSetValue, data);
     }
 
     public void Move(MoveDirection moveDirection)
     {
-        Redraw(out var dataSetMaxRowIndex, out var dataSetMaxColumnIndex);
+        Redraw(
+            out var viewportMinRowIndex,
+            out var viewportMinColumnIndex,
+            out var dataSetMinRowIndex,
+            out var dataSetMinColumnIndex,
+            out var viewportMaxRowIndex,
+            out var viewportMaxColumnIndex,
+            out var dataSetMaxRowIndex,
+            out var dataSetMaxColumnIndex
+        );
         Vector2I moveDirectionVector;
         int isMovingOutLineIndex;
         int isMovingInLineIndex;
@@ -592,6 +717,11 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         ViewRowIndex += moveDirectionVector.X;
         ViewColumnIndex += moveDirectionVector.Y;
 
+        var resolvedViewportMinRowIndex = Mathf.Max(ViewRows - 1, 0);
+        var resolvedViewportMinColumnIndex = Mathf.Max(ViewColumns - 1, 0);
+        var resolvedViewportMaxRowIndex = 0;
+        var resolvedViewportMaxColumnIndex = 0;
+        
         const byte EDGE_NORMAL = 0;
         const byte EDGE_OUT = 1;
         const byte EDGE_IN = 2;
@@ -614,7 +744,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             var currentButton = currentViewItem.AssignedButton;
 
             if (currentButton is null) continue;
-
+            
             var currentGridIndex = new Vector2I(rowIndex, columnIndex);
             var movementType = GetEdgeType(rowIndex, columnIndex);
 
@@ -624,15 +754,20 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                 case EDGE_NORMAL:
                 case EDGE_IN:
                     targetGridPosition = currentGridIndex - moveDirectionVector;
-                    currentButton.CallMove(
-                        ConstructInfo(
-                            targetGridPosition.X,
-                            targetGridPosition.Y,
-                            dataSetMaxRowIndex,
-                            dataSetMaxColumnIndex,
-                            currentViewItem.Data.Unwrap()
-                        )
+                    var info = ConstructInfo(
+                        currentViewItem.Data.Unwrap(),
+                        targetGridPosition.X,
+                        targetGridPosition.Y,
+                        viewportMinRowIndex,
+                        viewportMinColumnIndex,
+                        dataSetMinRowIndex,
+                        dataSetMinColumnIndex,
+                        viewportMaxRowIndex,
+                        viewportMaxColumnIndex,
+                        dataSetMaxRowIndex,
+                        dataSetMaxColumnIndex
                     );
+                    currentButton.CallMove(info);
                     ElementTweener.MoveTo(currentButton, _layoutGrid.GetGridElementPosition(SwapXY(targetGridPosition)));
                     break;
                 case EDGE_OUT:
@@ -649,13 +784,20 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
             if (movementType is EDGE_NORMAL or EDGE_IN)
             {
-                var nextViewItem = _nextView[targetGridPosition.X, targetGridPosition.Y];
+                var targetRowIndex = targetGridPosition.X;
+                var targetColumnIndex = targetGridPosition.Y;
+                var nextViewItem = _nextView[targetRowIndex, targetColumnIndex];
                 nextViewItem.AssignedButton = currentButton;
                 nextViewItem.Data = currentViewItem.Data;
+                
+                resolvedViewportMinRowIndex = Math.Min(resolvedViewportMinRowIndex, targetRowIndex);
+                resolvedViewportMinColumnIndex = Math.Min(resolvedViewportMinColumnIndex, targetColumnIndex);
+                resolvedViewportMaxRowIndex = Math.Max(resolvedViewportMaxRowIndex, targetRowIndex);
+                resolvedViewportMaxColumnIndex = Math.Max(resolvedViewportMaxColumnIndex, targetColumnIndex);
             }
         }
 
-        // Resolve newly occured item
+        // Resolve newly occured item and update boundaries
         for (var rowIndex = 0; rowIndex < ViewRows; rowIndex++)
         {
             var span = _dataInspector.InspectViewColumn(rowIndex, ViewColumnIndex, ViewRowIndex);
@@ -669,6 +811,11 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
                 if (!currentValue.TryUnwrap(out var data)) continue;
 
+                resolvedViewportMinRowIndex = Math.Min(resolvedViewportMinRowIndex, rowIndex);
+                resolvedViewportMinColumnIndex = Math.Min(resolvedViewportMinColumnIndex, columnIndex);
+                resolvedViewportMaxRowIndex = Math.Max(resolvedViewportMaxRowIndex, rowIndex);
+                resolvedViewportMaxColumnIndex = Math.Max(resolvedViewportMaxColumnIndex, columnIndex);
+                
                 nextViewItem.Data = currentValue;
 
                 var movementType = GetEdgeType(rowIndex, columnIndex);
@@ -677,11 +824,19 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                     data,
                     rowIndex,
                     columnIndex,
+                    viewportMinRowIndex,
+                    viewportMinColumnIndex,
+                    dataSetMinRowIndex,
+                    dataSetMinColumnIndex,
+                    viewportMaxRowIndex,
+                    viewportMaxColumnIndex,
                     dataSetMaxRowIndex,
                     dataSetMaxColumnIndex
                 );
                 nextViewItem.AssignedButton = newButton;
-
+                var info = newButton.Info!.Value;
+                newButton.Info = info;
+                
                 switch (movementType)
                 {
                     case EDGE_IN:
@@ -697,6 +852,28 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                         throw new ArgumentException(nameof(movementType));
                 }
             }
+        }
+
+        for (var rowIndex = 0; rowIndex < ViewRows; rowIndex++)
+        for (var columnIndex = 0; columnIndex < ViewColumns; columnIndex++)
+        {
+            var nextViewItem = _nextView[rowIndex, columnIndex];
+            if(nextViewItem.Data.IsNull) continue;
+            var info = nextViewItem.AssignedButton!.Info!.Value;
+            
+            nextViewItem.AssignedButton.Info = ConstructInfo(
+                info.Data!,
+                info.RowIndex,
+                info.ColumnIndex,
+                resolvedViewportMinRowIndex,
+                resolvedViewportMinColumnIndex,
+                dataSetMinRowIndex,
+                dataSetMinColumnIndex,
+                resolvedViewportMaxRowIndex,
+                resolvedViewportMaxColumnIndex,
+                dataSetMaxRowIndex,
+                dataSetMaxColumnIndex
+            );
         }
 
         (_currentView, _nextView) = (_nextView, _currentView);

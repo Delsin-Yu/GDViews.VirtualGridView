@@ -1,4 +1,5 @@
-﻿using GodotViews.Core.FocusFinder;
+﻿using Godot;
+using GodotViews.Core.FocusFinder;
 
 namespace GodotViews.VirtualGrid.Examples;
 
@@ -55,17 +56,17 @@ public partial class Main
 
     private readonly (string Name, IElementPositioner Data)[] _listOfPositionerTypes =
     {
-        ("边缘对齐", ElementPositioners.CreateSide()),
-        ("居中对齐", ElementPositioners.CreateCentered()),
+        ("边缘对齐", ElementPositioners.Side),
+        ("居中对齐", ElementPositioners.Centered),
     };
 
-    private readonly (string Name, StartPositionHandler Data)[] _listOfStartPositionsTypes =
+    private readonly (string Name, Vector2I Data)[] _listOfStartPositionsTypes =
     {
-        ("左上", StartPositions.TopLeft),
-        ("右上", StartPositions.TopRight),
-        ("坐下", StartPositions.BottomLeft),
-        ("右下", StartPositions.BottomRight),
-        ("中央", StartPositions.Center),
+        ("左上", ViewCorner.TopLeft),
+        ("右上", ViewCorner.TopRight),
+        ("坐下", ViewCorner.BottomLeft),
+        ("右下", ViewCorner.BottomRight),
+        ("中央", Vector2I.Zero),
     };
 
     private readonly (string Name, SearchDirection Data)[] _listOfSearchDirectionsTypes =

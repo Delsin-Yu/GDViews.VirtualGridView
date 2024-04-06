@@ -9,7 +9,7 @@ public partial class View : VirtualGridViewItem<Main.DataModel>
 {
     protected override void _OnGridItemDraw(Main.DataModel data, Vector2I gridPosition)
     {
-        Text = $"{data.Index:D3}\n{data.Message}";
+        Text = $"{data.Index:D2}\n{data.Message}";
 
         var hue = data.DataSetIndex / 5f;
         var saturation = Mathf.Lerp(0.2f, 1f, Flip(data.Index, 10));
@@ -19,6 +19,7 @@ public partial class View : VirtualGridViewItem<Main.DataModel>
             1f
         );
     }
+
 
     private static float Flip(float value, float pageSize)
     {

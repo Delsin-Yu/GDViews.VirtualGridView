@@ -1,4 +1,6 @@
 ﻿using System;
+using Godot;
+using GodotViews.Core.FocusFinder;
 
 namespace GodotViews.VirtualGrid;
 
@@ -22,13 +24,15 @@ public interface IEqualityDataFocusFinder
     );
 }
 
-public interface IDataFocusFinder<TMatchingArgument>
+public interface IDataFocusFinder<TArgument>
 {
-    public bool TryResolveFocus<TDataType>(
-        ref readonly TMatchingArgument matchingArgument,
+    bool TryResolveFocus<TDataType>(
         ref readonly ReadOnlyDataArray<TDataType> currentView,
-        out int dataSetRowIndex,
-        out int dataSetColumnIndex
+        ref readonly ReadOnlySpan<Vector2I> searchDirection,
+        DataStartPositionHandler<TDataType, TArgument> dataStartPositionHandler,
+        ref readonly TArgument argument, 
+        out int viewRowIndex,
+        out int viewColumnIndex
     );
 }
 

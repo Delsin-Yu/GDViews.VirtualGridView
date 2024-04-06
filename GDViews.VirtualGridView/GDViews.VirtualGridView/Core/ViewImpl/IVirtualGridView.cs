@@ -16,16 +16,18 @@ public interface IVirtualGridView<TDataType>
 
     bool GrabFocus();
 
-    bool GrabFocus(
-        IViewFocusFinder focusFinder,
-        StartPositionHandler startPositionHandler,
+    bool GrabFocus<TArgument>(
+        IViewFocusFinder<TArgument> focusFinder,
+        ViewStartPositionHandler<TArgument> startPositionHandler,
+        TArgument argument,
         SearchDirection searchDirection
     );
 
     bool GrabFocus(in ViewFocusFinderPreset focusFinderPreset) =>
         GrabFocus(
-            focusFinderPreset.ViewFocusFinder,
-            focusFinderPreset.StartPosition,
+            focusFinderPreset.FocusFinder,
+            focusFinderPreset.StartPositionHandler,
+            focusFinderPreset.Argument,
             focusFinderPreset.SearchDirection
         );
 
@@ -38,9 +40,11 @@ public interface IVirtualGridView<TDataType>
         IPredicateDataFocusFinder focusFinder,
         Predicate<TDataType> matchingArgument
     );
-    
-    bool GrabFocus<TMatchingArgument>(
-        IDataFocusFinder<TMatchingArgument> focusFinder,
-        in TMatchingArgument matchingArgument
+
+    bool GrabFocus<TArgument>(
+        IDataFocusFinder<TArgument> focusFinder,
+        DataStartPositionHandler<TDataType, TArgument> startPositionHandler,
+        TArgument matchingArgument,
+        SearchDirection searchDirection
     );
 }

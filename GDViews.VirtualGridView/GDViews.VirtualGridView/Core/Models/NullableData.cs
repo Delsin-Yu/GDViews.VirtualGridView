@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq.Expressions;
 
 namespace GodotViews.VirtualGrid;
 
@@ -44,5 +44,15 @@ internal readonly struct NullableData<T>(bool hasValue, T? value)
     {
         if (IsNull) return $"Null({typeof(T).Name})";
         return value!.ToString()!;
+    }
+
+    public bool IsEqual(NullableData<T> other, IEqualityComparer<T> comparer)
+    {
+        var currentHasValue = TryUnwrap(out var thisData);
+        var otherHasValue = other.TryUnwrap(out var otherData);
+
+        if (currentHasValue) return otherHasValue && comparer.Equals(thisData, otherData);
+        if (otherHasValue) return false;
+        return true;
     }
 }

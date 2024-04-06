@@ -1,10 +1,10 @@
-﻿using GodotViews.VirtualGrid;
+﻿using Godot;
+using GodotViews.VirtualGrid;
 
 namespace GodotViews.Core.FocusFinder;
 
-public readonly struct ViewFocusFinderPreset(IViewFocusFinder ViewFocusFinder, StartPositionHandler StartPosition, SearchDirection SearchDirection)
-{
-    public readonly IViewFocusFinder ViewFocusFinder = ViewFocusFinder;
-    public readonly StartPositionHandler StartPosition = StartPosition;
-    public readonly SearchDirection SearchDirection = SearchDirection;
-}
+public record struct ViewFocusFinderPreset(
+    IViewFocusFinder<Vector2I> FocusFinder,
+    ViewStartPositionHandler<Vector2I> StartPositionHandler,
+    Vector2I Argument,
+    SearchDirection SearchDirection);

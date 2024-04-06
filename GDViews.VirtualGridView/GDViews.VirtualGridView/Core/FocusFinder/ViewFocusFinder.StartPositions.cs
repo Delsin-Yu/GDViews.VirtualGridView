@@ -3,17 +3,33 @@ using GodotViews.VirtualGrid;
 
 namespace GodotViews.Core.FocusFinder;
 
-public static class StartPositions
+public static class ViewCorner
 {
-    private static Vector2I TopLeftHandler(ref readonly ReadOnlyViewArray view) => Vector2I.Zero;
-    private static Vector2I TopRightHandler(ref readonly ReadOnlyViewArray view) => new(0, view.ViewColumns - 1);
-    private static Vector2I BottomLeftHandler(ref readonly ReadOnlyViewArray view) => new(view.ViewRows - 1, 0);
-    private static Vector2I BottomRightHandler(ref readonly ReadOnlyViewArray view) => new(view.ViewRows - 1, view.ViewColumns - 1);
-    private static Vector2I CenterHandler(ref readonly ReadOnlyViewArray currentView) => new Vector2I(currentView.ViewRows, currentView.ViewColumns) / 2;
+    public static readonly Vector2I TopLeft = Vector2I.Zero;
+    public static readonly Vector2I TopRight = new(0, -1);
+    public static readonly Vector2I BottomLeft = new(-1, 0);
+    public static readonly Vector2I BottomRight = new(-1, -1);
+}
 
-    public static StartPositionHandler TopLeft { get; } = TopLeftHandler;
-    public static StartPositionHandler TopRight { get; } = TopRightHandler;
-    public static StartPositionHandler BottomLeft { get; } = BottomLeftHandler;
-    public static StartPositionHandler BottomRight { get; } = BottomRightHandler;
-    public static StartPositionHandler Center { get; } = CenterHandler;
+public static class StartFrom
+{
+    private static Vector2I PositionHandler(ref readonly ReadOnlyViewArray currentView, Vector2I position) =>
+        new(
+            position.X < 0 ? currentView.ViewRows + position.X : position.X,
+            position.Y < 0 ? currentView.ViewColumns + position.Y : position.Y
+        );  
+    
+    private static Vector2I PositionHandler<TDataType>(ref readonly ReadOnlyDataArray<TDataType> currentView, Vector2I position) =>
+        new(
+            position.X < 0 ? currentView.DataSetRows + position.X : position.X,
+            position.Y < 0 ? currentView.DataSetColumns + position.Y : position.Y
+        );
+
+    private static Vector2I CenterHandler(ref readonly ReadOnlyViewArray currentView, Vector2I offset) => 
+        new Vector2I(currentView.ViewRows, currentView.ViewColumns) / 2 + offset;
+    
+    public static DataStartPositionHandler<TDataType, Vector2I> DataSetPosition<TDataType>() => PositionHandler<TDataType>;
+    public static ViewStartPositionHandler<Vector2I> ViewPosition { get; } = PositionHandler;
+    public static ViewStartPositionHandler<Vector2I> ViewCenter { get; } = CenterHandler;
+
 }

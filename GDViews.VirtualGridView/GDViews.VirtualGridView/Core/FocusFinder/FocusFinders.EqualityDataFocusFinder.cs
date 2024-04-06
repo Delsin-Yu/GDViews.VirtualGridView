@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Godot;
 using GodotViews.VirtualGrid;
 
 namespace GodotViews.Core.FocusFinder;
 
-public static partial class FocusFinders
+public static partial class FocusBy
 {
     private class EqualityDataFocusFinder : IEqualityDataFocusFinder
     {
@@ -26,5 +27,28 @@ public static partial class FocusFinders
                 out dataSetRowIndex,
                 out dataSetColumnIndex
             );
+    }
+    
+        
+    private class BFSDataSetFocusFinder : IDataFocusFinder<Vector2I>
+    {
+        public bool TryResolveFocus<TDataType>(
+            ref readonly ReadOnlyDataArray<TDataType> currentView,
+            ref readonly ReadOnlySpan<Vector2I> searchDirection,
+            DataStartPositionHandler<TDataType, Vector2I> dataStartPositionHandler,
+            ref readonly Vector2I argument, 
+            out int viewRowIndex,
+            out int viewColumnIndex
+        )
+        {
+            var start = dataStartPositionHandler(in currentView, argument);
+            return BFSSearch.BFSCore(
+                in start,
+                in currentView,
+                in searchDirection,
+                out viewRowIndex,
+                out viewColumnIndex
+            );
+        }
     }
 }

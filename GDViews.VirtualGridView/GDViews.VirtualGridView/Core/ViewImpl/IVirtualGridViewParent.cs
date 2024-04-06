@@ -3,6 +3,6 @@
 internal interface IVirtualGridViewParent<TDataType, TExtraArgument>
 {
     TExtraArgument? ExtraArgument { get; }
-    void FocusTo(VirtualGridViewItem<TDataType, TExtraArgument>.CurrentInfo info);
+    void FocusTo(VirtualGridViewItem<TDataType, TExtraArgument>.CellInfo info);
     void MoveAndGrabFocus(MoveDirection moveDirection, int rowIndex, int columnIndex);
 }

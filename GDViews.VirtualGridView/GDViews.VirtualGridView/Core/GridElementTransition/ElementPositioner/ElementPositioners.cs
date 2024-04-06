@@ -2,7 +2,6 @@ namespace GodotViews.VirtualGrid;
 
 public static partial class ElementPositioners
 {
-    public static IElementPositioner CreateCentered() => new CenteredElementPositioner();
-    public static IElementPositioner CreateSide() => new SideElementPositioner();
+    public static IElementPositioner Centered { get; } = new CenteredElementPositioner();
+    public static IElementPositioner Side { get; } = new SideElementPositioner();
 }
-

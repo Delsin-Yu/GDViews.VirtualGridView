@@ -4,10 +4,10 @@ namespace GodotViews.Core.FocusFinder;
 
 public static class SearchDirections
 {
-    private static readonly Vector2I SearchRight = new(0, 1);
-    private static readonly Vector2I SearchDown = new(1, 0);
-    private static readonly Vector2I SearchLeft = new(0, -1);
-    private static readonly Vector2I SearchUp = new(-1, 0);
+    internal static readonly Vector2I SearchRight = new(0, 1);
+    internal static readonly Vector2I SearchDown = new(1, 0);
+    internal static readonly Vector2I SearchLeft = new(0, -1);
+    internal static readonly Vector2I SearchUp = new(-1, 0);
 
     private static readonly Vector2I[] _fourWayClockwise = [SearchUp, SearchRight, SearchDown, SearchLeft];
     private static readonly Vector2I[] _fourWayAnticlockwise = [SearchUp, SearchLeft, SearchDown, SearchRight];

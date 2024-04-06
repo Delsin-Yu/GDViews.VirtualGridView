@@ -50,7 +50,7 @@ public partial class Main : Node, IDataSetHandler
     private float _currentDuration;
     private List<DataModel> _currentDataSet;
 
-    private StartPositionHandler _currentStartPositionHandler;
+    private Vector2I _currentStartPositionHandler;
     private SearchDirection _currentSearchDirection;
     
     private TweenSetup CurrentTweenSetup
@@ -184,22 +184,23 @@ public partial class Main : Node, IDataSetHandler
         DataBindings.Bind(
             _grabByViewPosition,
             () => _virtualGridView.GrabFocus(
-                FocusFinders.ByPosition,
-                _currentStartPositionHandler,
+                FocusBy.View,
+                StartFrom.ViewPosition,
+                ViewCorner.TopLeft,
                 _currentSearchDirection
             )
         );
         DataBindings.Bind(
             _grabByMatching,
             () => _virtualGridView.GrabFocus(
-                FocusFinders.ByValue,
+                FocusBy.DataSetValue,
                 _currentDataSet[(int)_searchDataSetIndex.Value]
             )
         );
         DataBindings.Bind(
             _grabByPattern,
             () => _virtualGridView.GrabFocus(
-                FocusFinders.ByPredicate,
+                FocusBy.DataSetPredicate,
                 x => x.Message.Contains(_matchPattern.Text, StringComparison.OrdinalIgnoreCase)
             )
         );

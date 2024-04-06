@@ -55,5 +55,5 @@ public readonly struct ReadOnlyDataArray<TDataType>
         );
 
         return cellData.TryUnwrap(out data);
-    }
+    }    
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Godot;
 
 namespace GodotViews.VirtualGrid;
@@ -13,24 +14,43 @@ internal static class UIInputActionNames
 }
 
 [Flags]
-internal enum EdgeElementType : short
+public enum EdgeType : byte
 {
-    Up = 1 << 0,
-    Down = 1 << 2,
-    Left = 1 << 3,
-    Right = 1 << 4, 
+    Up = 0b1000,
+    Down = 0b0100,
+    Left = 0b0010,
+    Right = 0b0001,
     None = 0
 }
 
 
 public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : Button
 {
-    internal readonly record struct CurrentInfo(
-        IVirtualGridViewParent<TDataType, TExtraArgument> Parent,
-        int RowIndex,
-        int ColumnIndex,
-        EdgeElementType ElementType,
-        TDataType? Data);
+    public readonly struct CellInfo
+    {
+        internal CellInfo(IVirtualGridViewParent<TDataType, TExtraArgument> parent, int rowIndex, int columnIndex, EdgeType definedViewEdgeType, EdgeType viewEdgeType, EdgeType dataSetEdgeType, TDataType? data)
+        {
+            Parent = parent;
+            RowIndex = rowIndex;
+            ColumnIndex = columnIndex;
+            DefinedViewEdgeType = definedViewEdgeType;
+            ViewEdgeType = viewEdgeType;
+            DataSetEdgeType = dataSetEdgeType;
+            Data = data;
+        }
+
+        internal readonly IVirtualGridViewParent<TDataType, TExtraArgument> Parent;
+        public readonly int RowIndex;
+        public readonly int ColumnIndex;
+        public readonly EdgeType DefinedViewEdgeType;
+        public readonly EdgeType ViewEdgeType;
+        public readonly EdgeType DataSetEdgeType;
+        public readonly TDataType? Data;
+
+
+        public override string ToString() => 
+            $"({RowIndex},{ColumnIndex}), DefinedViewEdge: {DefinedViewEdgeType}, ViewEdge: {ViewEdgeType}, DataEdge: {DataSetEdgeType}, Data: {Data}";
+    }
 
     protected VirtualGridViewItem()
     {
@@ -45,52 +65,81 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         _OnPressedHandler = _OnGridItemPressed;
     }
 
-    internal CurrentInfo? Info { get; set; }
+    internal CellInfo? Info;
 
     private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnDrawHandler;
+    
     private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnMoveHandler;
     private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnMoveInHandler;
     private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnMoveOutHandler;
-    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnAppearHandler;
-    private readonly Action<TExtraArgument?> _OnDisappearHandler;
+    
     private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnFocusEnteredHandler;
     private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnFocusExitedHandler;
     private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnPressedHandler;
+    
+    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnAppearHandler;
+    private readonly Action<TExtraArgument?> _OnDisappearHandler;
 
+    private Label _label;
+    
     private string? _cachedName;
 
     internal string LocalName => _cachedName ??= Name;
-    
+
+    public override void _Ready()
+    {
+        base._Ready();
+        _label = new();
+        _label.AddThemeFontSizeOverride("font_size", 12);
+        AddChild(_label);
+    }
+
     public sealed override void _GuiInput(InputEvent inputEvent)
     {
         using (inputEvent)
         {
             if (!AccessInfo(out var info)) return;
 
-            if(inputEvent.IsReleased()) return;
+            if (inputEvent.IsReleased()) return;
 
-            if (Check(UIInputActionNames.UIDown, EdgeElementType.Down, in info, inputEvent))
+            if (Check(UIInputActionNames.UIDown, EdgeType.Down, in info, inputEvent))
+            {
                 info.Parent.MoveAndGrabFocus(MoveDirection.Down, info.RowIndex, info.ColumnIndex);
-            else if (Check(UIInputActionNames.UIUp, EdgeElementType.Up, in info, inputEvent))
+                return;
+            }
+
+            if (Check(UIInputActionNames.UIUp, EdgeType.Up, in info, inputEvent))
+            {
                 info.Parent.MoveAndGrabFocus(MoveDirection.Up, info.RowIndex, info.ColumnIndex);
-            else if (Check(UIInputActionNames.UILeft, EdgeElementType.Left, in info, inputEvent))
+                return;
+            }
+
+            if (Check(UIInputActionNames.UILeft, EdgeType.Left, in info, inputEvent))
+            {
                 info.Parent.MoveAndGrabFocus(MoveDirection.Left, info.RowIndex, info.ColumnIndex);
-            else if(Check(UIInputActionNames.UIRight, EdgeElementType.Right, in info, inputEvent)) 
+                return;
+            }
+
+            if (Check(UIInputActionNames.UIRight, EdgeType.Right, in info, inputEvent))
+            {
                 info.Parent.MoveAndGrabFocus(MoveDirection.Right, info.RowIndex, info.ColumnIndex);
+            }
         }
     }
 
-    private static bool Check(StringName actionName,
-        EdgeElementType edgeElementType,
-        ref readonly CurrentInfo info,
-        InputEvent inputEvent)
+    private static bool Check(
+        StringName actionName,
+        EdgeType edgeType,
+        ref readonly CellInfo info,
+        InputEvent inputEvent
+    )
     {
+        if (!info.ViewEdgeType.HasFlag(edgeType) || info.DataSetEdgeType.HasFlag(edgeType)) return false;
         if (!inputEvent.IsAction(actionName, true)) return false;
-        if (!info.ElementType.HasFlag(edgeElementType)) return false;
         return true;
     }
 
-    private bool AccessInfo(out CurrentInfo info)
+    private bool AccessInfo(out CellInfo info)
     {
         if (Info is null)
         {
@@ -102,7 +151,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         return true;
     }
 
-    private void CallDelegate(Action<TExtraArgument?> call, in CurrentInfo info, string methodName)
+    private void CallDelegate(Action<TExtraArgument?> call, in CellInfo info, string methodName)
     {
         DelegateRunner.RunProtected(
             call,
@@ -112,7 +161,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         );
     }
 
-    private void CallDelegate(Action<TDataType, Vector2I, TExtraArgument?> call, in CurrentInfo info, string methodName)
+    private void CallDelegate(Action<TDataType, Vector2I, TExtraArgument?> call, in CellInfo info, string methodName)
     {
         DelegateRunner.RunProtected(
             call,
@@ -147,7 +196,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         }
     }
 
-    internal void DrawGridItem(CurrentInfo info)
+    internal void DrawGridItem(in CellInfo info)
     {
         Info = info;
         CallDelegate(_OnDrawHandler, info, "On Draw");
@@ -161,7 +210,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         Info = null;
     }
 
-    internal void CallMove(CurrentInfo info)
+    internal void CallMove(in CellInfo info)
     {
         Info = info;
         CallDelegate(_OnMoveHandler, Info!.Value, "On Move");
@@ -173,8 +222,6 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
     {
         var currentInfo = Info!.Value;
         CallDelegate(_OnMoveOutHandler, currentInfo, "On Move Out");
-        var parent = currentInfo.Parent;
-        Info = new(parent, -1, -1, EdgeElementType.None, default);
     }
 
     protected virtual void _OnGridItemDraw(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
