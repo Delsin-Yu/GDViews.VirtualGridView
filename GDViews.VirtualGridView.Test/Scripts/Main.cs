@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Godot;
 using Bogus;
-using GodotViews.Core.FocusFinder;
 using Range = Godot.Range;
 
 namespace GodotViews.VirtualGrid.Examples;

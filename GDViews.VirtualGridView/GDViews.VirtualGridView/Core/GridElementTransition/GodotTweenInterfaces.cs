@@ -1,6 +1,4 @@
-﻿using Godot;
-
-namespace GodotViews.VirtualGrid;
+﻿namespace GodotViews.VirtualGrid;
 
 public interface IGodotTween
 {

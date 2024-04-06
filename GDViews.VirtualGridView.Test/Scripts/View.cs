@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-using System.Text;
 using Godot;
 
 namespace GodotViews.VirtualGrid.Examples;

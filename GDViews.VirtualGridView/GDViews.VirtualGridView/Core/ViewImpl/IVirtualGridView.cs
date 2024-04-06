@@ -1,5 +1,4 @@
 ﻿using System;
-using GodotViews.Core.FocusFinder;
 
 namespace GodotViews.VirtualGrid;
 

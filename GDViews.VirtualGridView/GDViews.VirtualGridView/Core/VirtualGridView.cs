@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Godot;
 
 namespace GodotViews.VirtualGrid;
@@ -53,7 +52,14 @@ public static class VirtualGridView
     internal static object? CurrentActiveGridView { get; set; }
     internal record struct ViewData(int RowIndex, int ColumnOffset, int RowOffset, int ColumnIndex);
 
-    internal static bool SearchForData<TDataType, TMatchArgument>(IDataInspector<TDataType> dataInspector, int viewRows, int viewColumns, out ViewData viewData, Func<TDataType, TMatchArgument, bool> comparer, TMatchArgument matchArgument)
+    internal static bool SearchForData<TDataType, TMatchArgument>(
+        IDataInspector<TDataType> dataInspector,
+        int viewRows,
+        int viewColumns,
+        out ViewData viewData,
+        Func<TDataType, TMatchArgument, bool> comparer,
+        TMatchArgument matchArgument
+    )
     {
         dataInspector.GetDataSetCurrentMetrics(out var rows, out var columns);
         for (var rowOffset = 0; rowOffset < rows; rowOffset += viewRows)

@@ -1,14 +1,12 @@
-﻿using System;
-using Godot;
-using GodotViews.VirtualGrid;
+﻿using Godot;
 
-namespace GodotViews.Core.FocusFinder;
+namespace GodotViews.VirtualGrid;
 
 
 public static partial class FocusFiners
 {
-    public static IViewFocusFinder<Vector2I> ViewPosition { get; } = new BFSViewFocusFinder();
-    public static IEqualityDataFocusFinder Value { get; } = new EqualityDataFocusFinder();
-    public static IPredicateDataFocusFinder Predicate { get; } = new PredicateDataFocusFinder();
-    public static IDataFocusFinder<Vector2I> DataPosition { get; } = new BFSDataSetFocusFinder();
+    public static IViewFocusFinder<Vector2I> ViewPosition { get; } = new ViewBFSFocusFinder();
+    public static IEqualityDataFocusFinder Value { get; } = new DataEqualityFocusFinder();
+    public static IPredicateDataFocusFinder Predicate { get; } = new DataPredicateFocusFinder();
+    public static IDataFocusFinder<Vector2I> DataPosition { get; } = new DataBFSFocusFinder();
 }

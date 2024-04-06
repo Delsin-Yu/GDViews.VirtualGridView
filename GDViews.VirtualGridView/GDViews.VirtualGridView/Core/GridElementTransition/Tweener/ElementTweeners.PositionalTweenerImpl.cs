@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Godot;
+﻿using Godot;
 
 namespace GodotViews.VirtualGrid;
 

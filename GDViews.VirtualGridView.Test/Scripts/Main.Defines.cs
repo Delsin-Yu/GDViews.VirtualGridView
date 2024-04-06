@@ -1,5 +1,4 @@
 ﻿using Godot;
-using GodotViews.Core.FocusFinder;
 
 namespace GodotViews.VirtualGrid.Examples;
 

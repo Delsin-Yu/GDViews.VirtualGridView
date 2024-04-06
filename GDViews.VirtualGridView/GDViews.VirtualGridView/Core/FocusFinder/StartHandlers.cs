@@ -1,24 +1,16 @@
 ﻿using Godot;
-using GodotViews.VirtualGrid;
 
-namespace GodotViews.Core.FocusFinder;
+namespace GodotViews.VirtualGrid;
 
-public static class ViewCorner
+
+public interface IDataStartHandler<in TArgument>
 {
-    public static readonly Vector2I TopLeft = Vector2I.Zero;
-    public static readonly Vector2I TopRight = new(0, -1);
-    public static readonly Vector2I BottomLeft = new(-1, 0);
-    public static readonly Vector2I BottomRight = new(-1, -1);
+    Vector2I ResolveStartPosition<TDataType>(ref readonly ReadOnlyDataArray<TDataType> currentView, TArgument argument);
 }
 
 public interface IViewStartHandler<in TArgument>
 {
     Vector2I ResolveStartPosition(ref readonly ReadOnlyViewArray currentView, TArgument argument);
-}
-
-public interface IDataStartHandler<in TArgument>
-{
-    Vector2I ResolveStartPosition<TDataType>(ref readonly ReadOnlyDataArray<TDataType> currentView, TArgument argument);
 }
 
 public static class StartHandlers

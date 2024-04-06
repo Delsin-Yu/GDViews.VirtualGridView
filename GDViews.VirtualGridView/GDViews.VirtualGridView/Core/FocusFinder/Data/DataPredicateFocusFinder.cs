@@ -1,11 +1,10 @@
 ﻿using System;
-using GodotViews.VirtualGrid;
 
-namespace GodotViews.Core.FocusFinder;
+namespace GodotViews.VirtualGrid;
 
 public static partial class FocusFiners
 {
-    private class PredicateDataFocusFinder : IPredicateDataFocusFinder
+    private class DataPredicateFocusFinder : IPredicateDataFocusFinder
     {
         public bool TryResolveFocus<TDataType>(
             ref readonly Predicate<TDataType> matchingArgument,
