@@ -242,11 +242,11 @@ public partial class Main : Node, IDataSetHandler
             .Create(7, 7)
             .WithHandlers(CurrentPositioner, CurrentTweener, CurrentFader)
             .WithVerticalDataLayout<DataModel>(reverseLocalLayout: false)
-                .AddColumnDataSource(DataSetDefinition.Create(dataSet1, [0, 1]))
-                .AddColumnDataSource(DataSetDefinition.Create(dataSet2, [2, 3]))
-                .AddColumnDataSource(DataSetDefinition.Create(dataSet3, [4, 5]))
-                .AddColumnDataSource(DataSetDefinition.Create(dataSet4, [6, 7]))
-                .AddColumnDataSource(DataSetDefinition.Create(dataSet5, [8, 9]))
+                .AddColumnDataSource(DataSetDefinitions.Create(dataSet1, [0, 1]))
+                .AddColumnDataSource(DataSetDefinitions.Create(dataSet2, [2, 3]))
+                .AddColumnDataSource(DataSetDefinitions.Create(dataSet3, [4, 5]))
+                .AddColumnDataSource(DataSetDefinitions.Create(dataSet4, [6, 7]))
+                .AddColumnDataSource(DataSetDefinitions.Create(dataSet5, [8, 9]))
             .WithArgument<View>(
                 _packedScene,
                 _container,

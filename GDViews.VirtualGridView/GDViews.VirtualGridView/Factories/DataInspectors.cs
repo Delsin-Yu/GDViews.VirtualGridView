@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using Godot;
 
 namespace GodotViews.VirtualGrid;
 
@@ -13,99 +10,9 @@ internal interface IDataInspector<T>
     NullableData<T> InspectViewCell(int rowIndex, int columnOffset, int rowOffset, int columnIndex);
 }
 
-internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayoutSelectionBuilder, IEqualityComparer<TDataType>? equalityComparer, bool reverseLocalLayout, bool isHorizontalDataLayout) : IHorizontalDataLayoutBuilder<TDataType>, IVerticalDataLayoutBuilder<TDataType>
+
+internal partial class DataLayoutBuilder<TDataType>
 {
-    private readonly List<DataSetDefinition<TDataType>> _dataSetDefinitions = [];
-    public DataLayoutSelectionBuilder DataLayoutSelectionBuilder { get; } = dataLayoutSelectionBuilder;
-    public IEqualityComparer<TDataType> EqualityComparer { get; } = equalityComparer ?? EqualityComparer<TDataType>.Default;
-
-    public IHorizontalDataLayoutBuilder<TDataType> AddRowDataSource(DataSetDefinition<TDataType> dataSetDefinition)
-    {
-        _dataSetDefinitions.Add(dataSetDefinition);
-        return this;
-    }
-
-
-    public IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> WithArgument<TButtonType, TExtraArgument>(PackedScene itemPrefab, Control itemContainer, IInfiniteLayoutGrid layoutGrid) where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
-    {
-        HashSet<int> existingIndexes = [];
-
-        var maxIndex = -1;
-        var dataSetDefinitions = CollectionsMarshal.AsSpan(_dataSetDefinitions);
-        foreach (ref readonly var dataSetDefinition in dataSetDefinitions)
-        {
-            if (dataSetDefinition.DataSet.FixedMetric != dataSetDefinition.DataSpan.Count)
-                throw new ArgumentException("A data set's fixed metric differs from the declared data span count!");
-
-            if (dataSetDefinition.DataSpan.Any(x => x < 0))
-                throw new ArgumentException("A data set's declared data span contains index(es) value less than 0!");
-
-            if (dataSetDefinition.DataSpan.Distinct().Count() != dataSetDefinition.DataSpan.Count)
-                throw new ArgumentException("A data set's declared data span contains duplicate index(es)!");
-
-            for (var spanIndex = 0; spanIndex < dataSetDefinition.DataSpan.Count; spanIndex++)
-            {
-                var dataIndex = dataSetDefinition.DataSpan[spanIndex];
-                if (!existingIndexes.Add(dataIndex))
-                    throw new ArgumentException($"A data set has already occupied the specified index {dataIndex}");
-                maxIndex = Math.Max(dataIndex, maxIndex);
-            }
-        }
-
-        var diff = existingIndexes.Count - 1 - maxIndex;
-
-        if (diff > 0)
-        {
-            int[] missingIndexes = [diff];
-            var localCounter = 0;
-            for (var i = 0; i <= maxIndex; i++)
-            {
-                if (existingIndexes.Contains(i)) continue;
-                missingIndexes[localCounter++] = i;
-            }
-
-            throw new ArgumentException($"One or more index(es) has not yet occupied by any data set(s): [{string.Join(", ", missingIndexes)}]");
-        }
-
-        var dataMap = new AnnotatedDataSet<TDataType>[existingIndexes.Count];
-
-        Dictionary<IDynamicGridViewer<TDataType>, int> dataSetCounter = new();
-
-        foreach (ref readonly var dataSetDefinition in dataSetDefinitions)
-            for (var spanIndex = 0; spanIndex < dataSetDefinition.DataSpan.Count; spanIndex++)
-            {
-                var dataIndex = dataSetDefinition.DataSpan[spanIndex];
-
-                ref var currentCount = ref CollectionsMarshal.GetValueRefOrAddDefault(dataSetCounter, dataSetDefinition.DataSet, out var exists);
-                if (!exists) currentCount = 0;
-                dataMap[dataIndex] = new(dataSetDefinition.DataSet, currentCount++);
-            }
-
-        if (reverseLocalLayout)
-            foreach (ref var annotatedDataSet in dataMap.AsSpan())
-            {
-                var count = dataSetCounter[annotatedDataSet.DataSet] - 1;
-                annotatedDataSet.LocalIndex = count - annotatedDataSet.LocalIndex;
-            }
-
-        var viewColumns = DataLayoutSelectionBuilder.ViewHandlerBuilder.ViewportColumns;
-        var viewRows = DataLayoutSelectionBuilder.ViewHandlerBuilder.ViewportRows;
-
-        IDataInspector<TDataType> dataInspector = isHorizontalDataLayout ?
-            new HorizontalDataInspector<TDataType>(dataMap, viewColumns, viewRows) :
-            new VerticalDataInspector<TDataType>(dataMap, viewColumns, viewRows);
-
-        return new FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(this, dataInspector, itemPrefab, itemContainer, layoutGrid);
-    }
-
-    public IVerticalDataLayoutBuilder<TDataType> AddColumnDataSource(DataSetDefinition<TDataType> dataSetDefinition)
-    {
-        _dataSetDefinitions.Add(dataSetDefinition);
-        return this;
-    }
-
-    private record struct AnnotatedDataSet<T>(IDynamicGridViewer<T> DataSet, int LocalIndex);
-
     private class HorizontalDataInspector<T>(AnnotatedDataSet<T>[] dataMap, int viewColumns, int viewRows) : IDataInspector<T>
     {
         private readonly bool[] _rowCalculationBuffer = new bool[dataMap.Length];
@@ -185,7 +92,10 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
             return NullableData.Null<T>();
         }
     }
+}
 
+internal partial class DataLayoutBuilder<TDataType>
+{
     private class VerticalDataInspector<T>(AnnotatedDataSet<T>[] dataMap, int viewColumns, int viewRows) : IDataInspector<T>
     {
         private readonly bool[] _columnCalculationBuffer = new bool[dataMap.Length];

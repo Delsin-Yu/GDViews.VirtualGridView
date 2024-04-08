@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using Godot;
 
 namespace GodotViews.VirtualGrid;
 
-public static class VirtualGridView
+internal static class Utils
 {
     internal static readonly StringName _uiUp = "ui_up";
     internal static readonly StringName _uiDown = "ui_down";
@@ -11,9 +12,7 @@ public static class VirtualGridView
     internal static readonly StringName _uiRight = "ui_right";
 
     internal static object? CurrentActiveGridView { get; set; }
-
-    public static IViewHandlerBuilder Create(int viewportColumns, int viewportRows) => new ViewHandlerBuilder(viewportColumns, viewportRows);
-
+    
     internal static bool TryGetMoveDirection(ref Vector2I vector, out Vector2I moveDirection)
     {
         moveDirection = Vector2I.Zero;
@@ -81,4 +80,77 @@ public static class VirtualGridView
     }
 
     internal record struct ViewData(int RowIndex, int ColumnOffset, int RowOffset, int ColumnIndex);
+}
+
+internal static class DelegateRunner
+{
+    internal static bool RunProtected<T>(Action<T>? call, in T arg, string actionName, string targetName, [CallerArgumentExpression(nameof(call))] string? methodName = null)
+    {
+        try
+        {
+            call?.Invoke(arg);
+            return true;
+        }
+        catch (Exception e)
+        {
+            ReportException(e, actionName, targetName, methodName);
+            return false;
+        }
+    }
+
+    internal static TR? RunProtected<T1, T2, TR>(Func<T1, T2, TR> call, in T1 arg1, in T2 arg2, string actionName, string targetName, [CallerArgumentExpression(nameof(call))] string? methodName = null)
+    {
+        try
+        {
+            return call.Invoke(arg1, arg2);
+        }
+        catch (Exception e)
+        {
+            ReportException(e, actionName, targetName, methodName);
+            return default;
+        }
+    }
+
+    internal static bool RunProtected<T1, T2, T3>(Action<T1, T2?, T3?>? call, in T1 arg1, in T2? arg2, in T3? arg3, string actionName, string targetName, [CallerArgumentExpression(nameof(call))] string? methodName = null)
+    {
+        try
+        {
+            call?.Invoke(arg1, arg2, arg3);
+            return true;
+        }
+        catch (Exception e)
+        {
+            ReportException(e, actionName, targetName, methodName);
+            return false;
+        }
+    }
+
+    internal static bool RunProtected(Action? call, string actionName, string targetName, [CallerArgumentExpression(nameof(call))] string? methodName = null)
+    {
+        try
+        {
+            call?.Invoke();
+            return true;
+        }
+        catch (Exception e)
+        {
+            ReportException(e, actionName, targetName, methodName);
+            return false;
+        }
+    }
+
+    internal static void ReportException(Exception e, string actionName, string targetName, string? methodName)
+    {
+        GD.PushError(
+            $"""
+
+             ┌┈┈┈┈ {actionName} Error ┈┈┈┈
+             │ {e.GetType().Name} on {targetName}.{methodName ?? "UnknownFunction"}
+             │ Message:
+             │   {e.Message}
+             └┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+             {e.StackTrace}
+             """
+        );
+    }
 }

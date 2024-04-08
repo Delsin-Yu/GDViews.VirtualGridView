@@ -134,7 +134,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         DelegateRunner.RunProtected(
             call,
             info.Data!,
-            VirtualGridView.CreatePosition(info.RowIndex, info.ColumnIndex),
+            Utils.CreatePosition(info.RowIndex, info.ColumnIndex),
             info.Parent.ExtraArgument,
             methodName,
             LocalName
@@ -153,12 +153,12 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         switch ((long)what)
         {
             case NotificationFocusEnter:
-                VirtualGridView.CurrentActiveGridView = info.Parent;
+                Utils.CurrentActiveGridView = info.Parent;
                 info.Parent.FocusTo(info);
                 CallDelegate(_OnFocusEnteredHandler, info, "On Focus Enter");
                 break;
             case NotificationFocusExit:
-                VirtualGridView.CurrentActiveGridView = null;
+                Utils.CurrentActiveGridView = null;
                 CallDelegate(_OnFocusExitedHandler, info, "On Focus Exit");
                 break;
         }

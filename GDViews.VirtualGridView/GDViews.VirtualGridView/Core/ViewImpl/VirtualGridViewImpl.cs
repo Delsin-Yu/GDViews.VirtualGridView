@@ -101,7 +101,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         _collectInvincibleControlHandler = CollectButtonInstance;
         _currentView = new DataView[ViewRows, ViewColumns];
         _nextView = new DataView[ViewRows, ViewColumns];
-        _viewportSize = VirtualGridView.CreatePosition(ViewRows, ViewColumns);
+        _viewportSize = Utils.CreatePosition(ViewRows, ViewColumns);
 
         for (var rowIndex = 0; rowIndex < ViewRows; rowIndex++)
         for (var columnIndex = 0; columnIndex < ViewColumns; columnIndex++)
@@ -293,14 +293,14 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     {
         rowIndex = -1;
         columnIndex = -1;
-        if (!VirtualGridView.SearchForData(_dataInspector, ViewRows, ViewColumns, out var matchedViewData, comparer, data)) return false;
+        if (!Utils.SearchForData(_dataInspector, ViewRows, ViewColumns, out var matchedViewData, comparer, data)) return false;
         var (matchedRowIndex, matchedColumnOffset, matchedRowOffset, matchColumnIndex) = matchedViewData;
-        var absoluteDataPosition = VirtualGridView.CreatePosition(
+        var absoluteDataPosition = Utils.CreatePosition(
             matchedRowOffset + matchedRowIndex,
             matchedColumnOffset + matchColumnIndex
         );
 
-        var currentViewOffset = VirtualGridView.CreatePosition(
+        var currentViewOffset = Utils.CreatePosition(
             ViewRowIndex,
             ViewColumnIndex
         );
@@ -333,7 +333,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     private void FocusToTarget(int viewportRowIndex, int viewportColumnIndex, out int targetRowIndex, out int targetColumnIndex)
     {
-        var dataPositionRelativeToViewport = VirtualGridView.CreatePosition(viewportRowIndex, viewportColumnIndex);
+        var dataPositionRelativeToViewport = Utils.CreatePosition(viewportRowIndex, viewportColumnIndex);
         ElementPositioner.GetTargetPosition(
             _viewportSize,
             dataPositionRelativeToViewport,
@@ -409,7 +409,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     {
         using (inputEvent)
         {
-            if (this != VirtualGridView.CurrentActiveGridView) return;
+            if (this != Utils.CurrentActiveGridView) return;
 
             if (Input.IsMouseButtonPressed(MouseButton.Left))
             {
@@ -469,7 +469,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                 default: return;
             }
 
-            var currentFocusPosition = VirtualGridView.CreatePosition(
+            var currentFocusPosition = Utils.CreatePosition(
                 _currentSelectedViewRowIndex,
                 _currentSelectedViewColumnIndex
             );
@@ -487,10 +487,10 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
             var eventName = simulatedMoveDirection switch
             {
-                MoveDirection.Up => VirtualGridView._uiUp,
-                MoveDirection.Down => VirtualGridView._uiDown,
-                MoveDirection.Left => VirtualGridView._uiLeft,
-                MoveDirection.Right => VirtualGridView._uiRight,
+                MoveDirection.Up => Utils._uiUp,
+                MoveDirection.Down => Utils._uiDown,
+                MoveDirection.Left => Utils._uiLeft,
+                MoveDirection.Right => Utils._uiRight,
                 _ => throw new InvalidOperationException()
             };
 
@@ -667,7 +667,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                         dataSetMaxColumnIndex
                     );
 
-                    buttonInstance.Position = _layoutGrid.GetGridElementPosition(VirtualGridView.CreatePosition(rowIndex, columnIndex));
+                    buttonInstance.Position = _layoutGrid.GetGridElementPosition(Utils.CreatePosition(rowIndex, columnIndex));
                     buttonInstance.CallAppear();
                     ElementTweener.KillTween(buttonInstance);
                     ElementFader.Appear(buttonInstance);
@@ -842,7 +842,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
         var dataSetMaxRowIndex = 0;
         var dataSetMaxColumnIndex = 0;
-        while (VirtualGridView.TryGetMoveDirection(ref offset, out var moveDirection))
+        while (Utils.TryGetMoveDirection(ref offset, out var moveDirection))
         {
             if (moveDirection == Vector2I.Left) Move(MoveDirection.Right, out dataSetMaxRowIndex, out dataSetMaxColumnIndex);
             if (moveDirection == Vector2I.Right) Move(MoveDirection.Left, out dataSetMaxRowIndex, out dataSetMaxColumnIndex);
