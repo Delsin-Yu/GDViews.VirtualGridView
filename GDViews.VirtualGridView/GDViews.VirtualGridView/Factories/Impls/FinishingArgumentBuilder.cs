@@ -9,17 +9,17 @@ internal class FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
     Control itemContainer,
     IInfiniteLayoutGrid layoutGrid) : IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
 {
-    private ScrollBar? _horizontalScrollBar;
     private bool _autoHideHorizontalScrollBar;
-    private IScrollBarTweener? _horizontalScrollBarTweener;
-    private IElementFader? _horizontalScrollBarFader;
-    
-    private ScrollBar? _verticalScrollBar;
     private bool _autoHideVerticalScrollBar;
-    private IScrollBarTweener? _verticalScrollBarTweener;
-    private IElementFader? _verticalScrollBarFader;
-    
+
     private TExtraArgument? _extraArgument;
+    private ScrollBar? _horizontalScrollBar;
+    private IElementFader? _horizontalScrollBarFader;
+    private IScrollBarTweener? _horizontalScrollBarTweener;
+
+    private ScrollBar? _verticalScrollBar;
+    private IElementFader? _verticalScrollBarFader;
+    private IScrollBarTweener? _verticalScrollBarTweener;
 
     public IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> ConfigureVerticalScrollBar(
         ScrollBar verticalScrollBar,

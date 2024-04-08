@@ -11,7 +11,7 @@ public static partial class FocusFiners
             ref readonly ReadOnlyDataArray<TDataType> currentView,
             ref readonly ReadOnlySpan<Vector2I> searchDirection,
             IDataStartHandler<Vector2I> dataStartPositionHandler,
-            ref readonly Vector2I argument, 
+            ref readonly Vector2I argument,
             out int viewRowIndex,
             out int viewColumnIndex
         )

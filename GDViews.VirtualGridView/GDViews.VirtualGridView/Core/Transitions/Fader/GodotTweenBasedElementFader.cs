@@ -10,14 +10,14 @@ public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IElemen
         Disappear,
         Appear
     }
-    
+
     private readonly GodotTweenCore<FadeType, Vector2, TCachedArgument> _tweenCore;
 
     protected GodotTweenCoreBasedElementFader()
     {
         _tweenCore = new(this);
     }
-    
+
     /// <inheritdoc/> 
     public void Disappear(Control control, Action<Control> onFinish) => _tweenCore.KillAndCreateNewTween(FadeType.Disappear, control, Vector2.Zero, onFinish, "Disappear");
 

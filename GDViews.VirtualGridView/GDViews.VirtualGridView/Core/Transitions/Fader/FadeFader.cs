@@ -2,15 +2,13 @@
 
 namespace GodotViews.VirtualGrid;
 
-
 public class FadeFader(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedElementFader<Color>, IGodotTweenFader
 {
-    public float Duration { get; set; } = duration;
-    public TweenSetup TweenSetup { get; set; } = tweenSetup;
-
     private static readonly NodePath ModulatePath = new(Control.PropertyName.Modulate);
     private static readonly Color _showColor = Colors.White;
     private static readonly Color _hideColor = Colors.Transparent;
+    public float Duration { get; set; } = duration;
+    public TweenSetup TweenSetup { get; set; } = tweenSetup;
 
     public override void Show(Control control) => control.Modulate = _showColor;
 
@@ -21,7 +19,7 @@ public class FadeFader(float duration, TweenSetup tweenSetup) : GodotTweenCoreBa
         var show = fadeType is FadeType.Appear;
         control.Modulate = show ? _hideColor : _showColor;
         var targetModulate = show ? _showColor : _hideColor;
-        
+
         tween
             .TweenProperty(control, ModulatePath, targetModulate, Duration)
             .SetTrans(TweenSetup.TransitionType)
@@ -31,5 +29,4 @@ public class FadeFader(float duration, TweenSetup tweenSetup) : GodotTweenCoreBa
     }
 
     public override bool IsTweenSupported(FadeType fadeType) => true;
-    
 }

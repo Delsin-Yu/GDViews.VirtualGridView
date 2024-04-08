@@ -19,5 +19,6 @@ public interface IFinishingArgumentBuilder<TDataType, TButtonType, in TExtraArgu
         IElementFader? fader = null,
         bool autoHide = false
     );
+
     IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> ConfigureExtraArgument(TExtraArgument extraArgument);
 }

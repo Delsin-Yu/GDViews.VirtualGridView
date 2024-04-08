@@ -5,17 +5,16 @@ namespace GodotViews.VirtualGrid;
 
 public class ScaleRotateFader(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedElementFader<(Vector2 Scale, float Rotation)>, IGodotTweenFader
 {
-    public float Duration { get; set; } = duration;
-    public TweenSetup TweenSetup { get; set; } = tweenSetup;
+    private const float _showRotation = 0f;
+    private const float _hideRotation = 180f;
 
     private static readonly NodePath ScalePath = new(Control.PropertyName.Scale);
     private static readonly NodePath RotationPath = new(Control.PropertyName.RotationDegrees);
 
     private static readonly Vector2 _showScale = Vector2.One;
     private static readonly Vector2 _hideScale = Vector2.Zero;
-
-    private const float _showRotation = 0f;
-    private const float _hideRotation = 180f;
+    public float Duration { get; set; } = duration;
+    public TweenSetup TweenSetup { get; set; } = tweenSetup;
 
     public override void Show(Control control)
     {

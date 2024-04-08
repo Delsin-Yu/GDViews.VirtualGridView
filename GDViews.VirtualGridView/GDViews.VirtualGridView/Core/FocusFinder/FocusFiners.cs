@@ -2,7 +2,6 @@
 
 namespace GodotViews.VirtualGrid;
 
-
 public static partial class FocusFiners
 {
     public static readonly IViewFocusFinder<Vector2I> ViewPosition = new ViewBFSFocusFinder();

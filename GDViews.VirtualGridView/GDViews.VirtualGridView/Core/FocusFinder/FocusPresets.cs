@@ -12,9 +12,6 @@ public static class ViewCorners
 
 public static class FocusPresets
 {
-    public static IEqualityDataFocusFinder Value => FocusFiners.Value;
-    public static IPredicateDataFocusFinder Predicate => FocusFiners.Predicate;
-    
     public static readonly DataFocusFinderPreset<Vector2I> DataPosition = new(FocusFiners.DataPosition, StartHandlers.DataPosition);
     public static readonly DataFocusFinderPreset TopLeftData = new(DataPosition, ViewCorners.TopLeft, SearchDirections.RightDown);
     public static readonly DataFocusFinderPreset TopRightData = new(DataPosition, ViewCorners.TopRight, SearchDirections.LeftDown);
@@ -24,7 +21,7 @@ public static class FocusPresets
     public static readonly DataFocusFinderPreset RightTopData = new(DataPosition, ViewCorners.TopRight, SearchDirections.DownLeft);
     public static readonly DataFocusFinderPreset LeftBottomData = new(DataPosition, ViewCorners.BottomLeft, SearchDirections.UpRight);
     public static readonly DataFocusFinderPreset RightBottomData = new(DataPosition, ViewCorners.BottomRight, SearchDirections.UpLeft);
-    
+
     public static readonly ViewFocusFinderPreset<Vector2I> ViewPosition = new(FocusFiners.ViewPosition, StartHandlers.ViewPosition);
     public static readonly ViewFocusFinderPreset<Vector2I> ViewCenter = new(FocusFiners.ViewPosition, StartHandlers.ViewCenter);
     public static readonly ViewFocusFinderPreset TopLeftView = new(ViewPosition, ViewCorners.TopLeft, SearchDirections.RightDown);
@@ -38,4 +35,6 @@ public static class FocusPresets
     public static readonly ViewFocusFinderPreset CenterClockwiseView = new(ViewCenter, Vector2I.Zero, SearchDirections.FourWayClockwise);
     public static readonly ViewFocusFinderPreset CenterAnticlockwiseView = new(ViewCenter, Vector2I.Zero, SearchDirections.FourWayAnticlockwise);
     public static readonly ViewFocusFinderPreset CenterUpDownLeftRightView = new(ViewCenter, Vector2I.Zero, SearchDirections.UpDownLeftRight);
+    public static IEqualityDataFocusFinder Value => FocusFiners.Value;
+    public static IPredicateDataFocusFinder Predicate => FocusFiners.Predicate;
 }

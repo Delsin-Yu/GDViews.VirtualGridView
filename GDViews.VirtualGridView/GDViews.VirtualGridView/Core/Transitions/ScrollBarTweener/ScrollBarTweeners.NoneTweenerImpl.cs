@@ -12,8 +12,6 @@ public static partial class ScrollBarTweeners
             scrollBar.Page = targetPage;
         }
 
-        public void KillTween(ScrollBar scrollBar)
-        {
-        }
+        public void KillTween(ScrollBar scrollBar) { }
     }
 }

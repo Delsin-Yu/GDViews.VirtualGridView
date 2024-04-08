@@ -4,12 +4,11 @@ namespace GodotViews.VirtualGrid;
 
 public class ScaleFader(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedElementFader<Vector2>, IGodotTweenFader
 {
-    public float Duration { get; set; } = duration;
-    public TweenSetup TweenSetup { get; set; } = tweenSetup;
-
     private static readonly NodePath ScalePath = new(Control.PropertyName.Scale);
     private static readonly Vector2 _showScale = Vector2.One;
     private static readonly Vector2 _HideScale = Vector2.Zero;
+    public float Duration { get; set; } = duration;
+    public TweenSetup TweenSetup { get; set; } = tweenSetup;
 
     public override void Show(Control control) => control.Scale = _showScale;
 

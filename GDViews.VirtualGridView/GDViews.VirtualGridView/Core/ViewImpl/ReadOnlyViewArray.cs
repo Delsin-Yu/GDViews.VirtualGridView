@@ -9,11 +9,13 @@ public readonly struct ReadOnlyViewArray
     public readonly int ViewColumns;
     private readonly object[,] _backing;
     private readonly Func<object, bool> _backingResolver;
-    
-    internal ReadOnlyViewArray(object[,] backing,
+
+    internal ReadOnlyViewArray(
+        object[,] backing,
         int viewRows,
         int viewColumns,
-        Func<object, bool> backingResolver)
+        Func<object, bool> backingResolver
+    )
     {
         _backing = backing;
         _backingResolver = backingResolver;

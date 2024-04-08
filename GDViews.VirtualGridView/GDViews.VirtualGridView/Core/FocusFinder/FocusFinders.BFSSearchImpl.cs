@@ -12,7 +12,7 @@ public static partial class FocusFiners
         public readonly int Y;
 
         public MinimalVector2I(Vector2I vector2I) : this(vector2I.X, vector2I.Y) { }
-        
+
         public MinimalVector2I(int x, int y)
         {
             X = x;
@@ -25,9 +25,12 @@ public static partial class FocusFiners
 
         public override string ToString() => $"<{X},{Y}>";
     }
-    
+
     internal static class BFSSearch
     {
+        private static readonly Queue<MinimalVector2I> _pending = new(256);
+        private static readonly HashSet<MinimalVector2I> _visited = new(256);
+
         private static bool IsValid(
             ref readonly ReadOnlyViewArray currentView,
             ref readonly MinimalVector2I candidate,
@@ -43,8 +46,8 @@ public static partial class FocusFiners
             }
 
             return false;
-        }    
-        
+        }
+
         private static bool IsValid<TDataType>(
             ref readonly ReadOnlyDataArray<TDataType> currentView,
             ref readonly MinimalVector2I candidate,
@@ -61,9 +64,6 @@ public static partial class FocusFiners
 
             return false;
         }
-
-        private static readonly Queue<MinimalVector2I> _pending = new(256);
-        private static readonly HashSet<MinimalVector2I> _visited = new(256);
 
         public static bool BFSCore(ref readonly Vector2I start, ref readonly ReadOnlyViewArray currentView, ref readonly ReadOnlySpan<Vector2I> neighborOffsetCollection, out int rowIndex, out int columnIndex)
         {
@@ -85,7 +85,7 @@ public static partial class FocusFiners
             columnIndex = -1;
 
             var startVector = new MinimalVector2I(start);
-            
+
             if (IsValid(in currentView, in startVector, ref rowIndex, ref columnIndex)) return true;
 
             _pending.Enqueue(startVector);
@@ -112,7 +112,7 @@ public static partial class FocusFiners
 
             return false;
         }
-        
+
         public static bool BFSCore<TDataType>(ref readonly Vector2I start, ref readonly ReadOnlyDataArray<TDataType> currentView, ref readonly ReadOnlySpan<Vector2I> neighborOffsetCollection, out int rowIndex, out int columnIndex)
         {
             var result = BFSCoreImpl(in start, in currentView, in neighborOffsetCollection, out rowIndex, out columnIndex);
@@ -133,7 +133,7 @@ public static partial class FocusFiners
             columnIndex = -1;
 
             var startVector = new MinimalVector2I(start);
-            
+
             if (IsValid(in currentView, in startVector, ref rowIndex, ref columnIndex)) return true;
 
             _pending.Enqueue(startVector);

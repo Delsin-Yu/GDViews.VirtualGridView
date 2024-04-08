@@ -10,7 +10,7 @@ public record TweenSetup(Tween.EaseType EaseType, Tween.TransitionType Transitio
 public static class TweenSetups
 {
     public static readonly TweenSetup Linear = new(Tween.EaseType.InOut, Tween.TransitionType.Linear);
-    
+
     public static readonly TweenSetup EaseInSine = new(Tween.EaseType.In, Tween.TransitionType.Sine);
     public static readonly TweenSetup EaseOutSine = new(Tween.EaseType.Out, Tween.TransitionType.Sine);
     public static readonly TweenSetup EaseInOutSine = new(Tween.EaseType.InOut, Tween.TransitionType.Sine);
@@ -50,7 +50,7 @@ public static class TweenSetups
     public static readonly TweenSetup EaseInBounce = new(Tween.EaseType.In, Tween.TransitionType.Bounce);
     public static readonly TweenSetup EaseOutBounce = new(Tween.EaseType.Out, Tween.TransitionType.Bounce);
     public static readonly TweenSetup EaseInOutBounce = new(Tween.EaseType.InOut, Tween.TransitionType.Bounce);
-    
+
     public static TweenSetup Default { get; set; } = EaseOutQuad;
 
     internal static TweenSetup CurrentOrDefault(TweenSetup? current) => current ?? Default;

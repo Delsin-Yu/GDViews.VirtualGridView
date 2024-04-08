@@ -34,12 +34,13 @@ public readonly struct ReadOnlyDataArray<TDataType>
             absoluteColumnIndex = -1;
             return false;
         }
+
         var (matchedRowIndex, matchedColumnOffset, matchedRowOffset, matchColumnIndex) = viewData;
         absoluteRowIndex = matchedRowOffset + matchedRowIndex;
         absoluteColumnIndex = matchedColumnOffset + matchColumnIndex;
         return true;
     }
-    
+
     public bool TryGetData(int dataRowIndex, int dataColumnIndex, [NotNullWhen(true)] out TDataType? data)
     {
         var viewRowIndex = dataRowIndex / _viewRows;
@@ -55,5 +56,5 @@ public readonly struct ReadOnlyDataArray<TDataType>
         );
 
         return cellData.TryUnwrap(out data);
-    }    
+    }
 }

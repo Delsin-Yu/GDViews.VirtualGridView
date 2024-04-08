@@ -6,11 +6,10 @@ public static partial class ScrollBarTweeners
 {
     private class LerpTweenerImpl(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedScrollBarTweener<(float targetValue, float targetPage)>, IGodotTweenScrollBarTweener
     {
-        public float Duration { get; set; } = duration;
-        public TweenSetup TweenSetup { get; set; } = tweenSetup;
-
         private static readonly NodePath ValuePath = new(ScrollBar.PropertyName.Value);
         private static readonly NodePath PagePath = new(ScrollBar.PropertyName.Page);
+        public float Duration { get; set; } = duration;
+        public TweenSetup TweenSetup { get; set; } = tweenSetup;
 
         public override (float targetValue, float targetPage) InitializeTween(in (float targetValue, float targetPage) targetValue, ScrollBar control, Tween tween)
         {
@@ -26,9 +25,9 @@ public static partial class ScrollBarTweeners
                 .SetTrans(TweenSetup.TransitionType)
                 .SetEase(TweenSetup.EaseType)
                 .Dispose();
-            
+
             tween.SetParallel(false);
-            
+
             return targetValue;
         }
 

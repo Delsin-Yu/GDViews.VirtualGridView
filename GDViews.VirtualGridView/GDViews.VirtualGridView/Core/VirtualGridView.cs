@@ -5,17 +5,20 @@ namespace GodotViews.VirtualGrid;
 
 public static class VirtualGridView
 {
-    public static IViewHandlerBuilder Create(int viewportColumns, int viewportRows) => 
-        new ViewHandlerBuilder(viewportColumns, viewportRows);
-    
+    internal static readonly StringName _uiUp = "ui_up";
+    internal static readonly StringName _uiDown = "ui_down";
+    internal static readonly StringName _uiLeft = "ui_left";
+    internal static readonly StringName _uiRight = "ui_right";
+
+    internal static object? CurrentActiveGridView { get; set; }
+
+    public static IViewHandlerBuilder Create(int viewportColumns, int viewportRows) => new ViewHandlerBuilder(viewportColumns, viewportRows);
+
     internal static bool TryGetMoveDirection(ref Vector2I vector, out Vector2I moveDirection)
     {
         moveDirection = Vector2I.Zero;
-        if (vector == Vector2I.Zero)
-        {
-            return false;
-        }
-        
+        if (vector == Vector2I.Zero) return false;
+
         switch (vector.X)
         {
             case > 0:
@@ -27,6 +30,7 @@ public static class VirtualGridView
                 vector.X += 1;
                 return true;
         }
+
         switch (vector.Y)
         {
             case > 0:
@@ -41,16 +45,8 @@ public static class VirtualGridView
 
         return true;
     }
-    
-    internal static Vector2I CreatePosition(int rowIndex, int columnIndex) => new(columnIndex, rowIndex);
-    
-    internal static readonly StringName _uiUp = "ui_up";
-    internal static readonly StringName _uiDown = "ui_down";
-    internal static readonly StringName _uiLeft = "ui_left";
-    internal static readonly StringName _uiRight = "ui_right";
 
-    internal static object? CurrentActiveGridView { get; set; }
-    internal record struct ViewData(int RowIndex, int ColumnOffset, int RowOffset, int ColumnIndex);
+    internal static Vector2I CreatePosition(int rowIndex, int columnIndex) => new(columnIndex, rowIndex);
 
     internal static bool SearchForData<TDataType, TMatchArgument>(
         IDataInspector<TDataType> dataInspector,
@@ -83,4 +79,6 @@ public static class VirtualGridView
         viewData = default;
         return false;
     }
+
+    internal record struct ViewData(int RowIndex, int ColumnOffset, int RowOffset, int ColumnIndex);
 }

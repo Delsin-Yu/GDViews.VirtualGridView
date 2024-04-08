@@ -7,12 +7,6 @@ public static partial class FocusFiners
 {
     private class DataEqualityFocusFinder : IEqualityDataFocusFinder
     {
-        private static class CachedComparer<TDataType>
-        {
-            public static readonly Func<TDataType, TDataType, bool> EqualsHandler = 
-                EqualityComparer<TDataType>.Default.Equals;
-        }
-        
         public bool TryResolveFocus<TDataType>(
             ref readonly TDataType matchingArgument,
             ref readonly ReadOnlyDataArray<TDataType> currentView,
@@ -25,5 +19,11 @@ public static partial class FocusFiners
                 out dataSetRowIndex,
                 out dataSetColumnIndex
             );
+
+        private static class CachedComparer<TDataType>
+        {
+            public static readonly Func<TDataType, TDataType, bool> EqualsHandler =
+                EqualityComparer<TDataType>.Default.Equals;
+        }
     }
 }

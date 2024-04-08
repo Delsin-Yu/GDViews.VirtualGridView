@@ -70,11 +70,11 @@ internal class GodotTweenCore<TTweenType, TTweenArgument, TCachedArgument>(ITwee
                 cachedArgument = NullableData.Null<TCachedArgument>();
             else
                 cachedArgument = NullableData.Create(previousTarget);
-        
+
             ret = true;
         }
 
-        if (ret && cachedArgument.TryUnwrap(out var data)) 
+        if (ret && cachedArgument.TryUnwrap(out var data))
             tweenCoreUser.ResetControl(control, data);
     }
 }

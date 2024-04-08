@@ -2,7 +2,6 @@
 
 namespace GodotViews.VirtualGrid;
 
-
 public interface IDataStartHandler<in TArgument>
 {
     Vector2I ResolveStartPosition<TDataType>(ref readonly ReadOnlyDataArray<TDataType> currentView, TArgument argument);
@@ -21,19 +20,18 @@ public static class StartHandlers
 
     private class DataStartPositionHandler : IDataStartHandler<Vector2I>
     {
-        public Vector2I ResolveStartPosition<TDataType>(ref readonly ReadOnlyDataArray<TDataType> currentView, Vector2I position)
-         => new(
-             position.X < 0 ? currentView.DataSetRows + position.X : position.X,
-             position.Y < 0 ? currentView.DataSetColumns + position.Y : position.Y
-         );
+        public Vector2I ResolveStartPosition<TDataType>(ref readonly ReadOnlyDataArray<TDataType> currentView, Vector2I position) =>
+            new(
+                position.X < 0 ? currentView.DataSetRows + position.X : position.X,
+                position.Y < 0 ? currentView.DataSetColumns + position.Y : position.Y
+            );
     }
-    
+
     private class ViewCenterStartPositionHandler : IViewStartHandler<Vector2I>
     {
-        public Vector2I ResolveStartPosition(ref readonly ReadOnlyViewArray currentView, Vector2I argument) => 
-            new Vector2I(currentView.ViewRows, currentView.ViewColumns) / 2 + argument;
+        public Vector2I ResolveStartPosition(ref readonly ReadOnlyViewArray currentView, Vector2I argument) => new Vector2I(currentView.ViewRows, currentView.ViewColumns) / 2 + argument;
     }
-    
+
     private class ViewStartPositionHandler : IViewStartHandler<Vector2I>
     {
         public Vector2I ResolveStartPosition(ref readonly ReadOnlyViewArray currentView, Vector2I position) =>
@@ -42,5 +40,4 @@ public static class StartHandlers
                 position.Y < 0 ? currentView.ViewColumns + position.Y : position.Y
             );
     }
-
 }

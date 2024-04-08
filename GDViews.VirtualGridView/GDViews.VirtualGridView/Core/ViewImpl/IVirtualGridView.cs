@@ -4,8 +4,6 @@ namespace GodotViews.VirtualGrid;
 
 public interface IVirtualGridView<TDataType>
 {
-    void Redraw();
-
     IElementPositioner ElementPositioner { get; set; }
     IElementTweener ElementTweener { get; set; }
     IElementFader ElementFader { get; set; }
@@ -18,6 +16,7 @@ public interface IVirtualGridView<TDataType>
 
     int ViewColumns { get; }
     int ViewRows { get; }
+    void Redraw();
 
     bool GrabFocus();
 
@@ -71,7 +70,7 @@ public interface IVirtualGridView<TDataType>
         SearchDirection searchDirection
     );
 
-    
+
     bool GrabFocus(in DataFocusFinderPreset focusFinderPreset) =>
         GrabFocus(
             focusFinderPreset.Preset.FocusFinder,
@@ -79,7 +78,7 @@ public interface IVirtualGridView<TDataType>
             focusFinderPreset.Argument,
             focusFinderPreset.SearchDirection
         );
-    
+
     bool GrabFocus<TArgument>(
         DataFocusFinderPreset<TArgument> preset,
         TArgument matchingArgument,

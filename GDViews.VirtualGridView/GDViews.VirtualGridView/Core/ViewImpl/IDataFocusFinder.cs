@@ -10,8 +10,8 @@ public interface IPredicateDataFocusFinder
         ref readonly ReadOnlyDataArray<TDataType> currentView,
         out int rowIndex,
         out int columnIndex
-    );   
-    
+    );
+
     public bool TryResolveFocus<TDataType, TExtraArgument>(
         ref readonly Func<TDataType, TExtraArgument, bool> predicate,
         ref readonly ReadOnlyDataArray<TDataType> currentView,
@@ -37,9 +37,8 @@ public interface IDataFocusFinder<TArgument>
         ref readonly ReadOnlyDataArray<TDataType> currentView,
         ref readonly ReadOnlySpan<Vector2I> searchDirection,
         IDataStartHandler<TArgument> dataStartPositionHandler,
-        ref readonly TArgument argument, 
+        ref readonly TArgument argument,
         out int viewRowIndex,
         out int viewColumnIndex
     );
 }
-

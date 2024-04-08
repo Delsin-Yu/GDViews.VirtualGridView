@@ -19,7 +19,7 @@ public abstract class GodotTweenCoreBasedElementTweener<TCachedArgument> : IElem
         _tweenCore = new(this);
     }
 
-    
+
     /// <inheritdoc/> 
     public void KillTween(Control control) => _tweenCore.KillTween(control);
 
@@ -35,6 +35,4 @@ public abstract class GodotTweenCoreBasedElementTweener<TCachedArgument> : IElem
     public abstract TCachedArgument InitializeTween(TweenType tweenType, in Vector2 targetValue, Control control, Tween tween);
     public abstract void ResetControl(Control control, TCachedArgument previousTarget);
     public abstract bool IsTweenSupported(TweenType tweenType);
-
-
 }

@@ -25,11 +25,12 @@ public static partial class FocusFiners
             in TExtraArgument extraArgument,
             out int rowIndex,
             out int columnIndex
-        ) =>  currentView.TryGetData(
-            static (data, composite) => composite.predicate(data, composite.extraArgument),
-            (predicate, extraArgument),
-            out rowIndex,
-            out columnIndex
-        );
+        ) =>
+            currentView.TryGetData(
+                static (data, composite) => composite.predicate(data, composite.extraArgument),
+                (predicate, extraArgument),
+                out rowIndex,
+                out columnIndex
+            );
     }
 }

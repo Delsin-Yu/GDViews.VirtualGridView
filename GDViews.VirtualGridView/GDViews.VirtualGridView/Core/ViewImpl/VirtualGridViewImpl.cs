@@ -8,249 +8,38 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     IVirtualGridViewParent<TDataType, TExtraArgument>,
     IVirtualGridView<TDataType> where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
 {
-    private class DataView
-    {
-        public NullableData<TDataType> Data;
-        public TButtonType? AssignedButton;
-        public override string ToString() => $"Button: {AssignedButton?.Name ?? "Null"}, Data: {Data}";
-    }
-    
+    private readonly Stack<TButtonType> _buttonPool;
+    private readonly Vector2 _cellItemSize;
+    private readonly Action<Control> _collectInvincibleControlHandler;
+    private readonly Viewport _containerViewport;
 
-    private readonly ScrollBar? _horizontalScrollBar;
-    private readonly ScrollBar? _verticalScrollBar;
-    
     private readonly IDataInspector<TDataType> _dataInspector;
     private readonly IEqualityComparer<TDataType> _equalityComparer;
     private readonly Func<TDataType, TDataType, bool> _equalityComparerEquals;
-    private readonly PackedScene _itemPrefab;
-    private readonly Control _itemContainer;
-    private readonly Viewport _containerViewport;
-    private readonly IInfiniteLayoutGrid _layoutGrid;
-    private readonly Vector2 _cellItemSize;
-    private readonly Vector2I _viewportSize;
 
-    private readonly Stack<TButtonType> _buttonPool;
+
+    private readonly ScrollBar? _horizontalScrollBar;
+    private readonly Control _itemContainer;
+    private readonly PackedScene _itemPrefab;
+    private readonly IInfiniteLayoutGrid _layoutGrid;
     private readonly HashSet<TButtonType> _movingOutControls = [];
     private readonly Stack<TButtonType> _pendingRemove = [];
-    private readonly Action<Control> _collectInvincibleControlHandler;
+    private readonly ScrollBar? _verticalScrollBar;
+    private readonly Vector2I _viewportSize;
 
-    private DataView[,] _currentView;
-    private DataView[,] _nextView;
+    private NullableData<TDataType> _currentSelectedData;
+    private int _currentSelectedViewColumnIndex;
 
     private int _currentSelectedViewRowIndex;
-    private int _currentSelectedViewColumnIndex;
-    
-    private bool _isHorizontalScrollBarVisible = true;
-    private bool _isVerticalScrollBarVisible = true;
-    
-    private NullableData<TDataType> _currentSelectedData;
 
-    private Vector2 _startDragPosition;
+    private DataView[,] _currentView;
     private bool _isDragging;
 
-    public int ViewColumnIndex { get; private set; }
-    public int ViewRowIndex { get; private set; }
+    private bool _isHorizontalScrollBarVisible = true;
+    private bool _isVerticalScrollBarVisible = true;
+    private DataView[,] _nextView;
 
-    public int ViewColumns { get; }
-    public int ViewRows { get; }
-    public TExtraArgument? ExtraArgument { get; }
-    public IElementPositioner ElementPositioner { get; set; }
-    public IElementTweener ElementTweener { get; set; }
-    public IElementFader ElementFader { get; set; }
-    
-    public IScrollBarTweener HScrollBarTweener { get; set; }
-    public IScrollBarTweener VScrollBarTweener { get; set; }
-    public IElementFader HScrollBarFader { get; set; }
-    public IElementFader VScrollBarFader { get; set; }
-    public bool AutoHideHScrollBar { get; set; }
-    public bool AutoHideVScrollBar { get; set; }
-
-    public bool GrabFocus() =>
-        _currentSelectedData.TryUnwrap(out var currentSelectedData) &&
-        TryGetDataPositionRelativeToViewport(_equalityComparerEquals, out var relativeRowIndex, out var relativeColumnIndex, currentSelectedData) &&
-        TryGrabFocusCore(relativeRowIndex, relativeColumnIndex) ||
-        TryGrabFocusCore(_currentSelectedViewRowIndex, _currentSelectedViewColumnIndex) ||
-        ((IVirtualGridView<TDataType>)this).GrabFocus(FocusPresets.TopLeftView) ||
-        ((IVirtualGridView<TDataType>)this).GrabFocus(FocusPresets.TopLeftData);
-
-    private bool TryGetDataPositionRelativeToViewport(Func<TDataType, TDataType, bool> comparer, out int rowIndex, out int columnIndex, TDataType data)
-    {
-        rowIndex = -1;
-        columnIndex = -1;
-        if (!VirtualGridView.SearchForData(_dataInspector, ViewRows, ViewColumns, out var matchedViewData, comparer, data)) return false;
-        var (matchedRowIndex, matchedColumnOffset, matchedRowOffset, matchColumnIndex) = matchedViewData;
-        var absoluteDataPosition = VirtualGridView.CreatePosition(
-            matchedRowOffset + matchedRowIndex,
-            matchedColumnOffset + matchColumnIndex
-        );
-
-        var currentViewOffset = VirtualGridView.CreatePosition(
-            ViewRowIndex,
-            ViewColumnIndex
-        );
-
-        var relativeDataPosition = absoluteDataPosition - currentViewOffset;
-
-        rowIndex = relativeDataPosition.Y;
-        columnIndex = relativeDataPosition.X;
-        
-        return true;
-    }
-    
-    private bool TryGrabFocusCore(int relativeRowIndex, int relativeColumnIndex)
-    {
-        FocusToTarget(
-            relativeRowIndex,
-            relativeColumnIndex,
-            out var targetColumnIndex,
-            out var targetRowIndex
-        );
-
-        var selectedView = _currentView[targetRowIndex, targetColumnIndex].AssignedButton;
-
-        if (selectedView is null) return false;
-
-        selectedView.GrabFocus();
-
-        return true;
-    }
-
-    private void FocusToTarget(int viewportRowIndex, int viewportColumnIndex, out int targetRowIndex, out int targetColumnIndex)
-    {
-        var dataPositionRelativeToViewport = VirtualGridView.CreatePosition(viewportRowIndex, viewportColumnIndex);
-        ElementPositioner.GetTargetPosition(
-            _viewportSize,
-            dataPositionRelativeToViewport,
-            out var targetDataPosition
-        );
-        
-        var offset = dataPositionRelativeToViewport - targetDataPosition;
-        
-        if (targetDataPosition.X < 0 || targetDataPosition.Y < 0 || targetDataPosition.X >= _viewportSize.X || targetDataPosition.Y >= _viewportSize.Y)
-        {
-            var fixedTargetPosition = targetDataPosition.Clamp(Vector2I.Zero, _viewportSize - Vector2I.One);
-            offset += targetDataPosition - fixedTargetPosition;
-            targetDataPosition = fixedTargetPosition;
-        }
-
-        ApplyMovementOffset(offset);
-        (targetRowIndex, targetColumnIndex) = targetDataPosition;
-    }
-
-
-    public bool GrabFocus<TArgument>(IViewFocusFinder<TArgument> focusFinder, IViewStartHandler<TArgument> handler, TArgument argument, SearchDirection searchDirection)
-    {
-        var wrapper = new ReadOnlyViewArray(_currentView, ViewRows, ViewColumns, BackingResolver);
-        var span = searchDirection.GetSpan();
-        return focusFinder.TryResolveFocus(
-            in wrapper,
-            in span,
-            handler,
-            in argument,
-            out var viewRowIndex,
-            out var viewColumnIndex
-        ) && TryGrabFocusCore(viewRowIndex, viewColumnIndex);
-    }
-
-    private static bool BackingResolver(object obj) => !((DataView)obj).Data.IsNull;
-
-    public bool GrabFocus(IEqualityDataFocusFinder focusFinder, in TDataType matchingArgument)
-    {
-        var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
-        return focusFinder.TryResolveFocus(
-            in matchingArgument,
-            in wrapper,
-            out var dataSetRowIndex,
-            out var dataSetColumnIndex
-        ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
-    }
-
-    public bool GrabFocus(IPredicateDataFocusFinder focusFinder, Predicate<TDataType> matchingArgument)
-    {
-        var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
-        return focusFinder.TryResolveFocus(
-            in matchingArgument,
-            in wrapper,
-            out var dataSetRowIndex,
-            out var dataSetColumnIndex
-        ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
-    }
-    
-    public bool GrabFocus<TMatchingExtraArgument>(IPredicateDataFocusFinder focusFinder, Func<TDataType, TMatchingExtraArgument, bool> matchingArgument, TMatchingExtraArgument extraArgument)
-    {
-        var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
-        return focusFinder.TryResolveFocus(
-            in matchingArgument,
-            in wrapper,
-            extraArgument,
-            out var dataSetRowIndex,
-            out var dataSetColumnIndex
-        ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
-    }
-
-    public bool GrabFocus<TArgument>(IDataFocusFinder<TArgument> focusFinder, IDataStartHandler<TArgument> startPositionHandler, TArgument matchingArgument, SearchDirection searchDirection)
-    {
-        var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
-        var span = searchDirection.GetSpan();
-        return focusFinder.TryResolveFocus(
-            in wrapper,
-            in span,
-            startPositionHandler,
-            in matchingArgument,
-            out var rowIndex,
-            out var columnIndex
-        ) && TryGrabFocusCore(rowIndex - ViewRowIndex, columnIndex - ViewColumnIndex);
-    }
-    
-    private VirtualGridViewItem<TDataType, TExtraArgument>.CellInfo ConstructInfo(
-        TDataType data,
-        int rowIndex,
-        int columnIndex,
-        int viewportMinRowIndex,
-        int viewportMinColumnIndex,
-        int dataSetMinRowIndex,
-        int dataSetMinColumnIndex,
-        int viewportMaxRowIndex,
-        int viewportMaxColumnIndex,
-        int dataSetMaxRowIndex,
-        int dataSetMaxColumnIndex
-    )
-    {
-        var definedViewEdgeType = EdgeType.None;
-
-        if (rowIndex == 0) definedViewEdgeType |= EdgeType.Up;
-        if (columnIndex == 0) definedViewEdgeType |= EdgeType.Left;
-        if (rowIndex == ViewRows - 1) definedViewEdgeType |= EdgeType.Down;
-        if (columnIndex == ViewColumns - 1) definedViewEdgeType |= EdgeType.Right;
-
-
-        var viewEdgeType = EdgeType.None;
-
-        if (rowIndex == viewportMinRowIndex) viewEdgeType |= EdgeType.Up;
-        if (columnIndex == viewportMinColumnIndex) viewEdgeType |= EdgeType.Left;
-        if (rowIndex == viewportMaxRowIndex) viewEdgeType |= EdgeType.Down;
-        if (columnIndex == viewportMaxColumnIndex) viewEdgeType |= EdgeType.Right;
-
-        var absRowIndex = rowIndex + ViewRowIndex;
-        var absColumnIndex = columnIndex + ViewColumnIndex;
-
-        var dataSetEdgeType = EdgeType.None;
-        if (absRowIndex == dataSetMinRowIndex) dataSetEdgeType |= EdgeType.Up;
-        if (absColumnIndex == dataSetMinColumnIndex) dataSetEdgeType |= EdgeType.Left;
-        if (absRowIndex == dataSetMaxRowIndex) dataSetEdgeType |= EdgeType.Down;
-        if (absColumnIndex == dataSetMaxColumnIndex) dataSetEdgeType |= EdgeType.Right;
-
-        var info = new VirtualGridViewItem<TDataType, TExtraArgument>.CellInfo(
-            this,
-            rowIndex,
-            columnIndex,
-            definedViewEdgeType,
-            viewEdgeType,
-            dataSetEdgeType,
-            data
-        );
-        return info;
-    }
+    private Vector2 _startDragPosition;
 
     internal VirtualGridViewImpl(
         int viewportRows,
@@ -287,15 +76,15 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         AutoHideVScrollBar = autoHideVerticalScrollBar;
         VScrollBarTweener = verticalScrollBarTweener;
         VScrollBarFader = verticalScrollBarFader;
-        
+
         _horizontalScrollBar = horizontalScrollBar;
         _verticalScrollBar = verticalScrollBar;
 
         object obj = new GodotThread();
-        
+
         InitializeScrollBar(_horizontalScrollBar);
         InitializeScrollBar(_verticalScrollBar);
-        
+
         _dataInspector = dataInspector;
         _equalityComparer = equalityComparer;
         _equalityComparerEquals = equalityComparer.Equals;
@@ -344,6 +133,276 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             scrollBar.FocusMode = Control.FocusModeEnum.None;
             scrollBar.MouseFilter = Control.MouseFilterEnum.Ignore;
         }
+    }
+
+    public int ViewColumnIndex { get; private set; }
+    public int ViewRowIndex { get; private set; }
+
+    public int ViewColumns { get; }
+    public int ViewRows { get; }
+    public IElementPositioner ElementPositioner { get; set; }
+    public IElementTweener ElementTweener { get; set; }
+    public IElementFader ElementFader { get; set; }
+
+    public IScrollBarTweener HScrollBarTweener { get; set; }
+    public IScrollBarTweener VScrollBarTweener { get; set; }
+    public IElementFader HScrollBarFader { get; set; }
+    public IElementFader VScrollBarFader { get; set; }
+    public bool AutoHideHScrollBar { get; set; }
+    public bool AutoHideVScrollBar { get; set; }
+
+    public bool GrabFocus() =>
+        (_currentSelectedData.TryUnwrap(out var currentSelectedData) &&
+         TryGetDataPositionRelativeToViewport(_equalityComparerEquals, out var relativeRowIndex, out var relativeColumnIndex, currentSelectedData) &&
+         TryGrabFocusCore(relativeRowIndex, relativeColumnIndex)) ||
+        TryGrabFocusCore(_currentSelectedViewRowIndex, _currentSelectedViewColumnIndex) ||
+        ((IVirtualGridView<TDataType>)this).GrabFocus(FocusPresets.TopLeftView) ||
+        ((IVirtualGridView<TDataType>)this).GrabFocus(FocusPresets.TopLeftData);
+
+
+    public bool GrabFocus<TArgument>(IViewFocusFinder<TArgument> focusFinder, IViewStartHandler<TArgument> handler, TArgument argument, SearchDirection searchDirection)
+    {
+        var wrapper = new ReadOnlyViewArray(_currentView, ViewRows, ViewColumns, BackingResolver);
+        var span = searchDirection.GetSpan();
+        return focusFinder.TryResolveFocus(
+            in wrapper,
+            in span,
+            handler,
+            in argument,
+            out var viewRowIndex,
+            out var viewColumnIndex
+        ) && TryGrabFocusCore(viewRowIndex, viewColumnIndex);
+    }
+
+    public bool GrabFocus(IEqualityDataFocusFinder focusFinder, in TDataType matchingArgument)
+    {
+        var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
+        return focusFinder.TryResolveFocus(
+            in matchingArgument,
+            in wrapper,
+            out var dataSetRowIndex,
+            out var dataSetColumnIndex
+        ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
+    }
+
+    public bool GrabFocus(IPredicateDataFocusFinder focusFinder, Predicate<TDataType> matchingArgument)
+    {
+        var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
+        return focusFinder.TryResolveFocus(
+            in matchingArgument,
+            in wrapper,
+            out var dataSetRowIndex,
+            out var dataSetColumnIndex
+        ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
+    }
+
+    public bool GrabFocus<TMatchingExtraArgument>(IPredicateDataFocusFinder focusFinder, Func<TDataType, TMatchingExtraArgument, bool> matchingArgument, TMatchingExtraArgument extraArgument)
+    {
+        var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
+        return focusFinder.TryResolveFocus(
+            in matchingArgument,
+            in wrapper,
+            extraArgument,
+            out var dataSetRowIndex,
+            out var dataSetColumnIndex
+        ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
+    }
+
+    public bool GrabFocus<TArgument>(IDataFocusFinder<TArgument> focusFinder, IDataStartHandler<TArgument> startPositionHandler, TArgument matchingArgument, SearchDirection searchDirection)
+    {
+        var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
+        var span = searchDirection.GetSpan();
+        return focusFinder.TryResolveFocus(
+            in wrapper,
+            in span,
+            startPositionHandler,
+            in matchingArgument,
+            out var rowIndex,
+            out var columnIndex
+        ) && TryGrabFocusCore(rowIndex - ViewRowIndex, columnIndex - ViewColumnIndex);
+    }
+
+    public void Redraw()
+    {
+        Redraw(
+            out _,
+            out _,
+            out _,
+            out _,
+            out _,
+            out _,
+            out var dataSetMaxRowIndex,
+            out var dataSetMaxColumnIndex
+        );
+        UpdateScrollBar(dataSetMaxRowIndex + 1, dataSetMaxColumnIndex + 1);
+    }
+
+    public TExtraArgument? ExtraArgument { get; }
+
+    public void FocusTo(VirtualGridViewItem<TDataType, TExtraArgument>.CellInfo info)
+    {
+        _currentSelectedViewRowIndex = info.RowIndex;
+        _currentSelectedViewColumnIndex = info.ColumnIndex;
+        _currentSelectedData = NullableData.Create<TDataType>(info.Data!);
+        FocusToTarget(
+            _currentSelectedViewRowIndex,
+            _currentSelectedViewColumnIndex,
+            out _,
+            out _
+        );
+    }
+
+    /// <summary>
+    /// This method tries to find the best next candidate
+    /// in the given <paramref name="moveDirection"/>
+    /// of the provided <paramref name="rowIndex"/> and <paramref name="columnIndex"/>.
+    /// </summary>
+    public void MoveAndGrabFocus(MoveDirection moveDirection, int rowIndex, int columnIndex)
+    {
+        ReadOnlySpan<Vector2I> searchDirection = moveDirection switch
+        {
+            MoveDirection.Up => [SearchDirections.SearchUp, SearchDirections.SearchLeft, SearchDirections.SearchRight],
+            MoveDirection.Down => [SearchDirections.SearchDown, SearchDirections.SearchRight, SearchDirections.SearchLeft],
+            MoveDirection.Left => [SearchDirections.SearchLeft, SearchDirections.SearchUp, SearchDirections.SearchDown],
+            MoveDirection.Right => [SearchDirections.SearchRight, SearchDirections.SearchUp, SearchDirections.SearchDown],
+            _ => throw new ArgumentOutOfRangeException(nameof(moveDirection), moveDirection, null)
+        };
+
+        var absoluteStart = new Vector2I(ViewRowIndex + rowIndex, ViewColumnIndex + columnIndex) + searchDirection[0];
+        var readOnlyDataArray = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
+
+        // TODO: Relying on BFS for searching for matching is stupid,
+        // this leads to serious performance degradation when
+        // the BFS walks through a very long distance.
+        // We should either:
+        //     Develop a new matching algorithm.
+        //     Optimize the hell out of the BFSCore, as accessing cell data involves a lot of calculations.
+        if (!FocusFiners.BFSSearch.BFSCore(
+                in absoluteStart,
+                in readOnlyDataArray,
+                in searchDirection,
+                out var targetAbsoluteRowIndex,
+                out var targetAbsoluteColumnIndex
+            )) return;
+
+        if (!readOnlyDataArray.TryGetData(targetAbsoluteRowIndex, targetAbsoluteColumnIndex, out var data)) return;
+        GrabFocus(FocusFiners.Value, data);
+    }
+
+    private bool TryGetDataPositionRelativeToViewport(Func<TDataType, TDataType, bool> comparer, out int rowIndex, out int columnIndex, TDataType data)
+    {
+        rowIndex = -1;
+        columnIndex = -1;
+        if (!VirtualGridView.SearchForData(_dataInspector, ViewRows, ViewColumns, out var matchedViewData, comparer, data)) return false;
+        var (matchedRowIndex, matchedColumnOffset, matchedRowOffset, matchColumnIndex) = matchedViewData;
+        var absoluteDataPosition = VirtualGridView.CreatePosition(
+            matchedRowOffset + matchedRowIndex,
+            matchedColumnOffset + matchColumnIndex
+        );
+
+        var currentViewOffset = VirtualGridView.CreatePosition(
+            ViewRowIndex,
+            ViewColumnIndex
+        );
+
+        var relativeDataPosition = absoluteDataPosition - currentViewOffset;
+
+        rowIndex = relativeDataPosition.Y;
+        columnIndex = relativeDataPosition.X;
+
+        return true;
+    }
+
+    private bool TryGrabFocusCore(int relativeRowIndex, int relativeColumnIndex)
+    {
+        FocusToTarget(
+            relativeRowIndex,
+            relativeColumnIndex,
+            out var targetColumnIndex,
+            out var targetRowIndex
+        );
+
+        var selectedView = _currentView[targetRowIndex, targetColumnIndex].AssignedButton;
+
+        if (selectedView is null) return false;
+
+        selectedView.GrabFocus();
+
+        return true;
+    }
+
+    private void FocusToTarget(int viewportRowIndex, int viewportColumnIndex, out int targetRowIndex, out int targetColumnIndex)
+    {
+        var dataPositionRelativeToViewport = VirtualGridView.CreatePosition(viewportRowIndex, viewportColumnIndex);
+        ElementPositioner.GetTargetPosition(
+            _viewportSize,
+            dataPositionRelativeToViewport,
+            out var targetDataPosition
+        );
+
+        var offset = dataPositionRelativeToViewport - targetDataPosition;
+
+        if (targetDataPosition.X < 0 || targetDataPosition.Y < 0 || targetDataPosition.X >= _viewportSize.X || targetDataPosition.Y >= _viewportSize.Y)
+        {
+            var fixedTargetPosition = targetDataPosition.Clamp(Vector2I.Zero, _viewportSize - Vector2I.One);
+            offset += targetDataPosition - fixedTargetPosition;
+            targetDataPosition = fixedTargetPosition;
+        }
+
+        ApplyMovementOffset(offset);
+        (targetRowIndex, targetColumnIndex) = targetDataPosition;
+    }
+
+    private static bool BackingResolver(object obj) => !((DataView)obj).Data.IsNull;
+
+    private VirtualGridViewItem<TDataType, TExtraArgument>.CellInfo ConstructInfo(
+        TDataType data,
+        int rowIndex,
+        int columnIndex,
+        int viewportMinRowIndex,
+        int viewportMinColumnIndex,
+        int dataSetMinRowIndex,
+        int dataSetMinColumnIndex,
+        int viewportMaxRowIndex,
+        int viewportMaxColumnIndex,
+        int dataSetMaxRowIndex,
+        int dataSetMaxColumnIndex
+    )
+    {
+        var definedViewEdgeType = EdgeType.None;
+
+        if (rowIndex == 0) definedViewEdgeType |= EdgeType.Up;
+        if (columnIndex == 0) definedViewEdgeType |= EdgeType.Left;
+        if (rowIndex == ViewRows - 1) definedViewEdgeType |= EdgeType.Down;
+        if (columnIndex == ViewColumns - 1) definedViewEdgeType |= EdgeType.Right;
+
+
+        var viewEdgeType = EdgeType.None;
+
+        if (rowIndex == viewportMinRowIndex) viewEdgeType |= EdgeType.Up;
+        if (columnIndex == viewportMinColumnIndex) viewEdgeType |= EdgeType.Left;
+        if (rowIndex == viewportMaxRowIndex) viewEdgeType |= EdgeType.Down;
+        if (columnIndex == viewportMaxColumnIndex) viewEdgeType |= EdgeType.Right;
+
+        var absRowIndex = rowIndex + ViewRowIndex;
+        var absColumnIndex = columnIndex + ViewColumnIndex;
+
+        var dataSetEdgeType = EdgeType.None;
+        if (absRowIndex == dataSetMinRowIndex) dataSetEdgeType |= EdgeType.Up;
+        if (absColumnIndex == dataSetMinColumnIndex) dataSetEdgeType |= EdgeType.Left;
+        if (absRowIndex == dataSetMaxRowIndex) dataSetEdgeType |= EdgeType.Down;
+        if (absColumnIndex == dataSetMaxColumnIndex) dataSetEdgeType |= EdgeType.Right;
+
+        var info = new VirtualGridViewItem<TDataType, TExtraArgument>.CellInfo(
+            this,
+            rowIndex,
+            columnIndex,
+            definedViewEdgeType,
+            viewEdgeType,
+            dataSetEdgeType,
+            data
+        );
+        return info;
     }
 
     private void ProcessScrollWheelAndDragInput(InputEvent inputEvent)
@@ -423,10 +482,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             );
 
             if (currentFocusPosition != targetFocusPosition)
-            {
                 _currentView[targetFocusPosition.Y, targetFocusPosition.X]
                     .AssignedButton?.GrabFocus();
-            }
 
             var eventName = simulatedMoveDirection switch
             {
@@ -483,39 +540,28 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     {
         if (!_buttonPool.TryPop(out var instance)) instance = _itemPrefab.Instantiate<TButtonType>();
         else instance.Show();
-        
+
         _itemContainer.AddChild(instance);
 
         instance.FocusMode = Control.FocusModeEnum.All;
         instance.MouseFilter = Control.MouseFilterEnum.Pass;
-        instance.DrawGridItem(ConstructInfo(
-            data,
-            rowIndex,
-            columnIndex,
-            viewportMinRowIndex,
-            viewportMinColumnIndex,
-            dataSetMinRowIndex,
-            dataSetMinColumnIndex,
-            viewportMaxRowIndex,
-            viewportMaxColumnIndex,
-            dataSetMaxRowIndex,
-            dataSetMaxColumnIndex
-        ));
-        
-        return instance;
-    }
-
-    public void FocusTo(VirtualGridViewItem<TDataType, TExtraArgument>.CellInfo info)
-    {
-        _currentSelectedViewRowIndex = info.RowIndex;
-        _currentSelectedViewColumnIndex = info.ColumnIndex;
-        _currentSelectedData = NullableData.Create<TDataType>(info.Data!);
-        FocusToTarget(
-            _currentSelectedViewRowIndex,
-            _currentSelectedViewColumnIndex,
-            out _,
-            out _
+        instance.DrawGridItem(
+            ConstructInfo(
+                data,
+                rowIndex,
+                columnIndex,
+                viewportMinRowIndex,
+                viewportMinColumnIndex,
+                dataSetMinRowIndex,
+                dataSetMinColumnIndex,
+                viewportMaxRowIndex,
+                viewportMaxColumnIndex,
+                dataSetMaxRowIndex,
+                dataSetMaxColumnIndex
+            )
         );
+
+        return instance;
     }
 
     private void CollectButtonInstance(Control button)
@@ -530,15 +576,6 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         _itemContainer.RemoveChild(button);
     }
 
-    public void Redraw()
-    {
-        Redraw(
-            out _, out _, out _, out _,
-            out _, out _, out var dataSetMaxRowIndex, out var dataSetMaxColumnIndex
-        );
-        UpdateScrollBar(dataSetMaxRowIndex + 1, dataSetMaxColumnIndex + 1);
-    }
-
     private void Redraw(
         out int viewportMinRowIndex,
         out int viewportMinColumnIndex,
@@ -551,12 +588,12 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     )
     {
         _dataInspector.GetDataSetCurrentMetrics(out var dataSetRows, out var dataSetColumns);
-        
+
         viewportMinRowIndex = Mathf.Max(ViewRows - 1, 0);
         viewportMinColumnIndex = Mathf.Max(ViewColumns - 1, 0);
         dataSetMinRowIndex = 0;
         dataSetMinColumnIndex = 0;
-        
+
         viewportMaxRowIndex = 0;
         viewportMaxColumnIndex = 0;
         dataSetMaxRowIndex = dataSetRows - 1;
@@ -583,21 +620,18 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                     // Set to new value
                     newViewItem.Data = dataSetValue;
                     // If new value is equal to old, set the button as well
-                    if (dataSetValue.IsEqual(oldViewItem.Data, _equalityComparer))
-                    {
-                        newViewItem.AssignedButton = oldViewItem.AssignedButton;
-                    }
+                    if (dataSetValue.IsEqual(oldViewItem.Data, _equalityComparer)) newViewItem.AssignedButton = oldViewItem.AssignedButton;
                 }
-                
-                if(dataSetValue.IsNull) continue;
-                
+
+                if (dataSetValue.IsNull) continue;
+
                 viewportMinRowIndex = Math.Min(viewportMinRowIndex, rowIndex);
                 viewportMinColumnIndex = Math.Min(viewportMinColumnIndex, columnIndex);
                 viewportMaxRowIndex = Math.Max(viewportMaxRowIndex, rowIndex);
                 viewportMaxColumnIndex = Math.Max(viewportMaxColumnIndex, columnIndex);
             }
         }
-        
+
         for (var rowIndex = 0; rowIndex < ViewRows; rowIndex++)
         for (var columnIndex = 0; columnIndex < ViewColumns; columnIndex++)
         {
@@ -658,7 +692,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                 );
             }
         }
-        
+
         (_currentView, _nextView) = (_nextView, _currentView);
 
         foreach (var dataView in _nextView)
@@ -674,7 +708,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         float rowPage;
         float columnProgress;
         float columnPage;
-        
+
         bool canAutoHideRowScrollBar;
         bool canAutoHideColumnScrollBar;
 
@@ -717,7 +751,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             AutoHideVScrollBar,
             ref _isVerticalScrollBarVisible
         );
-        
+
         UpdateScroller(
             _horizontalScrollBar,
             HScrollBarTweener,
@@ -755,9 +789,9 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                 scrollBar.Page = page;
 
                 if (!autoHide) return;
-                
+
                 if (isCurrentVisible == canAutoHide) return;
-                
+
                 scrollBar.Visible = canAutoHide;
                 isCurrentVisible = canAutoHide;
             }
@@ -794,7 +828,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                         fader.KillTween(scrollBar);
                         fader.Appear(scrollBar);
                         isCurrentVisible = true;
-                    } 
+                    }
                 }
 
                 tweener.UpdateValue(scrollBar, progress, page);
@@ -804,8 +838,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     private void ApplyMovementOffset(Vector2I offset)
     {
-        if(offset == Vector2I.Zero) return;
-        
+        if (offset == Vector2I.Zero) return;
+
         var dataSetMaxRowIndex = 0;
         var dataSetMaxColumnIndex = 0;
         while (VirtualGridView.TryGetMoveDirection(ref offset, out var moveDirection))
@@ -815,45 +849,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             if (moveDirection == Vector2I.Up) Move(MoveDirection.Down, out dataSetMaxRowIndex, out dataSetMaxColumnIndex);
             if (moveDirection == Vector2I.Down) Move(MoveDirection.Up, out dataSetMaxRowIndex, out dataSetMaxColumnIndex);
         }
-        
+
         UpdateScrollBar(dataSetMaxRowIndex + 1, dataSetMaxColumnIndex + 1);
-    }
-
-    /// <summary>
-    /// This method tries to find the best next candidate
-    /// in the given <paramref name="moveDirection"/>
-    /// of the provided <paramref name="rowIndex"/> and <paramref name="columnIndex"/>.
-    /// </summary>
-    public void MoveAndGrabFocus(MoveDirection moveDirection, int rowIndex, int columnIndex)
-    {
-        ReadOnlySpan<Vector2I> searchDirection = moveDirection switch
-        {
-            MoveDirection.Up => [SearchDirections.SearchUp, SearchDirections.SearchLeft, SearchDirections.SearchRight],
-            MoveDirection.Down => [SearchDirections.SearchDown, SearchDirections.SearchRight, SearchDirections.SearchLeft],
-            MoveDirection.Left => [SearchDirections.SearchLeft, SearchDirections.SearchUp, SearchDirections.SearchDown],
-            MoveDirection.Right => [SearchDirections.SearchRight, SearchDirections.SearchUp, SearchDirections.SearchDown],
-            _ => throw new ArgumentOutOfRangeException(nameof(moveDirection), moveDirection, null)
-        };
-        
-        var absoluteStart = new Vector2I(ViewRowIndex + rowIndex, ViewColumnIndex + columnIndex) + searchDirection[0];
-        var readOnlyDataArray = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
-
-        // TODO: Relying on BFS for searching for matching is stupid,
-        // this leads to serious performance degradation when
-        // the BFS walks through a very long distance.
-        // We should either:
-        //     Develop a new matching algorithm.
-        //     Optimize the hell out of the BFSCore, as accessing cell data involves a lot of calculations.
-        if (!FocusFiners.BFSSearch.BFSCore(
-                in absoluteStart,
-                in readOnlyDataArray,
-                in searchDirection,
-                out var targetAbsoluteRowIndex,
-                out var targetAbsoluteColumnIndex
-            )) return;
-
-        if(!readOnlyDataArray.TryGetData(targetAbsoluteRowIndex, targetAbsoluteColumnIndex, out var data)) return;
-        GrabFocus(FocusFiners.Value, data);
     }
 
     private void Move(MoveDirection moveDirection, out int dataSetMaxRowIndex, out int dataSetMaxColumnIndex)
@@ -919,7 +916,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         var resolvedViewportMinColumnIndex = Mathf.Max(ViewColumns - 1, 0);
         var resolvedViewportMaxRowIndex = 0;
         var resolvedViewportMaxColumnIndex = 0;
-        
+
         const byte EDGE_NORMAL = 0;
         const byte EDGE_OUT = 1;
         const byte EDGE_IN = 2;
@@ -942,7 +939,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             var currentButton = currentViewItem.AssignedButton;
 
             if (currentButton is null) continue;
-            
+
             var currentGridIndex = new Vector2I(rowIndex, columnIndex);
             var movementType = GetEdgeType(rowIndex, columnIndex);
 
@@ -987,7 +984,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                 var nextViewItem = _nextView[targetRowIndex, targetColumnIndex];
                 nextViewItem.AssignedButton = currentButton;
                 nextViewItem.Data = currentViewItem.Data;
-                
+
                 resolvedViewportMinRowIndex = Math.Min(resolvedViewportMinRowIndex, targetRowIndex);
                 resolvedViewportMinColumnIndex = Math.Min(resolvedViewportMinColumnIndex, targetColumnIndex);
                 resolvedViewportMaxRowIndex = Math.Max(resolvedViewportMaxRowIndex, targetRowIndex);
@@ -1013,7 +1010,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                 resolvedViewportMinColumnIndex = Math.Min(resolvedViewportMinColumnIndex, columnIndex);
                 resolvedViewportMaxRowIndex = Math.Max(resolvedViewportMaxRowIndex, rowIndex);
                 resolvedViewportMaxColumnIndex = Math.Max(resolvedViewportMaxColumnIndex, columnIndex);
-                
+
                 nextViewItem.Data = currentValue;
 
                 var movementType = GetEdgeType(rowIndex, columnIndex);
@@ -1034,7 +1031,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                 nextViewItem.AssignedButton = newButton;
                 var info = newButton.Info!.Value;
                 newButton.Info = info;
-                
+
                 switch (movementType)
                 {
                     case EDGE_IN:
@@ -1056,9 +1053,9 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         for (var columnIndex = 0; columnIndex < ViewColumns; columnIndex++)
         {
             var nextViewItem = _nextView[rowIndex, columnIndex];
-            if(nextViewItem.Data.IsNull) continue;
+            if (nextViewItem.Data.IsNull) continue;
             var info = nextViewItem.AssignedButton!.Info!.Value;
-            
+
             nextViewItem.AssignedButton.Info = ConstructInfo(
                 info.Data!,
                 info.RowIndex,
@@ -1081,7 +1078,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             dataView.Data = NullableData.Null<TDataType>();
             dataView.AssignedButton = null;
         }
-        
+
         return;
 
         byte GetEdgeType(int rowIndex, int columnIndex)
@@ -1100,4 +1097,11 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     }
 
     private static Vector2I SwapXY(Vector2I vector2I) => new(vector2I.Y, vector2I.X);
+
+    private class DataView
+    {
+        public TButtonType? AssignedButton;
+        public NullableData<TDataType> Data;
+        public override string ToString() => $"Button: {AssignedButton?.Name ?? "Null"}, Data: {Data}";
+    }
 }

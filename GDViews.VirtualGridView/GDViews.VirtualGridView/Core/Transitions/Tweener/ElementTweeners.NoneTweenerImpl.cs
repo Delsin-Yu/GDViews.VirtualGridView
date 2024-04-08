@@ -17,8 +17,6 @@ public static partial class ElementTweeners
             onFinish.Invoke(control);
         }
 
-        public void KillTween(Control control)
-        {
-        }
+        public void KillTween(Control control) { }
     }
 }

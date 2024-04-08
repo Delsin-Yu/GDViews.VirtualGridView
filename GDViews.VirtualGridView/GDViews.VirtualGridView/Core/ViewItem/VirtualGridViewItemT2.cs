@@ -21,34 +21,26 @@ public enum EdgeType : byte
     None = 0
 }
 
-
 public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : Button
 {
-    public readonly struct CellInfo
-    {
-        internal CellInfo(IVirtualGridViewParent<TDataType, TExtraArgument> parent, int rowIndex, int columnIndex, EdgeType definedViewEdgeType, EdgeType viewEdgeType, EdgeType dataSetEdgeType, TDataType? data)
-        {
-            Parent = parent;
-            RowIndex = rowIndex;
-            ColumnIndex = columnIndex;
-            DefinedViewEdgeType = definedViewEdgeType;
-            ViewEdgeType = viewEdgeType;
-            DataSetEdgeType = dataSetEdgeType;
-            Data = data;
-        }
+    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnAppearHandler;
+    private readonly Action<TExtraArgument?> _OnDisappearHandler;
 
-        internal readonly IVirtualGridViewParent<TDataType, TExtraArgument> Parent;
-        public readonly int RowIndex;
-        public readonly int ColumnIndex;
-        public readonly EdgeType DefinedViewEdgeType;
-        public readonly EdgeType ViewEdgeType;
-        public readonly EdgeType DataSetEdgeType;
-        public readonly TDataType? Data;
+    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnDrawHandler;
 
+    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnFocusEnteredHandler;
+    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnFocusExitedHandler;
 
-        public override string ToString() => 
-            $"({RowIndex},{ColumnIndex}), DefinedViewEdge: {DefinedViewEdgeType}, ViewEdge: {ViewEdgeType}, DataEdge: {DataSetEdgeType}, Data: {Data}";
-    }
+    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnMoveHandler;
+    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnMoveInHandler;
+    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnMoveOutHandler;
+    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnPressedHandler;
+
+    private string? _cachedName;
+
+    private Label _label;
+
+    internal CellInfo? Info;
 
     protected VirtualGridViewItem()
     {
@@ -62,25 +54,6 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         _OnFocusExitedHandler = _OnGridItemFocusExited;
         _OnPressedHandler = _OnGridItemPressed;
     }
-
-    internal CellInfo? Info;
-
-    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnDrawHandler;
-    
-    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnMoveHandler;
-    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnMoveInHandler;
-    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnMoveOutHandler;
-    
-    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnFocusEnteredHandler;
-    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnFocusExitedHandler;
-    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnPressedHandler;
-    
-    private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnAppearHandler;
-    private readonly Action<TExtraArgument?> _OnDisappearHandler;
-
-    private Label _label;
-    
-    private string? _cachedName;
 
     internal string LocalName => _cachedName ??= Name;
 
@@ -118,10 +91,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
                 return;
             }
 
-            if (Check(UIInputActionNames.UIRight, EdgeType.Right, in info, inputEvent))
-            {
-                info.Parent.MoveAndGrabFocus(MoveDirection.Right, info.RowIndex, info.ColumnIndex);
-            }
+            if (Check(UIInputActionNames.UIRight, EdgeType.Right, in info, inputEvent)) info.Parent.MoveAndGrabFocus(MoveDirection.Right, info.RowIndex, info.ColumnIndex);
         }
     }
 
@@ -231,4 +201,29 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
     protected virtual void _OnGridItemFocusEntered(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
     protected virtual void _OnGridItemFocusExited(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
     protected virtual void _OnGridItemPressed(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
+
+    public readonly struct CellInfo
+    {
+        internal CellInfo(IVirtualGridViewParent<TDataType, TExtraArgument> parent, int rowIndex, int columnIndex, EdgeType definedViewEdgeType, EdgeType viewEdgeType, EdgeType dataSetEdgeType, TDataType? data)
+        {
+            Parent = parent;
+            RowIndex = rowIndex;
+            ColumnIndex = columnIndex;
+            DefinedViewEdgeType = definedViewEdgeType;
+            ViewEdgeType = viewEdgeType;
+            DataSetEdgeType = dataSetEdgeType;
+            Data = data;
+        }
+
+        internal readonly IVirtualGridViewParent<TDataType, TExtraArgument> Parent;
+        public readonly int RowIndex;
+        public readonly int ColumnIndex;
+        public readonly EdgeType DefinedViewEdgeType;
+        public readonly EdgeType ViewEdgeType;
+        public readonly EdgeType DataSetEdgeType;
+        public readonly TDataType? Data;
+
+
+        public override string ToString() => $"({RowIndex},{ColumnIndex}), DefinedViewEdge: {DefinedViewEdgeType}, ViewEdge: {ViewEdgeType}, DataEdge: {DataSetEdgeType}, Data: {Data}";
+    }
 }

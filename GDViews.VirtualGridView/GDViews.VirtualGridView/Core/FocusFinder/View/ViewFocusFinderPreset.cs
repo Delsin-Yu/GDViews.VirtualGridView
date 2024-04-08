@@ -10,4 +10,3 @@ public record struct ViewFocusFinderPreset(
 public record struct ViewFocusFinderPreset<TArgument>(
     IViewFocusFinder<TArgument> FocusFinder,
     IViewStartHandler<TArgument> StartHandler);
-    

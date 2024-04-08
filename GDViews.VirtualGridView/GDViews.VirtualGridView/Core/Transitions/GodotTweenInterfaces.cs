@@ -6,17 +6,8 @@ public interface IGodotTween
     TweenSetup TweenSetup { get; set; }
 }
 
-public interface IGodotTweenScrollBarTweener : IGodotTween, IScrollBarTweener
-{
-    
-}
+public interface IGodotTweenScrollBarTweener : IGodotTween, IScrollBarTweener { }
 
-public interface IGodotTweenTweener : IGodotTween, IElementTweener
-{
-    
-}
+public interface IGodotTweenTweener : IGodotTween, IElementTweener { }
 
-public interface IGodotTweenFader : IGodotTween, IElementFader
-{
-    
-}
+public interface IGodotTweenFader : IGodotTween, IElementFader { }

@@ -15,10 +15,9 @@ internal interface IDataInspector<T>
 
 internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayoutSelectionBuilder, IEqualityComparer<TDataType>? equalityComparer, bool reverseLocalLayout, bool isHorizontalDataLayout) : IHorizontalDataLayoutBuilder<TDataType>, IVerticalDataLayoutBuilder<TDataType>
 {
+    private readonly List<DataSetDefinition<TDataType>> _dataSetDefinitions = [];
     public DataLayoutSelectionBuilder DataLayoutSelectionBuilder { get; } = dataLayoutSelectionBuilder;
     public IEqualityComparer<TDataType> EqualityComparer { get; } = equalityComparer ?? EqualityComparer<TDataType>.Default;
-
-    private readonly List<DataSetDefinition<TDataType>> _dataSetDefinitions = [];
 
     public IHorizontalDataLayoutBuilder<TDataType> AddRowDataSource(DataSetDefinition<TDataType> dataSetDefinition)
     {
@@ -26,15 +25,7 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
         return this;
     }
 
-    public IVerticalDataLayoutBuilder<TDataType> AddColumnDataSource(DataSetDefinition<TDataType> dataSetDefinition)
-    {
-        _dataSetDefinitions.Add(dataSetDefinition);
-        return this;
-    }
 
-    private record struct AnnotatedDataSet<T>(IDynamicGridViewer<T> DataSet, int LocalIndex);
-
-    
     public IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> WithArgument<TButtonType, TExtraArgument>(PackedScene itemPrefab, Control itemContainer, IInfiniteLayoutGrid layoutGrid) where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
     {
         HashSet<int> existingIndexes = [];
@@ -81,7 +72,6 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
         Dictionary<IDynamicGridViewer<TDataType>, int> dataSetCounter = new();
 
         foreach (ref readonly var dataSetDefinition in dataSetDefinitions)
-        {
             for (var spanIndex = 0; spanIndex < dataSetDefinition.DataSpan.Count; spanIndex++)
             {
                 var dataIndex = dataSetDefinition.DataSpan[spanIndex];
@@ -90,16 +80,13 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
                 if (!exists) currentCount = 0;
                 dataMap[dataIndex] = new(dataSetDefinition.DataSet, currentCount++);
             }
-        }
 
         if (reverseLocalLayout)
-        {
             foreach (ref var annotatedDataSet in dataMap.AsSpan())
             {
                 var count = dataSetCounter[annotatedDataSet.DataSet] - 1;
                 annotatedDataSet.LocalIndex = count - annotatedDataSet.LocalIndex;
             }
-        }
 
         var viewColumns = DataLayoutSelectionBuilder.ViewHandlerBuilder.ViewportColumns;
         var viewRows = DataLayoutSelectionBuilder.ViewHandlerBuilder.ViewportRows;
@@ -111,10 +98,18 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
         return new FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(this, dataInspector, itemPrefab, itemContainer, layoutGrid);
     }
 
+    public IVerticalDataLayoutBuilder<TDataType> AddColumnDataSource(DataSetDefinition<TDataType> dataSetDefinition)
+    {
+        _dataSetDefinitions.Add(dataSetDefinition);
+        return this;
+    }
+
+    private record struct AnnotatedDataSet<T>(IDynamicGridViewer<T> DataSet, int LocalIndex);
+
     private class HorizontalDataInspector<T>(AnnotatedDataSet<T>[] dataMap, int viewColumns, int viewRows) : IDataInspector<T>
     {
-        private readonly NullableData<T>[] _view = new NullableData<T>[viewColumns];
         private readonly bool[] _rowCalculationBuffer = new bool[dataMap.Length];
+        private readonly NullableData<T>[] _view = new NullableData<T>[viewColumns];
 
         public void GetDataSetCurrentMetrics(out int rows, out int columns)
         {
@@ -127,6 +122,7 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
                 var mapRow = dataMapSpan[index];
                 bufferSpan[index] = mapRow.DataSet.TryGetGridElement(mapRow.LocalIndex, 0, out _);
             }
+
             rows = bufferSpan.LastIndexOf(true);
             if (rows != -1) rows++;
             else rows = 0;
@@ -141,7 +137,7 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
          * [4] DataSet2 <====> [1]
          * [5] DataSet1 <====> [3]
          */
-        
+
         public ReadOnlySpan<NullableData<T>> InspectViewColumn(int rowIndex, int columnOffset, int rowOffset)
         {
             var viewSpan = _view.AsSpan();
@@ -159,7 +155,7 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
             for (var i = columnOffset; i < dstColumnIndex; i++)
             {
                 ref var current = ref viewSpan[i - columnOffset];
-                
+
                 if (i >= 0 && dataSet.TryGetGridElement(localIndex, i, out var element))
                     current = NullableData.Create(element);
                 else
@@ -182,18 +178,18 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
             var (dataSet, localIndex) = dataMap[actualRow];
 
             var i = columnOffset * viewColumns + columnIndex;
-            
+
             if (i >= 0 && dataSet.TryGetGridElement(localIndex, i, out var element))
                 return NullableData.Create(element);
-            
+
             return NullableData.Null<T>();
         }
     }
 
     private class VerticalDataInspector<T>(AnnotatedDataSet<T>[] dataMap, int viewColumns, int viewRows) : IDataInspector<T>
     {
-        private readonly NullableData<T>[] _view = new NullableData<T>[viewColumns];
         private readonly bool[] _columnCalculationBuffer = new bool[dataMap.Length];
+        private readonly NullableData<T>[] _view = new NullableData<T>[viewColumns];
 
         public void GetDataSetCurrentMetrics(out int rows, out int columns)
         {
@@ -205,6 +201,7 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
                 var mapColumn = dataMapSpan[index];
                 bufferSpan[index] = mapColumn.DataSet.TryGetGridElement(mapColumn.LocalIndex, 0, out _);
             }
+
             columns = bufferSpan.LastIndexOf(true);
             if (columns != -1) columns++;
             else columns = 0;
@@ -271,7 +268,7 @@ internal class DataLayoutBuilder<TDataType>(DataLayoutSelectionBuilder dataLayou
 
             if (actualRow >= 0 && dataSet.TryGetGridElement(localIndex, actualRow, out var element))
                 return NullableData.Create(element);
-         
+
             return NullableData.Null<T>();
         }
     }

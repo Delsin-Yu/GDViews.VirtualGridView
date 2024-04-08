@@ -32,7 +32,7 @@ internal static class DelegateRunner
             return default;
         }
     }
-    
+
     internal static bool RunProtected<T1, T2, T3>(Action<T1, T2?, T3?>? call, in T1 arg1, in T2? arg2, in T3? arg3, string actionName, string targetName, [CallerArgumentExpression(nameof(call))] string? methodName = null)
     {
         try
@@ -65,7 +65,7 @@ internal static class DelegateRunner
     {
         GD.PushError(
             $"""
-             
+
              ┌┈┈┈┈ {actionName} Error ┈┈┈┈
              │ {e.GetType().Name} on {targetName}.{methodName ?? "UnknownFunction"}
              │ Message:

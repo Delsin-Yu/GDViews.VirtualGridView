@@ -9,17 +9,10 @@ public static partial class ElementFaders
     {
         public void Disappear(Control control, Action<Control> onFinish) => onFinish(control);
 
-        public void Appear(Control control)
-        {
-        }
+        public void Appear(Control control) { }
 
-        public void KillTween(Control control)
-        {
-        }
+        public void KillTween(Control control) { }
 
-        public void Show(Control control)
-        {
-            
-        }
+        public void Show(Control control) { }
     }
 }
