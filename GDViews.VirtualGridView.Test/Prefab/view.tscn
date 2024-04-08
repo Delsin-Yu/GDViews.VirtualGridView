@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bbflxig4up0wr"]
 
-[ext_resource type="Script" path="res://Scripts/View.cs" id="1_6p6a5"]
+[ext_resource type="Script" path="res://Scripts/ViewItemControl/View.cs" id="1_6p6a5"]
 
 [node name="View" type="Button"]
 custom_minimum_size = Vector2(120, 120)

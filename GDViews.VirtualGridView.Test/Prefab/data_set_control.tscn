@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://djj3jan54wgsy"]
 
-[ext_resource type="Script" path="res://Scripts/DataSetController.cs" id="1_mhvjj"]
+[ext_resource type="Script" path="res://Scripts/ViewItemControl/DataSetController.cs" id="1_mhvjj"]
 
 [node name="DataSetControl" type="PanelContainer" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear")]
 auto_translate_mode = 1
