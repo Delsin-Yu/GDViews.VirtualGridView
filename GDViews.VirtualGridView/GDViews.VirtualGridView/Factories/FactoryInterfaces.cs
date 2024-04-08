@@ -34,6 +34,16 @@ public interface IDataLayoutBuilder
     /// <param name="reverseLocalLayout">When set to true, the view controller will reverse the layout of the provided datasets.</param>
     /// <typeparam name="TDataType">The type for the data</typeparam>
     /// <returns>A builder that continues the building process of the <see cref="IVirtualGridView{TDataType}"/> instance.</returns>
+    /// <remarks><code>
+    /// Preview of the horizontal data layout, each data set is allowed to occupy more than one row:
+    /// --------------------------------------->
+    ///   [Row 0] [DataSet0: 0, 2, 4, 6, 8]
+    ///   [Row 1] [DataSet0: 1, 3, 5, 7, 9]
+    ///   [Row 2] [DataSet1: 0, 2, 4, 6, 8]
+    ///   [Row 3] [DataSet1: 1, 3, 5, 7, 9]
+    ///   [Row 4] [DataSet2: 0, 1, 2, 3, 4, 5]
+    ///   [Row 5] [DataSet3: 0, 1, 2, 3, 4, 5]
+    /// </code></remarks>
     IHorizontalDataLayoutBuilder<TDataType> WithHorizontalDataLayout<TDataType>(IEqualityComparer<TDataType>? equalityComparer = null, bool reverseLocalLayout = false);
     
     
@@ -46,6 +56,19 @@ public interface IDataLayoutBuilder
     /// <param name="reverseLocalLayout">When set to true, the view controller will reverse the layout of the provided datasets.</param>
     /// <typeparam name="TDataType">The type for the data</typeparam>
     /// <returns>A builder that continues the building process of the <see cref="IVirtualGridView{TDataType}"/> instance.</returns>
+    /// <remarks><code>
+    /// Preview of the vertical data layout, each data set is allowed to occupy more than one column:
+    /// ---------------------------------------------------------------->
+    /// [Column 0] [Column 1] [Column 2] [Column 3] [Column 4] [Column 5]
+    /// [DataSet0] [DataSet0] [DataSet1] [DataSet1] [DataSet2] [DataSet3]
+    ///  [          [          [          [          [          [          
+    ///      0,         1,         0,         1,         0,         0,    
+    ///      2,         3,         2,         3,         1,         1,    
+    ///      4,         5,         4,         5,         2,         2,    
+    ///      6,         7,         6,         7,         3,         3,    
+    ///      8,         9,         8,         9,         4,         4,    
+    ///         ]          ]          ]          ]          ]          ]          
+    /// </code></remarks>
     IVerticalDataLayoutBuilder<TDataType> WithVerticalDataLayout<TDataType>(IEqualityComparer<TDataType>? equalityComparer = null, bool reverseLocalLayout = false);
 }
 
