@@ -7,25 +7,25 @@ public static partial class ElementPositioners
 {
     private class SideElementPositioner : IElementPositioner
     {
-        public void GetTargetPosition(Vector2I viewportSize, Vector2I dataPositionRelativeToViewport, out Vector2I targetDataPosition)
+        public void GetTargetPosition(Vector2I viewportSize, Vector2I positionRelativeToViewport, out Vector2I destPositionRelativeToViewport)
         {
-            if (dataPositionRelativeToViewport >= Vector2I.Zero && dataPositionRelativeToViewport < viewportSize)
+            if (positionRelativeToViewport >= Vector2I.Zero && positionRelativeToViewport < viewportSize)
             {
-                targetDataPosition = dataPositionRelativeToViewport;
+                destPositionRelativeToViewport = positionRelativeToViewport;
                 return;
             }
 
-            targetDataPosition = dataPositionRelativeToViewport.Clamp(Vector2I.Zero, viewportSize - Vector2I.One);
+            destPositionRelativeToViewport = positionRelativeToViewport.Clamp(Vector2I.Zero, viewportSize - Vector2I.One);
         }
 
-        public void GetDragViewPosition(Vector2I viewportSize, MoveDirection dragDirection, Vector2I currentFocusPosition, out Vector2I targetFocusPosition)
+        public void GetDragViewPosition(Vector2I viewportSize, MoveDirection dragDirection, Vector2I positionRelativeToViewport, out Vector2I destPositionRelativeToViewport)
         {
-            targetFocusPosition = dragDirection switch
+            destPositionRelativeToViewport = dragDirection switch
             {
-                MoveDirection.Up => currentFocusPosition with { Y = 0 },
-                MoveDirection.Down => currentFocusPosition with { Y = viewportSize.Y - 1 },
-                MoveDirection.Left => currentFocusPosition with { X = 0 },
-                MoveDirection.Right => currentFocusPosition with { X = viewportSize.X - 1 },
+                MoveDirection.Up => positionRelativeToViewport with { Y = 0 },
+                MoveDirection.Down => positionRelativeToViewport with { Y = viewportSize.Y - 1 },
+                MoveDirection.Left => positionRelativeToViewport with { X = 0 },
+                MoveDirection.Right => positionRelativeToViewport with { X = viewportSize.X - 1 },
                 _ => throw new ArgumentOutOfRangeException(nameof(dragDirection), dragDirection, null)
             };
         }

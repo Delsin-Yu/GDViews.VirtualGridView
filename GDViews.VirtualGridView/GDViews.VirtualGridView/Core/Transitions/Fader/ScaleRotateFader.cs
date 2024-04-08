@@ -16,7 +16,7 @@ public class ScaleRotateFader(float duration, TweenSetup tweenSetup) : GodotTwee
     public float Duration { get; set; } = duration;
     public TweenSetup TweenSetup { get; set; } = tweenSetup;
 
-    public override void Show(Control control)
+    public override void Reset(Control control)
     {
         control.Scale = _showScale;
         control.RotationDegrees = _showRotation;

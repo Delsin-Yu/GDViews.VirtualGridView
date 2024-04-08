@@ -6,9 +6,9 @@ public static partial class ElementPositioners
 {
     private class CenteredElementPositioner : IElementPositioner
     {
-        public void GetTargetPosition(Vector2I viewportSize, Vector2I dataPositionRelativeToViewport, out Vector2I targetDataPosition)
+        public void GetTargetPosition(Vector2I viewportSize, Vector2I positionRelativeToViewport, out Vector2I destPositionRelativeToViewport)
         {
-            targetDataPosition = viewportSize / 2;
+            destPositionRelativeToViewport = viewportSize / 2;
         }
     }
 }

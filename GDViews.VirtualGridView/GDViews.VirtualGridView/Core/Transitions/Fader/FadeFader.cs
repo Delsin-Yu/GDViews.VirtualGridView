@@ -10,7 +10,7 @@ public class FadeFader(float duration, TweenSetup tweenSetup) : GodotTweenCoreBa
     public float Duration { get; set; } = duration;
     public TweenSetup TweenSetup { get; set; } = tweenSetup;
 
-    public override void Show(Control control) => control.Modulate = _showColor;
+    public override void Reset(Control control) => control.Modulate = _showColor;
 
     public override void ResetControl(Control control, Color previousTarget) => control.Modulate = previousTarget;
 

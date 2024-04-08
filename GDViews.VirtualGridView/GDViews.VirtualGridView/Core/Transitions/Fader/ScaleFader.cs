@@ -10,7 +10,7 @@ public class ScaleFader(float duration, TweenSetup tweenSetup) : GodotTweenCoreB
     public float Duration { get; set; } = duration;
     public TweenSetup TweenSetup { get; set; } = tweenSetup;
 
-    public override void Show(Control control) => control.Scale = _showScale;
+    public override void Reset(Control control) => control.Scale = _showScale;
 
     public override void ResetControl(Control control, Vector2 previousTarget) => control.Scale = previousTarget;
 

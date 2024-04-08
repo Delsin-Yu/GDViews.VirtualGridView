@@ -28,7 +28,7 @@ public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IElemen
     public void KillTween(Control control) => _tweenCore.KillTween(control);
 
     /// <inheritdoc/> 
-    public abstract void Show(Control control);
+    public abstract void Reset(Control control);
 
     public abstract void ResetControl(Control control, TCachedArgument previousTarget);
 
