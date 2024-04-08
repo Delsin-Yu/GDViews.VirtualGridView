@@ -15,13 +15,37 @@ public interface IViewHandlerBuilder
     /// <param name="elementPositioner">The Positioner assigned to the <see cref="IVirtualGridView{TDataType}"/>.</param>
     /// <param name="elementTweener">The Tweener assigned to the <see cref="IVirtualGridView{TDataType}"/>.</param>
     /// <param name="elementFader">The Fader assigned to the <see cref="IVirtualGridView{TDataType}"/>.</param>
-    /// <returns></returns>
+    /// <returns>A builder that continues the building process of the <see cref="IVirtualGridView{TDataType}"/> instance.</returns>
     IDataLayoutBuilder WithHandlers(IElementPositioner elementPositioner, IElementTweener elementTweener, IElementFader elementFader);
 }
 
+/// <summary>
+/// The builder that continues the building process of the <see cref="IVirtualGridView{TDataType}"/> instance.<br/>
+/// Use the <see cref="WithHorizontalDataLayout{TDataType}"/> or the <see cref="WithVerticalDataLayout{TDataType}"/> method to choose between the layout of the data sets.
+/// </summary>
 public interface IDataLayoutBuilder
 {
+    /// <summary>
+    /// Instruct the view controller to layout the datasets horizontally. 
+    /// </summary>
+    /// <param name="equalityComparer">The <see cref="IEqualityComparer{T}"/> used to
+    /// determine if the data associated to certain grid element has changed,
+    /// setting to null will fallback to the <see cref="EqualityComparer{T}.Default"/></param>
+    /// <param name="reverseLocalLayout">When set to true, the view controller will reverse the layout of the provided datasets.</param>
+    /// <typeparam name="TDataType">The type for the data</typeparam>
+    /// <returns>A builder that continues the building process of the <see cref="IVirtualGridView{TDataType}"/> instance.</returns>
     IHorizontalDataLayoutBuilder<TDataType> WithHorizontalDataLayout<TDataType>(IEqualityComparer<TDataType>? equalityComparer = null, bool reverseLocalLayout = false);
+    
+    
+    /// <summary>
+    /// Instruct the view controller to layout the datasets vertically. 
+    /// </summary>
+    /// <param name="equalityComparer">The <see cref="IEqualityComparer{T}"/> used to
+    /// determine if the data associated to certain grid element has changed,
+    /// setting to null will fallback to the <see cref="EqualityComparer{T}.Default"/></param>
+    /// <param name="reverseLocalLayout">When set to true, the view controller will reverse the layout of the provided datasets.</param>
+    /// <typeparam name="TDataType">The type for the data</typeparam>
+    /// <returns>A builder that continues the building process of the <see cref="IVirtualGridView{TDataType}"/> instance.</returns>
     IVerticalDataLayoutBuilder<TDataType> WithVerticalDataLayout<TDataType>(IEqualityComparer<TDataType>? equalityComparer = null, bool reverseLocalLayout = false);
 }
 
