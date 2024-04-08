@@ -13,6 +13,8 @@ public partial class Main : Node, IDataSetHandler
 
     [Export] private PackedScene _packedScene;
     [Export] private Control _container;
+    [Export] private ScrollBar _verticalScrollBar;
+    [Export] private ScrollBar _horizontalScrollBar;
     [Export] private Vector2 _size;
     [Export] private Vector2 _padding;
 
@@ -31,6 +33,7 @@ public partial class Main : Node, IDataSetHandler
     [Export] private OptionButton _tweenType;
     [Export] private OptionButton _faderType;
     [Export] private OptionButton _tweenerType;
+    [Export] private OptionButton _scrollBarTweenerType;
     [Export] private OptionButton _positionerType;
     [Export] private OptionButton _startPositionsType;
     [Export] private OptionButton _searchDirectionsType;
@@ -41,6 +44,7 @@ public partial class Main : Node, IDataSetHandler
     [Export] private Label _durationText;
 
     [Export] private CheckButton _enableClipChildren;
+    [Export] private CheckButton _autoHideScrollBar;
 
     #endregion
 
@@ -50,6 +54,7 @@ public partial class Main : Node, IDataSetHandler
     private TweenSetup _currentTweenSetup;
     private IElementFader _currentFader;
     private IElementTweener _currentTweener;
+    private IScrollBarTweener _currentScrollBarTweener;
     private IElementPositioner _currentPositioner;
     private float _currentDuration;
     private List<DataModel> _currentDataSet;
@@ -76,8 +81,9 @@ public partial class Main : Node, IDataSetHandler
         set
         {
             _currentTweenSetup = value;
-            if (CurrentFader is IGodotTweenFader currentGodotFader) currentGodotFader.TweenSetup = value;
-            if (CurrentTweener is IGodotTweenTweener currentGodotTweener) currentGodotTweener.TweenSetup = value;
+            if (CurrentFader is IGodotTween godotTweenFader) godotTweenFader.TweenSetup = value;
+            if (CurrentTweener is IGodotTween godotTweenTweener) godotTweenTweener.TweenSetup = value;
+            if (CurrentScrollBarTweener is IGodotTween godotTweenScrollBarTweener) godotTweenScrollBarTweener.TweenSetup = value;
             _virtualGridView.Redraw();
         }
     }
@@ -89,6 +95,8 @@ public partial class Main : Node, IDataSetHandler
         {
             _currentFader = value;
             _virtualGridView.ElementFader = value;
+            _virtualGridView.HScrollBarFader = value;
+            _virtualGridView.VScrollBarFader = value;
             CurrentDuration = _currentDuration;
             CurrentTweenSetup = _currentTweenSetup;
             _virtualGridView.Redraw();
@@ -102,6 +110,20 @@ public partial class Main : Node, IDataSetHandler
         {
             _currentTweener = value;
             _virtualGridView.ElementTweener = value;
+            CurrentDuration = _currentDuration;
+            CurrentTweenSetup = _currentTweenSetup;
+            _virtualGridView.Redraw();
+        }
+    }
+
+    private IScrollBarTweener CurrentScrollBarTweener
+    {
+        get => _currentScrollBarTweener;
+        set
+        {
+            _currentScrollBarTweener = value;
+            _virtualGridView.HScrollBarTweener = value;
+            _virtualGridView.VScrollBarTweener = value;
             CurrentDuration = _currentDuration;
             CurrentTweenSetup = _currentTweenSetup;
             _virtualGridView.Redraw();
@@ -125,8 +147,9 @@ public partial class Main : Node, IDataSetHandler
         set
         {
             _currentDuration = value;
-            if (CurrentFader is IGodotTweenFader currentGodotFader) currentGodotFader.Duration = value;
-            if (CurrentTweener is IGodotTweenTweener currentGodotTweener) currentGodotTweener.Duration = value;
+            if (CurrentFader is IGodotTween godotTweenFader) godotTweenFader.Duration = value;
+            if (CurrentTweener is IGodotTween godotTweenTweener) godotTweenTweener.Duration = value;
+            if (CurrentScrollBarTweener is IGodotTween godotTweenScrollBarTweener) godotTweenScrollBarTweener.Duration = value;
             _durationText.Text = value.ToString("F2");
         }
     }
@@ -144,6 +167,7 @@ public partial class Main : Node, IDataSetHandler
         const int tweenSetupDefaultSelection = 2;
         const int faderDefaultSelection = 1;
         const int tweenerDefaultSelection = 1;
+        const int scrollBarTweenerDefaultSelection = 1;
         const int positionerDefaultSelection = 0;
         const int startPositionHandlerDefaultSelection = 0;
         const int searchDirectionDefaultSelection = 0;
@@ -160,6 +184,7 @@ public partial class Main : Node, IDataSetHandler
         _currentTweenSetup = _listOfTweens[tweenSetupDefaultSelection].TweenSetup;
         _currentFader = _listOfFaderTypes[faderDefaultSelection].Data;
         _currentTweener = _listOfTweenerTypes[tweenerDefaultSelection].Data;
+        _currentScrollBarTweener = _listOfScrollBarTweenerTypes[scrollBarTweenerDefaultSelection].Data;
         _currentPositioner = _listOfPositionerTypes[positionerDefaultSelection].Data;
         _currentStartPosition = _listOfStartPositionsTypes[startPositionHandlerDefaultSelection].Data;
         _currentSearchDirection = _listOfSearchDirectionsTypes[searchDirectionDefaultSelection].Data;
@@ -177,6 +202,7 @@ public partial class Main : Node, IDataSetHandler
         DataBindings.Bind(_listOfTweens, _tweenType, static (x, instance) => instance.CurrentTweenSetup = x, tweenSetupDefaultSelection, this);
         DataBindings.Bind(_listOfFaderTypes, _faderType, static (x, instance) => instance.CurrentFader = x, faderDefaultSelection, this);
         DataBindings.Bind(_listOfTweenerTypes, _tweenerType, static (x, instance) => instance.CurrentTweener = x, tweenerDefaultSelection, this);
+        DataBindings.Bind(_listOfScrollBarTweenerTypes, _scrollBarTweenerType, static (x, instance) => instance.CurrentScrollBarTweener = x, scrollBarTweenerDefaultSelection, this);
         DataBindings.Bind(_listOfPositionerTypes, _positionerType, static (x, instance) => instance.CurrentPositioner = x, positionerDefaultSelection, this);
         DataBindings.Bind(_listOfStartPositionsTypes, _startPositionsType, static (x, instance) => instance._currentStartPosition = x, startPositionHandlerDefaultSelection, this);
         DataBindings.Bind(_listOfSearchDirectionsTypes, _searchDirectionsType, static (x, instance) => instance._currentSearchDirection = x, searchDirectionDefaultSelection, this);
@@ -194,6 +220,17 @@ public partial class Main : Node, IDataSetHandler
         );
 
         DataBindings.Bind(_enableClipChildren, (on, instance) => instance._container.ClipContents = on, true, this);
+        DataBindings.Bind(
+            _autoHideScrollBar,
+            (on, instance) =>
+            {
+                instance._virtualGridView.AutoHideHScrollBar = on;
+                instance._virtualGridView.AutoHideVScrollBar = on;
+                instance._virtualGridView.Redraw();
+            },
+            false,
+            this
+        );
 
         DataBindings.Bind(_grabByViewPosition, static instance => instance._virtualGridView.GrabFocus(FocusPresets.ViewPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
         DataBindings.Bind(_grabByDataPosition, static instance => instance._virtualGridView.GrabFocus(FocusPresets.DataPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
@@ -218,6 +255,8 @@ public partial class Main : Node, IDataSetHandler
                     _padding
                 )
             )
+                .ConfigureHorizontalScrollBar(_horizontalScrollBar, CurrentScrollBarTweener, CurrentFader)
+                .ConfigureVerticalScrollBar(_verticalScrollBar, CurrentScrollBarTweener, CurrentFader)
             .Build();
 
         CurrentDuration = _currentDuration;

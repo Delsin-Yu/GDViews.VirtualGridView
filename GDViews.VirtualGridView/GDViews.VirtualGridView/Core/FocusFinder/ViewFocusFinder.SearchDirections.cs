@@ -41,19 +41,19 @@ public static class SearchDirections
     private static readonly Vector2I[] _upLeft = [SearchUp, SearchLeft];
 
 
-    public static SearchDirection FourWayClockwise { get; } = new(_fourWayClockwise);
-    public static SearchDirection FourWayAnticlockwise { get; } = new(_fourWayAnticlockwise);
-    public static SearchDirection UpDownLeftRight { get; } = new(_forWayUpDownLeftRight);
-    public static SearchDirection RightDown { get; } = new(_rightDown);
-    public static SearchDirection LeftDown { get; } = new(_leftDown);
-    public static SearchDirection RightUp { get; } = new(_rightUp);
-    public static SearchDirection LeftUp { get; } = new(_leftUp);
-    public static SearchDirection DownRight { get; } = new(_downRight);
-    public static SearchDirection DownLeft { get; } = new(_downLeft);
-    public static SearchDirection UpRight { get; } = new(_upRight);
-    public static SearchDirection UpLeft { get; } = new(_upLeft);
-    public static SearchDirection Right { get; } = new(_oneWayRight);
-    public static SearchDirection Down { get; } = new(_oneWayDown);
-    public static SearchDirection Left { get; } = new(_oneWayLeft);
-    public static SearchDirection Up { get; } = new(_oneWayUp);
+    public static readonly SearchDirection FourWayClockwise = new(_fourWayClockwise);
+    public static readonly SearchDirection FourWayAnticlockwise = new(_fourWayAnticlockwise);
+    public static readonly SearchDirection UpDownLeftRight = new(_forWayUpDownLeftRight);
+    public static readonly SearchDirection RightDown = new(_rightDown);
+    public static readonly SearchDirection LeftDown = new(_leftDown);
+    public static readonly SearchDirection RightUp = new(_rightUp);
+    public static readonly SearchDirection LeftUp = new(_leftUp);
+    public static readonly SearchDirection DownRight = new(_downRight);
+    public static readonly SearchDirection DownLeft = new(_downLeft);
+    public static readonly SearchDirection UpRight = new(_upRight);
+    public static readonly SearchDirection UpLeft = new(_upLeft);
+    public static readonly SearchDirection Right = new(_oneWayRight);
+    public static readonly SearchDirection Down = new(_oneWayDown);
+    public static readonly SearchDirection Left = new(_oneWayLeft);
+    public static readonly SearchDirection Up = new(_oneWayUp);
 }

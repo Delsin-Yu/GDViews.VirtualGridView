@@ -9,6 +9,12 @@ public interface IVirtualGridView<TDataType>
     IElementPositioner ElementPositioner { get; set; }
     IElementTweener ElementTweener { get; set; }
     IElementFader ElementFader { get; set; }
+    IScrollBarTweener HScrollBarTweener { get; set; }
+    IScrollBarTweener VScrollBarTweener { get; set; }
+    IElementFader HScrollBarFader { get; set; }
+    IElementFader VScrollBarFader { get; set; }
+    bool AutoHideHScrollBar { get; set; }
+    bool AutoHideVScrollBar { get; set; }
 
     int ViewColumns { get; }
     int ViewRows { get; }

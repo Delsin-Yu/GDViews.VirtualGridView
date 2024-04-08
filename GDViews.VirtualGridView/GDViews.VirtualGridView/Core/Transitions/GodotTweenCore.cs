@@ -4,14 +4,14 @@ using Godot;
 
 namespace GodotViews.VirtualGrid;
 
-internal interface ITweenCoreUser<in TTweenType, TCachedArgument>
+internal interface ITweenCoreUser<in TTweenType, TTweenArgument, TCachedArgument>
 {
     bool IsTweenSupported(TTweenType tweenType);
     void ResetControl(Control control, TCachedArgument previousTarget);
-    TCachedArgument InitializeTween(TTweenType tweenType, in Vector2? targetPosition, Control control, Tween tween);
+    TCachedArgument InitializeTween(TTweenType tweenType, in TTweenArgument targetValue, Control control, Tween tween);
 }
 
-internal class GodotTweenCore<TTweenType, TCachedArgument>(ITweenCoreUser<TTweenType, TCachedArgument> tweenCoreUser)
+internal class GodotTweenCore<TTweenType, TTweenArgument, TCachedArgument>(ITweenCoreUser<TTweenType, TTweenArgument, TCachedArgument> tweenCoreUser)
 {
     private readonly Dictionary<Control, Tween> _activeTween = new();
     private readonly Dictionary<Control, TCachedArgument> _cachedArguments = [];
@@ -19,7 +19,7 @@ internal class GodotTweenCore<TTweenType, TCachedArgument>(ITweenCoreUser<TTween
     public void KillAndCreateNewTween(
         TTweenType tweenType,
         Control control,
-        in Vector2? targetPosition,
+        in TTweenArgument targetArgument,
         Action<Control>? onFinish,
         string methodName
     )
@@ -35,7 +35,7 @@ internal class GodotTweenCore<TTweenType, TCachedArgument>(ITweenCoreUser<TTween
         var runningTween = control.CreateTween();
         _activeTween[control] = runningTween;
 
-        _cachedArguments[control] = tweenCoreUser.InitializeTween(tweenType, targetPosition, control, runningTween);
+        _cachedArguments[control] = tweenCoreUser.InitializeTween(tweenType, targetArgument, control, runningTween);
 
         runningTween
             .TweenCallback(

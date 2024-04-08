@@ -15,9 +15,9 @@ public interface IViewStartHandler<in TArgument>
 
 public static class StartHandlers
 {
-    public static IDataStartHandler<Vector2I> DataPosition { get; } = new DataStartPositionHandler();
-    public static IViewStartHandler<Vector2I> ViewPosition { get; } = new ViewStartPositionHandler();
-    public static IViewStartHandler<Vector2I> ViewCenter { get; } = new ViewCenterStartPositionHandler();
+    public static readonly IDataStartHandler<Vector2I> DataPosition = new DataStartPositionHandler();
+    public static readonly IViewStartHandler<Vector2I> ViewPosition = new ViewStartPositionHandler();
+    public static readonly IViewStartHandler<Vector2I> ViewCenter = new ViewCenterStartPositionHandler();
 
     private class DataStartPositionHandler : IDataStartHandler<Vector2I>
     {

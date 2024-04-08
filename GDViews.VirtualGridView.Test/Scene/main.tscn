@@ -18,7 +18,7 @@ MarginContainer/constants/margin_top = 20
 OptionButton/font_sizes/font_size = 25
 PopupMenu/font_sizes/font_size = 25
 
-[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_dataSetController1", "_dataSetController2", "_dataSetController3", "_dataSetController4", "_dataSetController5", "_grabByViewPosition", "_grabByDataPosition", "_grabByMatching", "_grabByPattern", "_killFocus", "_tweenType", "_faderType", "_tweenerType", "_positionerType", "_startPositionsType", "_searchDirectionsType", "_searchDataSet", "_searchDataSetIndex", "_matchPattern", "_duration", "_durationText", "_enableClipChildren")]
+[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_verticalScrollBar", "_horizontalScrollBar", "_dataSetController1", "_dataSetController2", "_dataSetController3", "_dataSetController4", "_dataSetController5", "_grabByViewPosition", "_grabByDataPosition", "_grabByMatching", "_grabByPattern", "_killFocus", "_tweenType", "_faderType", "_tweenerType", "_scrollBarTweenerType", "_positionerType", "_startPositionsType", "_searchDirectionsType", "_searchDataSet", "_searchDataSetIndex", "_matchPattern", "_duration", "_durationText", "_enableClipChildren", "_autoHideScrollBar")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -29,7 +29,9 @@ scale = Vector2(1.00056, 1)
 theme = SubResource("Theme_p8tds")
 script = ExtResource("1_wuctx")
 _packedScene = ExtResource("2_7ef37")
-_container = NodePath("MarginContainer/HBoxContainer/DataView/ItemContainer")
+_container = NodePath("MarginContainer/HBoxContainer/DataView/HBoxContainer/ItemContainer")
+_verticalScrollBar = NodePath("MarginContainer/HBoxContainer/DataView/HBoxContainer/VerticalProgress")
+_horizontalScrollBar = NodePath("MarginContainer/HBoxContainer/DataView/HorizontalProgress")
 _size = Vector2(120, 120)
 _padding = Vector2(10, 10)
 _dataSetController1 = NodePath("MarginContainer/HBoxContainer/ControlPanel/BackingListControl/DataSetControl")
@@ -42,10 +44,11 @@ _grabByDataPosition = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabB
 _grabByMatching = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue/GrabByMatch")
 _grabByPattern = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByPattern/GrabByMatch")
 _killFocus = NodePath("MarginContainer/HBoxContainer/ControlPanel/RemoveFocusBtn2")
-_tweenType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Tween")
-_faderType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Fader")
-_tweenerType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Tweener")
-_positionerType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GridContainer/Positioner")
+_tweenType = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer2/Tween")
+_faderType = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer3/Fader")
+_tweenerType = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer3/Tweener")
+_scrollBarTweenerType = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer3/ScrollBarTweener")
+_positionerType = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer2/Positioner")
 _startPositionsType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByPosition/GrabByViewPositionStart")
 _searchDirectionsType = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByPosition/GrabByViewPositionDirection")
 _searchDataSet = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByExactValue/DataSet")
@@ -54,6 +57,7 @@ _matchPattern = NodePath("MarginContainer/HBoxContainer/ControlPanel/GrabByPatte
 _duration = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer/AnimationDuration/AnimationTimeSpinBox")
 _durationText = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer/AnimationDuration/AnimationTimeValue")
 _enableClipChildren = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer/MaskToggle")
+_autoHideScrollBar = NodePath("MarginContainer/HBoxContainer/ControlPanel/HBoxContainer/AutoHideScrollBar")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -85,7 +89,16 @@ text = "移动光标：[键盘方向键] 或 [滚轮/Shift+滚轮] 或 [拖拽]"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ItemContainer" type="Panel" parent="MarginContainer/HBoxContainer/DataView"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/DataView"]
+layout_mode = 2
+
+[node name="VerticalProgress" type="VScrollBar" parent="MarginContainer/HBoxContainer/DataView/HBoxContainer"]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+max_value = 1.0
+
+[node name="ItemContainer" type="Panel" parent="MarginContainer/HBoxContainer/DataView/HBoxContainer"]
 clip_contents = true
 custom_minimum_size = Vector2(900, 900)
 layout_mode = 2
@@ -93,52 +106,70 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 size_flags_stretch_ratio = 5.0
 
+[node name="HorizontalProgress" type="HScrollBar" parent="MarginContainer/HBoxContainer/DataView"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+max_value = 1.0
+
 [node name="ControlPanel" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 6
 alignment = 1
 
-[node name="GridContainer" type="GridContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
 layout_mode = 2
-columns = 4
 
-[node name="TweenTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+[node name="TweenTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer2"]
 layout_mode = 2
 text = "动画补间"
 
-[node name="Tween" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+[node name="Tween" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer2"]
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
 
-[node name="PositionerTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+[node name="PositionerTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer2"]
 auto_translate_mode = 1
 layout_mode = 2
 text = "布局类型"
 
-[node name="Positioner" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+[node name="Positioner" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer2"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
 
-[node name="TweenerTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+[node name="HBoxContainer3" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]
+layout_mode = 2
+
+[node name="TweenerTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer3"]
 auto_translate_mode = 1
 layout_mode = 2
 text = "过渡类型"
 
-[node name="Tweener" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+[node name="Tweener" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer3"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
 
-[node name="FaderTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+[node name="ScrollBarTweenerTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer3"]
+auto_translate_mode = 1
+layout_mode = 2
+text = "滚动条过渡"
+
+[node name="ScrollBarTweener" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer3"]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+
+[node name="FaderTitle" type="Label" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer3"]
 auto_translate_mode = 1
 layout_mode = 2
 text = "渐隐类型"
 
-[node name="Fader" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/GridContainer"]
+[node name="Fader" type="OptionButton" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer3"]
 auto_translate_mode = 1
 layout_mode = 2
 size_flags_horizontal = 3
@@ -176,6 +207,13 @@ vertical_alignment = 1
 layout_mode = 2
 focus_mode = 0
 text = "启用蒙版"
+flat = true
+
+[node name="AutoHideScrollBar" type="CheckButton" parent="MarginContainer/HBoxContainer/ControlPanel/HBoxContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+focus_mode = 0
+text = "自动隐藏滚动条"
 flat = true
 
 [node name="GrabByPosition" type="HBoxContainer" parent="MarginContainer/HBoxContainer/ControlPanel"]

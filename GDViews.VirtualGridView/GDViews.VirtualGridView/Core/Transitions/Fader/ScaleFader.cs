@@ -15,7 +15,7 @@ public class ScaleFader(float duration, TweenSetup tweenSetup) : GodotTweenCoreB
 
     public override void ResetControl(Control control, Vector2 previousTarget) => control.Scale = previousTarget;
 
-    public override Vector2 InitializeTween(FadeType fadeType, in Vector2? targetPosition, Control control, Tween tween)
+    public override Vector2 InitializeTween(FadeType fadeType, in Vector2 targetValue, Control control, Tween tween)
     {
         var show = fadeType is FadeType.Appear;
         control.Scale = show ? _HideScale : _showScale;

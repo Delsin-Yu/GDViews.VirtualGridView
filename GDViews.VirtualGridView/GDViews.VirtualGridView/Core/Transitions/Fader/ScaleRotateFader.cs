@@ -29,7 +29,7 @@ public class ScaleRotateFader(float duration, TweenSetup tweenSetup) : GodotTwee
         control.RotationDegrees = previousTarget.Rotation;
     }
 
-    public override (Vector2 Scale, float Rotation) InitializeTween(FadeType fadeType, in Vector2? targetPosition, Control control, Tween tween)
+    public override (Vector2 Scale, float Rotation) InitializeTween(FadeType fadeType, in Vector2 targetValue, Control control, Tween tween)
     {
         tween.SetParallel();
 

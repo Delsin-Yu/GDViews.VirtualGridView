@@ -15,11 +15,10 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         public override string ToString() => $"Button: {AssignedButton?.Name ?? "Null"}, Data: {Data}";
     }
     
+
     private readonly ScrollBar? _horizontalScrollBar;
     private readonly ScrollBar? _verticalScrollBar;
-    private readonly int _maxViewColumnIndex;
-    private readonly int _maxViewRowIndex;
-
+    
     private readonly IDataInspector<TDataType> _dataInspector;
     private readonly IEqualityComparer<TDataType> _equalityComparer;
     private readonly Func<TDataType, TDataType, bool> _equalityComparerEquals;
@@ -40,13 +39,16 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     private int _currentSelectedViewRowIndex;
     private int _currentSelectedViewColumnIndex;
+    
+    private bool _isHorizontalScrollBarVisible = true;
+    private bool _isVerticalScrollBarVisible = true;
+    
     private NullableData<TDataType> _currentSelectedData;
 
     private Vector2 _startDragPosition;
     private bool _isDragging;
 
     public int ViewColumnIndex { get; private set; }
-
     public int ViewRowIndex { get; private set; }
 
     public int ViewColumns { get; }
@@ -55,6 +57,13 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     public IElementPositioner ElementPositioner { get; set; }
     public IElementTweener ElementTweener { get; set; }
     public IElementFader ElementFader { get; set; }
+    
+    public IScrollBarTweener HScrollBarTweener { get; set; }
+    public IScrollBarTweener VScrollBarTweener { get; set; }
+    public IElementFader HScrollBarFader { get; set; }
+    public IElementFader VScrollBarFader { get; set; }
+    public bool AutoHideHScrollBar { get; set; }
+    public bool AutoHideVScrollBar { get; set; }
 
     public bool GrabFocus() =>
         _currentSelectedData.TryUnwrap(out var currentSelectedData) &&
@@ -250,26 +259,43 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         IElementTweener elementTweener,
         IElementFader elementFader,
         ScrollBar? horizontalScrollBar,
+        bool autoHideHorizontalScrollBar,
+        IScrollBarTweener horizontalScrollBarTweener,
+        IElementFader horizontalScrollBarFader,
         ScrollBar? verticalScrollBar,
+        bool autoHideVerticalScrollBar,
+        IScrollBarTweener verticalScrollBarTweener,
+        IElementFader verticalScrollBarFader,
         IDataInspector<TDataType> dataInspector,
         IEqualityComparer<TDataType> equalityComparer,
         PackedScene itemPrefab,
         Control itemContainer,
         IInfiniteLayoutGrid layoutGrid,
-        TExtraArgument? extraArgument)
+        TExtraArgument? extraArgument
+    )
     {
         ViewRows = viewportRows;
         ViewColumns = viewportColumns;
-
-        _maxViewRowIndex = ViewRows - 1;
-        _maxViewColumnIndex = ViewColumns - 1;
 
         ElementTweener = elementTweener;
         ElementFader = elementFader;
         ElementPositioner = elementPositioner;
 
+        AutoHideHScrollBar = autoHideHorizontalScrollBar;
+        HScrollBarTweener = horizontalScrollBarTweener;
+        HScrollBarFader = horizontalScrollBarFader;
+        AutoHideVScrollBar = autoHideVerticalScrollBar;
+        VScrollBarTweener = verticalScrollBarTweener;
+        VScrollBarFader = verticalScrollBarFader;
+        
         _horizontalScrollBar = horizontalScrollBar;
         _verticalScrollBar = verticalScrollBar;
+
+        object obj = new GodotThread();
+        
+        InitializeScrollBar(_horizontalScrollBar);
+        InitializeScrollBar(_verticalScrollBar);
+        
         _dataInspector = dataInspector;
         _equalityComparer = equalityComparer;
         _equalityComparerEquals = equalityComparer.Equals;
@@ -304,8 +330,19 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         {
             var instance = itemPrefab.Instantiate<TButtonType>();
             _buttonPool.Push(instance);
-            instance.Hide();
-            itemContainer.AddChild(instance, @internal: Node.InternalMode.Front);
+        }
+
+        return;
+
+        static void InitializeScrollBar(ScrollBar? scrollBar)
+        {
+            if (scrollBar is null) return;
+            scrollBar.Rounded = false;
+            scrollBar.MaxValue = 1f;
+            scrollBar.MinValue = 0f;
+            scrollBar.Step = 0;
+            scrollBar.FocusMode = Control.FocusModeEnum.None;
+            scrollBar.MouseFilter = Control.MouseFilterEnum.Ignore;
         }
     }
 
@@ -444,15 +481,10 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         int dataSetMaxColumnIndex
     )
     {
-        if (!_buttonPool.TryPop(out var instance))
-        {
-            instance = _itemPrefab.Instantiate<TButtonType>();
-            _itemContainer.AddChild(instance);
-        }
-        else
-        {
-            instance.Show();
-        }
+        if (!_buttonPool.TryPop(out var instance)) instance = _itemPrefab.Instantiate<TButtonType>();
+        else instance.Show();
+        
+        _itemContainer.AddChild(instance);
 
         instance.FocusMode = Control.FocusModeEnum.All;
         instance.MouseFilter = Control.MouseFilterEnum.Pass;
@@ -495,14 +527,17 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         typedButton.CallDisappear();
         _movingOutControls.Remove(typedButton);
         _buttonPool.Push(typedButton);
-        button.Hide();
+        _itemContainer.RemoveChild(button);
     }
 
-    public void Redraw() =>
+    public void Redraw()
+    {
         Redraw(
             out _, out _, out _, out _,
-            out _, out _, out _, out _
+            out _, out _, out var dataSetMaxRowIndex, out var dataSetMaxColumnIndex
         );
+        UpdateScrollBar(dataSetMaxRowIndex + 1, dataSetMaxColumnIndex + 1);
+    }
 
     private void Redraw(
         out int viewportMinRowIndex,
@@ -515,7 +550,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         out int dataSetMaxColumnIndex
     )
     {
-        _dataInspector.GetDataSetCurrentMetrics(out var rows, out var columns);
+        _dataInspector.GetDataSetCurrentMetrics(out var dataSetRows, out var dataSetColumns);
         
         viewportMinRowIndex = Mathf.Max(ViewRows - 1, 0);
         viewportMinColumnIndex = Mathf.Max(ViewColumns - 1, 0);
@@ -524,8 +559,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         
         viewportMaxRowIndex = 0;
         viewportMaxColumnIndex = 0;
-        dataSetMaxRowIndex = rows - 1;
-        dataSetMaxColumnIndex = columns - 1;
+        dataSetMaxRowIndex = dataSetRows - 1;
+        dataSetMaxColumnIndex = dataSetColumns - 1;
 
         for (var rowIndex = 0; rowIndex < ViewRows; rowIndex++)
         {
@@ -633,15 +668,155 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         }
     }
 
+    private void UpdateScrollBar(int dataRows, int dataColumns, bool noAnimation = false)
+    {
+        float rowProgress;
+        float rowPage;
+        float columnProgress;
+        float columnPage;
+        
+        bool canAutoHideRowScrollBar;
+        bool canAutoHideColumnScrollBar;
+
+        if (ViewRows >= dataRows)
+        {
+            rowProgress = 1f;
+            rowPage = 1f;
+            canAutoHideRowScrollBar = true;
+        }
+        else
+        {
+            rowProgress = ViewRowIndex / (float)(dataRows - ViewRows);
+            rowProgress = Math.Max(rowProgress, 0f);
+            rowPage = ViewRows / (float)dataRows;
+            canAutoHideRowScrollBar = false;
+        }
+
+        if (ViewColumns >= dataColumns)
+        {
+            columnProgress = 1f;
+            columnPage = 1f;
+            canAutoHideColumnScrollBar = true;
+        }
+        else
+        {
+            columnProgress = ViewColumnIndex / (float)(dataColumns - ViewColumns);
+            columnProgress = Math.Max(columnProgress, 0f);
+            columnPage = ViewColumns / (float)dataColumns;
+            canAutoHideColumnScrollBar = false;
+        }
+
+        UpdateScroller(
+            _verticalScrollBar,
+            VScrollBarTweener,
+            VScrollBarFader,
+            rowProgress,
+            rowPage,
+            noAnimation,
+            canAutoHideRowScrollBar,
+            AutoHideVScrollBar,
+            ref _isVerticalScrollBarVisible
+        );
+        
+        UpdateScroller(
+            _horizontalScrollBar,
+            HScrollBarTweener,
+            HScrollBarFader,
+            columnProgress,
+            columnPage,
+            noAnimation,
+            canAutoHideColumnScrollBar,
+            AutoHideHScrollBar,
+            ref _isHorizontalScrollBarVisible
+        );
+
+        return;
+
+        static void UpdateScroller(
+            ScrollBar? scrollBar,
+            IScrollBarTweener tweener,
+            IElementFader fader,
+            float progress,
+            float page,
+            bool noAnimation,
+            bool canAutoHide,
+            bool autoHide,
+            ref bool isCurrentVisible
+        )
+        {
+            if (scrollBar is null) return;
+            tweener.KillTween(scrollBar);
+
+            Console.WriteLine($"{scrollBar.Name}, {progress}, {page}, {noAnimation}, {canAutoHide}, {autoHide}");
+
+            if (noAnimation)
+            {
+                scrollBar.Value = progress;
+                scrollBar.Page = page;
+
+                if (!autoHide) return;
+                
+                if (isCurrentVisible == canAutoHide) return;
+                
+                scrollBar.Visible = canAutoHide;
+                isCurrentVisible = canAutoHide;
+            }
+            else
+            {
+                if (autoHide)
+                {
+                    if (canAutoHide)
+                    {
+                        if (isCurrentVisible)
+                        {
+                            scrollBar.Show();
+                            fader.KillTween(scrollBar);
+                            fader.Disappear(scrollBar, control => control.Hide());
+                            isCurrentVisible = false;
+                        }
+                    }
+                    else
+                    {
+                        if (!isCurrentVisible)
+                        {
+                            scrollBar.Show();
+                            fader.KillTween(scrollBar);
+                            fader.Appear(scrollBar);
+                            isCurrentVisible = true;
+                        }
+                    }
+                }
+                else
+                {
+                    if (!isCurrentVisible)
+                    {
+                        scrollBar.Show();
+                        fader.KillTween(scrollBar);
+                        fader.Appear(scrollBar);
+                        isCurrentVisible = true;
+                    } 
+                }
+
+                tweener.UpdateValue(scrollBar, progress, page);
+            }
+        }
+    }
+
     private void ApplyMovementOffset(Vector2I offset)
     {
+        if(offset == Vector2I.Zero) return;
+        
+        var dataSetMaxRowIndex = 0;
+        var dataSetMaxColumnIndex = 0;
         while (VirtualGridView.TryGetMoveDirection(ref offset, out var moveDirection))
         {
-            if (moveDirection == Vector2I.Left) Move(MoveDirection.Right);
-            if (moveDirection == Vector2I.Right) Move(MoveDirection.Left);
-            if (moveDirection == Vector2I.Up) Move(MoveDirection.Down);
-            if (moveDirection == Vector2I.Down) Move(MoveDirection.Up);
+            if (moveDirection == Vector2I.Left) Move(MoveDirection.Right, out dataSetMaxRowIndex, out dataSetMaxColumnIndex);
+            if (moveDirection == Vector2I.Right) Move(MoveDirection.Left, out dataSetMaxRowIndex, out dataSetMaxColumnIndex);
+            if (moveDirection == Vector2I.Up) Move(MoveDirection.Down, out dataSetMaxRowIndex, out dataSetMaxColumnIndex);
+            if (moveDirection == Vector2I.Down) Move(MoveDirection.Up, out dataSetMaxRowIndex, out dataSetMaxColumnIndex);
         }
+        
+        UpdateScrollBar(dataSetMaxRowIndex + 1, dataSetMaxColumnIndex + 1);
     }
 
     /// <summary>
@@ -681,7 +856,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         GrabFocus(FocusFiners.Value, data);
     }
 
-    public void Move(MoveDirection moveDirection)
+    private void Move(MoveDirection moveDirection, out int dataSetMaxRowIndex, out int dataSetMaxColumnIndex)
     {
         Redraw(
             out var viewportMinRowIndex,
@@ -690,8 +865,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             out var dataSetMinColumnIndex,
             out var viewportMaxRowIndex,
             out var viewportMaxColumnIndex,
-            out var dataSetMaxRowIndex,
-            out var dataSetMaxColumnIndex
+            out dataSetMaxRowIndex,
+            out dataSetMaxColumnIndex
         );
         Vector2I moveDirectionVector;
         int isMovingOutLineIndex;
@@ -906,7 +1081,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             dataView.Data = NullableData.Null<TDataType>();
             dataView.AssignedButton = null;
         }
-
+        
         return;
 
         byte GetEdgeType(int rowIndex, int columnIndex)

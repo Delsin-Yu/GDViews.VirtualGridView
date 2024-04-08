@@ -6,6 +6,11 @@ public interface IGodotTween
     TweenSetup TweenSetup { get; set; }
 }
 
+public interface IGodotTweenScrollBarTweener : IGodotTween, IScrollBarTweener
+{
+    
+}
+
 public interface IGodotTweenTweener : IGodotTween, IElementTweener
 {
     

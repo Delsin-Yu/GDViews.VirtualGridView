@@ -3,7 +3,7 @@ using Godot;
 
 namespace GodotViews.VirtualGrid;
 
-public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IElementFader, ITweenCoreUser<GodotTweenCoreBasedElementFader<TCachedArgument>.FadeType, TCachedArgument>
+public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IElementFader, ITweenCoreUser<GodotTweenCoreBasedElementFader<TCachedArgument>.FadeType, Vector2, TCachedArgument>
 {
     public enum FadeType
     {
@@ -11,7 +11,7 @@ public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IElemen
         Appear
     }
     
-    private readonly GodotTweenCore<FadeType, TCachedArgument> _tweenCore;
+    private readonly GodotTweenCore<FadeType, Vector2, TCachedArgument> _tweenCore;
 
     protected GodotTweenCoreBasedElementFader()
     {
@@ -31,6 +31,7 @@ public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IElemen
     public abstract void Show(Control control);
 
     public abstract void ResetControl(Control control, TCachedArgument previousTarget);
-    public abstract TCachedArgument InitializeTween(FadeType fadeType, in Vector2? targetPosition, Control control, Tween tween);
+
+    public abstract TCachedArgument InitializeTween(FadeType fadeType, in Vector2 targetValue, Control control, Tween tween);
     public abstract bool IsTweenSupported(FadeType fadeType);
 }

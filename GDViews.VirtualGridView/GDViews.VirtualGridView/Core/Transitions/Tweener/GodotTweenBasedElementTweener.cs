@@ -3,7 +3,7 @@ using Godot;
 
 namespace GodotViews.VirtualGrid;
 
-public abstract class GodotTweenCoreBasedElementTweener<TCachedArgument> : IElementTweener, ITweenCoreUser<GodotTweenCoreBasedElementTweener<TCachedArgument>.TweenType, TCachedArgument>
+public abstract class GodotTweenCoreBasedElementTweener<TCachedArgument> : IElementTweener, ITweenCoreUser<GodotTweenCoreBasedElementTweener<TCachedArgument>.TweenType, Vector2, TCachedArgument>
 {
     public enum TweenType
     {
@@ -12,7 +12,7 @@ public abstract class GodotTweenCoreBasedElementTweener<TCachedArgument> : IElem
         MoveOut
     }
 
-    private readonly GodotTweenCore<TweenType, TCachedArgument> _tweenCore;
+    private readonly GodotTweenCore<TweenType, Vector2, TCachedArgument> _tweenCore;
 
     protected GodotTweenCoreBasedElementTweener()
     {
@@ -32,7 +32,7 @@ public abstract class GodotTweenCoreBasedElementTweener<TCachedArgument> : IElem
     /// <inheritdoc/> 
     public void MoveOut(Control control, Vector2 targetPosition, Action<Control> onFinish) => _tweenCore.KillAndCreateNewTween(TweenType.MoveOut, control, targetPosition, onFinish, "Move Out");
 
-    public abstract TCachedArgument InitializeTween(TweenType tweenType, in Vector2? targetPosition, Control control, Tween tween);
+    public abstract TCachedArgument InitializeTween(TweenType tweenType, in Vector2 targetValue, Control control, Tween tween);
     public abstract void ResetControl(Control control, TCachedArgument previousTarget);
     public abstract bool IsTweenSupported(TweenType tweenType);
 

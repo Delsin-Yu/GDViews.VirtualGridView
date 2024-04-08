@@ -16,7 +16,7 @@ public class FadeFader(float duration, TweenSetup tweenSetup) : GodotTweenCoreBa
 
     public override void ResetControl(Control control, Color previousTarget) => control.Modulate = previousTarget;
 
-    public override Color InitializeTween(FadeType fadeType, in Vector2? targetPosition, Control control, Tween tween)
+    public override Color InitializeTween(FadeType fadeType, in Vector2 targetValue, Control control, Tween tween)
     {
         var show = fadeType is FadeType.Appear;
         control.Modulate = show ? _hideColor : _showColor;

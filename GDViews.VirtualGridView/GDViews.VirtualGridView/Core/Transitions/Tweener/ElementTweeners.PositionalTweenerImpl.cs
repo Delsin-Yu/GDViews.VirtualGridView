@@ -11,17 +11,15 @@ public static partial class ElementTweeners
 
         private static readonly NodePath PositionPath = new(Control.PropertyName.Position);
 
-        public override Vector2 InitializeTween(TweenType tweenType, in Vector2? targetPosition, Control control, Tween tween)
+        public override Vector2 InitializeTween(TweenType tweenType, in Vector2 targetValue, Control control, Tween tween)
         {
-            var targetPositionValue = targetPosition!.Value;
-            
             tween
-                .TweenProperty(control, PositionPath, targetPositionValue, Duration)
+                .TweenProperty(control, PositionPath, targetValue, Duration)
                 .SetTrans(TweenSetup.TransitionType)
                 .SetEase(TweenSetup.EaseType)
                 .Dispose();
 
-            return targetPositionValue;
+            return targetValue;
         }
 
         public override void ResetControl(Control control, Vector2 previousTarget) => 

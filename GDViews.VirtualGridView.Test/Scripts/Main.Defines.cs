@@ -52,6 +52,12 @@ public partial class Main
         ("无", ElementTweeners.None),
         ("平移", ElementTweeners.CreatePan(0f)),
     };
+    
+    private readonly (string Name, IScrollBarTweener Data)[] _listOfScrollBarTweenerTypes =
+    {
+        ("无", ScrollBarTweeners.None),
+        ("过渡", ScrollBarTweeners.CreateLerp(0f)),
+    };
 
     private readonly (string Name, IElementPositioner Data)[] _listOfPositionerTypes =
     {
@@ -61,10 +67,10 @@ public partial class Main
 
     private readonly (string Name, Vector2I Data)[] _listOfStartPositionsTypes =
     {
-        ("左上", ViewCorner.TopLeft),
-        ("右上", ViewCorner.TopRight),
-        ("左下", ViewCorner.BottomLeft),
-        ("右下", ViewCorner.BottomRight),
+        ("左上", ViewCorners.TopLeft),
+        ("右上", ViewCorners.TopRight),
+        ("左下", ViewCorners.BottomLeft),
+        ("右下", ViewCorners.BottomRight),
         ("中央", Vector2I.Zero),
     };
 
