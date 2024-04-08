@@ -38,8 +38,6 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
 
     private string? _cachedName;
 
-    private Label _label;
-
     internal CellInfo? Info;
 
     protected VirtualGridViewItem()
@@ -56,14 +54,6 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
     }
 
     internal string LocalName => _cachedName ??= Name;
-
-    public override void _Ready()
-    {
-        base._Ready();
-        _label = new();
-        _label.AddThemeFontSizeOverride("font_size", 12);
-        AddChild(_label);
-    }
 
     public sealed override void _GuiInput(InputEvent inputEvent)
     {
