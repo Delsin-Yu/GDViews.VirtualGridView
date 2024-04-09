@@ -4,7 +4,7 @@ using Godot;
 namespace GodotViews.VirtualGrid;
 
 /// <summary>
-/// Element Tweener is responsible for managing the visual tweening of the elements when moving the virtualized viewport.<br/>
+/// Element Tweener is responsible for managing the visual positional interpolation of the elements when user moves the virtualized viewport.<br/>
 /// You may access a set of built-in element tweeners from the <see cref="ElementTweeners"/> class.
 /// </summary>
 /// <remarks>

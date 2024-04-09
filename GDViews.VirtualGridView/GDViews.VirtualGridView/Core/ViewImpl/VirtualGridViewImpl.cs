@@ -781,8 +781,6 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             if (scrollBar is null) return;
             tweener.KillTween(scrollBar);
 
-            Console.WriteLine($"{scrollBar.Name}, {progress}, {page}, {noAnimation}, {canAutoHide}, {autoHide}");
-
             if (noAnimation)
             {
                 scrollBar.Value = progress;
