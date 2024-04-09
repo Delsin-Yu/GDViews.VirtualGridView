@@ -6,7 +6,7 @@ using System.Linq;
 namespace GodotViews.VirtualGrid;
 
 /// <summary>
-/// Allow the developer to indirectly access the populate state of each cell of the current viewport.
+/// Allow the developer to indirectly access the populate state of the current viewport.
 /// </summary>
 public readonly struct ReadOnlyViewArray
 {

@@ -99,7 +99,7 @@ public interface IFinishingBuilderAccess<TDataType>
     /// <param name="itemPrefab">The <see cref="PackedScene"/> used for the virtualized grid element
     /// that have a script inherits <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/> attached.</param>
     /// <param name="itemContainer">The <see cref="Control"/> used for the container of all virtualized grid elements.</param>
-    /// <param name="layoutGrid">The <see cref="InfinitLayoutGrids"/> used to handle the layout positioning of all virtualized grid elements.</param>
+    /// <param name="layoutGrid">The <see cref="InfiniteLayoutGrids"/> used to handle the layout positioning of all virtualized grid elements.</param>
     /// <typeparam name="TButtonType">The type of the script attached to the <paramref name="itemPrefab"/>.</typeparam>
     /// <typeparam name="TExtraArgument">The extra argument passed to the script attached to the virtualized grid elements.</typeparam>
     /// <returns>A builder that concludes the building process of the <see cref="IVirtualGridView{TDataType}"/> instance.</returns>
@@ -115,7 +115,7 @@ public interface IFinishingBuilderAccess<TDataType>
     /// <param name="itemPrefab">The <see cref="PackedScene"/> used for the virtualized grid element
     /// that have a script inherits <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/> attached.</param>
     /// <param name="itemContainer">The <see cref="Control"/> used for the container of all virtualized grid elements.</param>
-    /// <param name="layoutGrid">The <see cref="InfinitLayoutGrids"/> used to handle the layout positioning of all virtualized grid elements.</param>
+    /// <param name="layoutGrid">The <see cref="InfiniteLayoutGrids"/> used to handle the layout positioning of all virtualized grid elements.</param>
     /// <typeparam name="TButtonType">The type of the script attached to the <paramref name="itemPrefab"/>.</typeparam>
     /// <returns>A builder that concludes the building process of the <see cref="IVirtualGridView{TDataType}"/> instance.</returns>
     IFinishingArgumentBuilder<TDataType, TButtonType, NoExtraArgument> WithArgument<TButtonType>(
@@ -197,7 +197,7 @@ public interface IFinishingArgumentBuilder<TDataType, TButtonType, in TExtraArgu
     /// for it to become the horizontal progress indicator.
     /// </summary>
     /// <param name="horizontalScrollBar">The <see cref="ScrollBar"/> to associate to.</param>
-    /// <param name="tweener"></param>
+    /// <param name="tweener">The <see cref="IScrollBarTweener"/> used to handle the value interpolation of the scroll bar.</param>
     /// <param name="fader">The <see cref="IElementTweener"/> used to hiding or showing the scroll bar.</param>
     /// <param name="autoHide">Instructs the <see cref="IVirtualGridView{TDataType}"/> to hide the scroll bar
     /// when the current viewport is horizontally sufficient for showing every element of the datasets.</param>
@@ -215,7 +215,7 @@ public interface IFinishingArgumentBuilder<TDataType, TButtonType, in TExtraArgu
     /// for it to become the vertical progress indicator.
     /// </summary>
     /// <param name="verticalScrollBar">The <see cref="ScrollBar"/> to associate to.</param>
-    /// <param name="tweener"></param>
+    /// <param name="tweener">The <see cref="IScrollBarTweener"/> used to handle the value interpolation of the scroll bar.</param>
     /// <param name="fader">The <see cref="IElementTweener"/> used to hiding or showing the scroll bar.</param>
     /// <param name="autoHide">Instructs the <see cref="IVirtualGridView{TDataType}"/> to hide the scroll bar
     /// when the current viewport is vertically sufficient for showing every element of the datasets.</param>

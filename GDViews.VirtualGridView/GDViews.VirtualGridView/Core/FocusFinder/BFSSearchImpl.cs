@@ -65,7 +65,13 @@ public static partial class FocusFinders
             return false;
         }
 
-        public static bool BFSCore(ref readonly Vector2I start, ref readonly ReadOnlyViewArray currentView, ref readonly ReadOnlySpan<Vector2I> neighborOffsetCollection, out int rowIndex, out int columnIndex)
+        public static bool BFSCore(
+            ref readonly Vector2I start,
+            ref readonly ReadOnlyViewArray currentView,
+            ref readonly ReadOnlySpan<Vector2I> neighborOffsetCollection,
+            out int rowIndex,
+            out int columnIndex
+        )
         {
             var result = BFSCoreImpl(in start, in currentView, in neighborOffsetCollection, out rowIndex, out columnIndex);
             _pending.Clear();
@@ -113,7 +119,13 @@ public static partial class FocusFinders
             return false;
         }
 
-        public static bool BFSCore<TDataType>(ref readonly Vector2I start, ref readonly ReadOnlyDataArray<TDataType> currentView, ref readonly ReadOnlySpan<Vector2I> neighborOffsetCollection, out int rowIndex, out int columnIndex)
+        public static bool BFSCore<TDataType>(
+            ref readonly Vector2I start,
+            ref readonly ReadOnlyDataArray<TDataType> currentView,
+            ref readonly ReadOnlySpan<Vector2I> neighborOffsetCollection,
+            out int rowIndex,
+            out int columnIndex
+        )
         {
             var result = BFSCoreImpl(in start, in currentView, in neighborOffsetCollection, out rowIndex, out columnIndex);
             _pending.Clear();

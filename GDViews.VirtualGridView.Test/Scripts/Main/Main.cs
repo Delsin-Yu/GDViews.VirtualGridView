@@ -256,7 +256,7 @@ public partial class Main : Node, IDataSetHandler
             .WithArgument<View>(
                 _packedScene,
                 _container,
-                InfinitLayoutGrids.CreateSimple(
+                InfiniteLayoutGrids.CreateSimple(
                     _size,
                     _padding
                 )

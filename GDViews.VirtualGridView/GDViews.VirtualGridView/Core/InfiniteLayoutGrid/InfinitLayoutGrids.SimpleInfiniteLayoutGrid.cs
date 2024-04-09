@@ -2,7 +2,7 @@
 
 namespace GodotViews.VirtualGrid;
 
-public static partial class InfinitLayoutGrids
+public static partial class InfiniteLayoutGrids
 {
     private class SimpleInfiniteLayoutGrid(Vector2 itemSize, Vector2 itemSeparation) : IInfiniteLayoutGrid
     {

@@ -2,6 +2,10 @@
 
 namespace GodotViews.VirtualGrid;
 
+/// <summary>
+/// Provides a set of predefined <see cref="SearchDirection"/> for indicating the search directions
+/// to be used with <see cref="FocusPresets"/> or <see cref="FocusFinders"/>.
+/// </summary>
 public static class SearchDirections
 {
     internal static readonly Vector2I SearchRight = new(0, 1);
@@ -28,19 +32,48 @@ public static class SearchDirections
     private static readonly Vector2I[] _upLeft = [SearchUp, SearchLeft];
 
 
+    /// <summary> Instruct the focus handler to search toward the FourWayClockwise side. </summary>
     public static readonly SearchDirection FourWayClockwise = new(_fourWayClockwise);
+
+    /// <summary> Instruct the focus handler to search toward the FourWayAnticlockwise side. </summary>
     public static readonly SearchDirection FourWayAnticlockwise = new(_fourWayAnticlockwise);
+
+    /// <summary> Instruct the focus handler to search toward the UpDownLeftRight side. </summary>
     public static readonly SearchDirection UpDownLeftRight = new(_forWayUpDownLeftRight);
+
+    /// <summary> Instruct the focus handler to search toward the RightDown side. </summary>
     public static readonly SearchDirection RightDown = new(_rightDown);
+
+    /// <summary> Instruct the focus handler to search toward the LeftDown side. </summary>
     public static readonly SearchDirection LeftDown = new(_leftDown);
+
+    /// <summary> Instruct the focus handler to search toward the RightUp side. </summary>
     public static readonly SearchDirection RightUp = new(_rightUp);
+
+    /// <summary> Instruct the focus handler to search toward the LeftUp side. </summary>
     public static readonly SearchDirection LeftUp = new(_leftUp);
+
+    /// <summary> Instruct the focus handler to search toward the DownRight side. </summary>
     public static readonly SearchDirection DownRight = new(_downRight);
+
+    /// <summary> Instruct the focus handler to search toward the DownLeft side. </summary>
     public static readonly SearchDirection DownLeft = new(_downLeft);
+
+    /// <summary> Instruct the focus handler to search toward the UpRight side. </summary>
     public static readonly SearchDirection UpRight = new(_upRight);
+
+    /// <summary> Instruct the focus handler to search toward the UpLeft side. </summary>
     public static readonly SearchDirection UpLeft = new(_upLeft);
+
+    /// <summary> Instruct the focus handler to search toward the Right side. </summary>
     public static readonly SearchDirection Right = new(_oneWayRight);
+
+    /// <summary> Instruct the focus handler to search toward the Down side. </summary>
     public static readonly SearchDirection Down = new(_oneWayDown);
+
+    /// <summary> Instruct the focus handler to search toward the Left side. </summary>
     public static readonly SearchDirection Left = new(_oneWayLeft);
+
+    /// <summary> Instruct the focus handler to search toward the Up side. </summary>
     public static readonly SearchDirection Up = new(_oneWayUp);
 }

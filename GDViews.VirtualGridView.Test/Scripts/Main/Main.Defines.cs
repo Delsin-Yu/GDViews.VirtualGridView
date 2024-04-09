@@ -67,10 +67,10 @@ public partial class Main
 
     private readonly (string Name, Vector2I Data)[] _listOfStartPositionsTypes =
     {
-        ("左上", ViewCorners.TopLeft),
-        ("右上", ViewCorners.TopRight),
-        ("左下", ViewCorners.BottomLeft),
-        ("右下", ViewCorners.BottomRight),
+        ("左上", Corners.TopLeft),
+        ("右上", Corners.TopRight),
+        ("左下", Corners.BottomLeft),
+        ("右下", Corners.BottomRight),
         ("中央", Vector2I.Zero),
     };
 
