@@ -6,9 +6,9 @@ namespace GodotViews.VirtualGrid;
 
 internal interface ITweenCoreUser<in TTweenType, TTweenArgument, TCachedArgument>
 {
-    bool IsTweenSupported(TTweenType tweenType);
-    void ResetControl(Control control, TCachedArgument previousTarget);
-    TCachedArgument InitializeTween(TTweenType tweenType, in TTweenArgument targetValue, Control control, Tween tween);
+    bool IsTweenSupported(TTweenType type);
+    void FastForwardState(Control control, TCachedArgument previousTarget);
+    TCachedArgument InitializeTween(TTweenType type, in TTweenArgument targetValue, Control control, Tween tween);
 }
 
 internal class GodotTweenCore<TTweenType, TTweenArgument, TCachedArgument>(ITweenCoreUser<TTweenType, TTweenArgument, TCachedArgument> tweenCoreUser)
@@ -45,7 +45,7 @@ internal class GodotTweenCore<TTweenType, TTweenArgument, TCachedArgument>(ITwee
                         var controlName = control.Name;
                         if (onFinish != null) DelegateRunner.RunProtected(onFinish, control, "On Finish #1", controlName, methodName);
                         if (_activeTween.Remove(control, out var tween)) tween.Kill();
-                        if (_cachedArguments.Remove(control, out var previousTarget)) tweenCoreUser.ResetControl(control, previousTarget);
+                        if (_cachedArguments.Remove(control, out var previousTarget)) tweenCoreUser.FastForwardState(control, previousTarget);
                     }
                 )
             )
@@ -75,6 +75,6 @@ internal class GodotTweenCore<TTweenType, TTweenArgument, TCachedArgument>(ITwee
         }
 
         if (ret && cachedArgument.TryUnwrap(out var data))
-            tweenCoreUser.ResetControl(control, data);
+            tweenCoreUser.FastForwardState(control, data);
     }
 }

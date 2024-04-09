@@ -5,7 +5,7 @@ namespace GodotViews.VirtualGrid;
 
 public static partial class ElementFaders
 {
-    private class ScaleRotateFaderImpl(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedElementFader<(Vector2 Scale, float Rotation)>, IGodotTweenFader
+    private class ScaleRotateFaderImpl(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedElementFader<(Vector2 Scale, float Rotation)>(duration, tweenSetup)
     {
         private const float _showRotation = 0f;
         private const float _hideRotation = 180f;
@@ -15,22 +15,20 @@ public static partial class ElementFaders
 
         private static readonly Vector2 _showScale = Vector2.One;
         private static readonly Vector2 _hideScale = Vector2.Zero;
-        public float Duration { get; set; } = duration;
-        public TweenSetup TweenSetup { get; set; } = tweenSetup;
 
-        public override void Reset(Control control)
+        public override void Reinitialize(Control control)
         {
             control.Scale = _showScale;
             control.RotationDegrees = _showRotation;
         }
 
-        public override void ResetControl(Control control, (Vector2 Scale, float Rotation) previousTarget)
+        public override void FastForwardState(Control control, (Vector2 Scale, float Rotation) previousTarget)
         {
             control.Scale = previousTarget.Scale;
             control.RotationDegrees = previousTarget.Rotation;
         }
 
-        public override (Vector2 Scale, float Rotation) InitializeTween(FadeType fadeType, in Vector2 targetValue, Control control, Tween tween)
+        public override (Vector2 Scale, float Rotation) InitializeTween(FadeType type, in Vector2 targetValue, Control control, Tween tween)
         {
             tween.SetParallel();
 
@@ -40,7 +38,7 @@ public static partial class ElementFaders
             Vector2 targetScale;
             float targetRotation;
 
-            switch (fadeType)
+            switch (type)
             {
                 case FadeType.Disappear:
                     startScale = _showScale;
@@ -55,7 +53,7 @@ public static partial class ElementFaders
                     targetRotation = _showRotation;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(fadeType), fadeType, null);
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
 
             control.Scale = startScale;
@@ -78,6 +76,6 @@ public static partial class ElementFaders
             return (targetScale, targetRotation);
         }
 
-        public override bool IsTweenSupported(FadeType fadeType) => true;
+        public override bool IsTweenSupported(FadeType type) => true;
     }
 }

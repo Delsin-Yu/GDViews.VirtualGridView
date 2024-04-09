@@ -630,7 +630,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     {
         ElementTweener.KillTween(button);
         ElementFader.KillTween(button);
-        ElementFader.Reset(button);
+        ElementFader.Reinitialize(button);
         var typedButton = (TButtonType)button;
         typedButton.CallDisappear();
         _movingOutControls.Remove(typedButton);

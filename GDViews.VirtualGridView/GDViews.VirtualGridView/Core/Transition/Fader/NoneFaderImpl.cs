@@ -13,6 +13,6 @@ public static partial class ElementFaders
 
         public void KillTween(Control control) { }
 
-        public void Reset(Control control) { }
+        public void Reinitialize(Control control) { }
     }
 }

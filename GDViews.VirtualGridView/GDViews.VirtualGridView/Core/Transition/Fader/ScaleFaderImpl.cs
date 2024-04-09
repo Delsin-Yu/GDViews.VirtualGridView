@@ -4,21 +4,19 @@ namespace GodotViews.VirtualGrid;
 
 public static partial class ElementFaders
 {
-    private class ScaleFaderImpl(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedElementFader<Vector2>, IGodotTweenFader
+    private class ScaleFaderImpl(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedElementFader<Vector2>(duration, tweenSetup)
     {
         private static readonly NodePath ScalePath = new(Control.PropertyName.Scale);
         private static readonly Vector2 _showScale = Vector2.One;
         private static readonly Vector2 _HideScale = Vector2.Zero;
-        public float Duration { get; set; } = duration;
-        public TweenSetup TweenSetup { get; set; } = tweenSetup;
 
-        public override void Reset(Control control) => control.Scale = _showScale;
+        public override void Reinitialize(Control control) => control.Scale = _showScale;
 
-        public override void ResetControl(Control control, Vector2 previousTarget) => control.Scale = previousTarget;
+        public override void FastForwardState(Control control, Vector2 previousTarget) => control.Scale = previousTarget;
 
-        public override Vector2 InitializeTween(FadeType fadeType, in Vector2 targetValue, Control control, Tween tween)
+        public override Vector2 InitializeTween(FadeType type, in Vector2 targetValue, Control control, Tween tween)
         {
-            var show = fadeType is FadeType.Appear;
+            var show = type is FadeType.Appear;
             control.Scale = show ? _HideScale : _showScale;
             var targetScale = show ? _showScale : _HideScale;
             tween
@@ -30,6 +28,6 @@ public static partial class ElementFaders
             return targetScale;
         }
 
-        public override bool IsTweenSupported(FadeType fadeType) => true;
+        public override bool IsTweenSupported(FadeType type) => true;
     }
 }

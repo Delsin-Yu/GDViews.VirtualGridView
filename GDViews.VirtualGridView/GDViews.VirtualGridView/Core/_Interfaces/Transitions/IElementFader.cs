@@ -29,10 +29,11 @@ public interface IElementFader
     
     /// <summary>
     /// Called when the view controller is caching a virtualized element.<br/>
-    /// The developer should reset every value affected by this element fader.
+    /// The developer should reset every value affected by this element fader
+    /// to their initial state.
     /// </summary>
     /// <param name="control">The virtualized element that gets reset.</param>
-    void Reset(Control control);
+    void Reinitialize(Control control);
     
     /// <summary>
     /// Called when the view controller is about to perform a fading action.<br/>
