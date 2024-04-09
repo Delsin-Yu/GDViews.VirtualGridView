@@ -238,15 +238,21 @@ public partial class Main : Node, IDataSetHandler
         DataBindings.Bind(_grabByPattern, static instance => instance._virtualGridView.GrabFocus(FocusPresets.Predicate, static (x, instance) => x.Message.Contains(instance._matchPattern.Text, StringComparison.OrdinalIgnoreCase), instance), this);
         DataBindings.Bind(_killFocus, static instance => instance.GetViewport().GuiReleaseFocus(), this);
 
+        var dataSet1GridView = DynamicGridViewers.CreateList(dataSet1); 
+            var dataSet2GridView = DynamicGridViewers.CreateList(dataSet2); 
+        var dataSet3GridView = DynamicGridViewers.CreateList(dataSet3); 
+            var dataSet4GridView = DynamicGridViewers.CreateList(dataSet4); 
+        var dataSet5GridView = DynamicGridViewers.CreateList(dataSet5); 
+        
         _virtualGridView = VirtualGridView
             .Create(7, 7)
             .WithHandlers(CurrentPositioner, CurrentTweener, CurrentFader)
             .WithVerticalDataLayout<DataModel>(reverseLocalLayout: false)
-                .AddColumnDataSource(DataSetDefinitions.Create(dataSet1, [0, 1]))
-                .AddColumnDataSource(DataSetDefinitions.Create(dataSet2, [2, 3]))
-                .AddColumnDataSource(DataSetDefinitions.Create(dataSet3, [4, 5]))
-                .AddColumnDataSource(DataSetDefinitions.Create(dataSet4, [6, 7]))
-                .AddColumnDataSource(DataSetDefinitions.Create(dataSet5, [8, 9]))
+                .AddColumnDataSource(dataSet1GridView, 2)
+                .AddColumnDataSource(dataSet2GridView, 2)
+                .AddColumnDataSource(dataSet3GridView, 2)
+                .AddColumnDataSource(dataSet4GridView, 2)
+                .AddColumnDataSource(dataSet5GridView, 2)
             .WithArgument<View>(
                 _packedScene,
                 _container,

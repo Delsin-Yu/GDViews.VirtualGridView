@@ -4,7 +4,7 @@ namespace GodotViews.VirtualGrid;
 
 public interface IDynamicGridViewer<T>
 {
-    int FixedMetric { get; }
+    int FixedMetric { set; }
 
     int GetDynamicMetric();
 

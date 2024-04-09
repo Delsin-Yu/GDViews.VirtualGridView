@@ -86,82 +86,57 @@ internal partial class DataLayoutBuilder<TDataType>(
 {
     private record struct AnnotatedDataSet<T>(IDynamicGridViewer<T> DataSet, int LocalIndex);
 
-    private readonly List<DataSetDefinition<TDataType>> _dataSetDefinitions = [];
+    private readonly List<IDynamicGridViewer<TDataType>> _dataSetDefinitions = [];
     public DataLayoutSelectionBuilder DataLayoutSelectionBuilder { get; } = dataLayoutSelectionBuilder;
     public IEqualityComparer<TDataType> EqualityComparer { get; } = equalityComparer ?? EqualityComparer<TDataType>.Default;
 
-    public IHorizontalDataLayoutBuilder<TDataType> AddRowDataSource(DataSetDefinition<TDataType> dataSetDefinition)
+    public IHorizontalDataLayoutBuilder<TDataType> AddRowDataSource(IDynamicGridViewer<TDataType> dataSetDefinition, int repeatCount = 1)
     {
-        _dataSetDefinitions.Add(dataSetDefinition);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(repeatCount);
+        for(var i = 0; i < repeatCount; i++)
+            _dataSetDefinitions.Add(dataSetDefinition);
         return this;
     }
 
-
+    public IVerticalDataLayoutBuilder<TDataType> AddColumnDataSource(IDynamicGridViewer<TDataType> dataSetDefinition, int repeatCount = 1)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(repeatCount);
+        for(var i = 0; i < repeatCount; i++)
+            _dataSetDefinitions.Add(dataSetDefinition);
+        return this;
+    }
+    
     public IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> WithArgument<TButtonType, TExtraArgument>(
         PackedScene itemPrefab,
         Control itemContainer,
         IInfiniteLayoutGrid layoutGrid
     ) where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
     {
-        HashSet<int> existingIndexes = [];
-
-        var maxIndex = -1;
         var dataSetDefinitions = CollectionsMarshal.AsSpan(_dataSetDefinitions);
-        foreach (ref readonly var dataSetDefinition in dataSetDefinitions)
-        {
-            if (dataSetDefinition.DataSet.FixedMetric != dataSetDefinition.DataSpan.Count)
-                throw new ArgumentException("A data set's fixed metric differs from the declared data span count!");
 
-            if (dataSetDefinition.DataSpan.Any(x => x < 0))
-                throw new ArgumentException("A data set's declared data span contains index(es) value less than 0!");
-
-            if (dataSetDefinition.DataSpan.Distinct().Count() != dataSetDefinition.DataSpan.Count)
-                throw new ArgumentException("A data set's declared data span contains duplicate index(es)!");
-
-            for (var spanIndex = 0; spanIndex < dataSetDefinition.DataSpan.Count; spanIndex++)
-            {
-                var dataIndex = dataSetDefinition.DataSpan[spanIndex];
-                if (!existingIndexes.Add(dataIndex))
-                    throw new ArgumentException($"A data set has already occupied the specified index {dataIndex}");
-                maxIndex = Math.Max(dataIndex, maxIndex);
-            }
-        }
-
-        var diff = existingIndexes.Count - 1 - maxIndex;
-
-        if (diff > 0)
-        {
-            int[] missingIndexes = [diff];
-            var localCounter = 0;
-            for (var i = 0; i <= maxIndex; i++)
-            {
-                if (existingIndexes.Contains(i)) continue;
-                missingIndexes[localCounter++] = i;
-            }
-
-            throw new ArgumentException($"One or more index(es) has not yet occupied by any data set(s): [{string.Join(", ", missingIndexes)}]");
-        }
-
-        var dataMap = new AnnotatedDataSet<TDataType>[existingIndexes.Count];
+        var dataMap = new AnnotatedDataSet<TDataType>[dataSetDefinitions.Length];
 
         Dictionary<IDynamicGridViewer<TDataType>, int> dataSetCounter = new();
 
-        foreach (ref readonly var dataSetDefinition in dataSetDefinitions)
-            for (var spanIndex = 0; spanIndex < dataSetDefinition.DataSpan.Count; spanIndex++)
-            {
-                var dataIndex = dataSetDefinition.DataSpan[spanIndex];
+        for (var index = 0; index < dataSetDefinitions.Length; index++)
+        {
+            var dataSetDefinition = dataSetDefinitions[index];
+            ref var currentCount = ref CollectionsMarshal.GetValueRefOrAddDefault(dataSetCounter, dataSetDefinition, out var exists);
+            if (!exists) currentCount = 0;
+            dataMap[index] = new(dataSetDefinition, currentCount++);
+        }
 
-                ref var currentCount = ref CollectionsMarshal.GetValueRefOrAddDefault(dataSetCounter, dataSetDefinition.DataSet, out var exists);
-                if (!exists) currentCount = 0;
-                dataMap[dataIndex] = new(dataSetDefinition.DataSet, currentCount++);
-            }
-
+        foreach (var (dynamicGridViewer, count) in dataSetCounter) 
+            dynamicGridViewer.FixedMetric = count;
+        
         if (reverseLocalLayout)
+        {
             foreach (ref var annotatedDataSet in dataMap.AsSpan())
             {
                 var count = dataSetCounter[annotatedDataSet.DataSet] - 1;
                 annotatedDataSet.LocalIndex = count - annotatedDataSet.LocalIndex;
             }
+        }
 
         var viewColumns = DataLayoutSelectionBuilder.ViewHandlerBuilder.ViewportColumns;
         var viewRows = DataLayoutSelectionBuilder.ViewHandlerBuilder.ViewportRows;
@@ -177,12 +152,6 @@ internal partial class DataLayoutBuilder<TDataType>(
             itemContainer,
             layoutGrid
         );
-    }
-
-    public IVerticalDataLayoutBuilder<TDataType> AddColumnDataSource(DataSetDefinition<TDataType> dataSetDefinition)
-    {
-        _dataSetDefinitions.Add(dataSetDefinition);
-        return this;
     }
 }
 
