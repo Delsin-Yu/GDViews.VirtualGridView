@@ -14,7 +14,7 @@ public interface IViewFocusFinder<TArgument>
     /// <param name="currentView">Provides indirect access to the populated state of the current viewport.</param>
     /// <param name="searchDirection">The search direction from the start position.</param>
     /// <param name="viewStartPositionHandler">The handler responsible for resolving the start position.</param>
-    /// <param name="argument">The argument passes to the <see cref="viewStartPositionHandler"/></param>
+    /// <param name="argument">The argument passes to the <paramref name="viewStartPositionHandler"/></param>
     /// <param name="viewRowIndex">The calculated target row index relative to the viewport,
     /// unused when the finder fails to obtain the coordinate.</param>
     /// <param name="viewColumnIndex">The calculated target column index relative to the viewport,

@@ -14,7 +14,7 @@ public interface IDataFocusFinder<TArgument>
     /// <param name="currentView">Provides indirect access to the content of the datasets.</param>
     /// <param name="searchDirection">The search direction from the start position.</param>
     /// <param name="dataStartPositionHandler">The handler responsible for resolving the start position.</param>
-    /// <param name="argument">The argument passes to the <see cref="dataStartPositionHandler"/></param>
+    /// <param name="argument">The argument passes to the <paramref name="dataStartPositionHandler"/></param>
     /// <param name="dataSetRowIndex">The calculated datasets row index,
     /// unused when the finder fails to obtain the coordinate.</param>
     /// <param name="dataSetColumnIndex">The calculated datasets column index,

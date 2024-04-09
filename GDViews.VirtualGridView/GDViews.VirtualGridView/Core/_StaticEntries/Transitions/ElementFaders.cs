@@ -12,7 +12,7 @@ public static partial class ElementFaders
     public static readonly IElementFader None = new NonFaderImpl();
 
     /// <summary>
-    /// Create an element fader that does <see cref="Godot.Control.Modulate"/> interpolation based on the provided arguments.
+    /// Create an element fader that does <see cref="Godot.CanvasItem.Modulate"/> interpolation based on the provided arguments.
     /// </summary>
     /// <param name="duration">The duration this fader takes to do finish interpolation.</param>
     /// <param name="tweenSetup">The <see cref="TweenSetup"/> fader uses when doing the interpolation.</param>

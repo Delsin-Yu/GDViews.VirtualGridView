@@ -19,7 +19,7 @@ public interface IInfiniteLayoutGrid
     Vector2 ItemSeparation { get; }
     
     /// <summary>
-    /// Calculate the layout position for the given <see cref="gridPosition"/>.
+    /// Calculate the layout position for the given <paramref name="gridPosition"/>.
     /// </summary>
     /// <param name="gridPosition">The position to calculate the layout position from.</param>
     /// <returns>The calculated layout position.</returns>
