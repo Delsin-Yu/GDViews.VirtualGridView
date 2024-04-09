@@ -12,7 +12,7 @@ internal static class UIInputActionNames
 }
 
 [Flags]
-public enum EdgeType : byte
+internal enum EdgeType : byte
 {
     Up = 0b1000,
     Down = 0b0100,
@@ -131,6 +131,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         );
     }
 
+    /// <inheritdoc />
     public sealed override void _Pressed()
     {
         if (!AccessInfo(out var info)) return;
@@ -192,7 +193,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
     protected virtual void _OnGridItemFocusExited(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
     protected virtual void _OnGridItemPressed(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
 
-    public readonly struct CellInfo
+    internal readonly struct CellInfo
     {
         internal CellInfo(IVirtualGridViewParent<TDataType, TExtraArgument> parent, int rowIndex, int columnIndex, EdgeType definedViewEdgeType, EdgeType viewEdgeType, EdgeType dataSetEdgeType, TDataType? data)
         {

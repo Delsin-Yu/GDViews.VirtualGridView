@@ -2,7 +2,7 @@
 
 namespace GodotViews.VirtualGrid;
 
-public static partial class FocusFiners
+public static partial class FocusFinders
 {
     public static readonly IViewFocusFinder<Vector2I> ViewPosition = new ViewBFSFocusFinder();
     public static readonly IEqualityDataFocusFinder Value = new DataEqualityFocusFinder();

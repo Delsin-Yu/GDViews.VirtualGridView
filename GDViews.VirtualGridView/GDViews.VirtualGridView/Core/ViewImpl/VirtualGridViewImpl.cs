@@ -26,6 +26,14 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     private readonly Stack<TButtonType> _pendingRemove = [];
     private readonly ScrollBar? _verticalScrollBar;
     private readonly Vector2I _viewportSize;
+    
+    private IElementPositioner _elementPositioner;
+    private IElementTweener _elementTweener;
+    private IElementFader _elementFader;
+    private IScrollBarTweener _hScrollBarTweener;
+    private IScrollBarTweener _vScrollBarTweener;
+    private IElementFader _hScrollBarFader;
+    private IElementFader _vScrollBarFader;
 
     private NullableData<TDataType> _currentSelectedData;
     private int _currentSelectedViewColumnIndex;
@@ -66,21 +74,21 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         ViewRows = viewportRows;
         ViewColumns = viewportColumns;
 
-        ElementTweener = elementTweener;
-        ElementFader = elementFader;
-        ElementPositioner = elementPositioner;
+        
+        _elementPositioner = elementPositioner;
+        _elementTweener = elementTweener;
+        _elementFader = elementFader;
+        
+        _hScrollBarTweener = horizontalScrollBarTweener;
+        _hScrollBarFader = horizontalScrollBarFader;
+        _vScrollBarTweener = verticalScrollBarTweener;
+        _vScrollBarFader = verticalScrollBarFader;
 
         AutoHideHScrollBar = autoHideHorizontalScrollBar;
-        HScrollBarTweener = horizontalScrollBarTweener;
-        HScrollBarFader = horizontalScrollBarFader;
         AutoHideVScrollBar = autoHideVerticalScrollBar;
-        VScrollBarTweener = verticalScrollBarTweener;
-        VScrollBarFader = verticalScrollBarFader;
 
         _horizontalScrollBar = horizontalScrollBar;
         _verticalScrollBar = verticalScrollBar;
-
-        object obj = new GodotThread();
 
         InitializeScrollBar(_horizontalScrollBar);
         InitializeScrollBar(_verticalScrollBar);
@@ -140,14 +148,49 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     public int ViewColumns { get; }
     public int ViewRows { get; }
-    public IElementPositioner ElementPositioner { get; set; }
-    public IElementTweener ElementTweener { get; set; }
-    public IElementFader ElementFader { get; set; }
+    
+    public IElementPositioner ElementPositioner
+    {
+        get => _elementPositioner;
+        set => _elementPositioner = value ?? ElementPositioners.Side;
+    }
 
-    public IScrollBarTweener HScrollBarTweener { get; set; }
-    public IScrollBarTweener VScrollBarTweener { get; set; }
-    public IElementFader HScrollBarFader { get; set; }
-    public IElementFader VScrollBarFader { get; set; }
+    public IElementTweener ElementTweener
+    {
+        get => _elementTweener;
+        set => _elementTweener = value ?? ElementTweeners.None;
+    }
+
+    public IElementFader ElementFader
+    {
+        get => _elementFader;
+        set => _elementFader = value ?? ElementFaders.None;
+    }
+
+    public IScrollBarTweener HScrollBarTweener
+    {
+        get => _hScrollBarTweener;
+        set => _hScrollBarTweener = value ?? ScrollBarTweeners.None;
+    }
+
+    public IScrollBarTweener VScrollBarTweener
+    {
+        get => _vScrollBarTweener;
+        set => _vScrollBarTweener = value ?? ScrollBarTweeners.None;
+    }
+
+    public IElementFader HScrollBarFader
+    {
+        get => _hScrollBarFader;
+        set => _hScrollBarFader = value ?? ElementFaders.None;
+    }
+
+    public IElementFader VScrollBarFader
+    {
+        get => _vScrollBarFader;
+        set => _vScrollBarFader = value ?? ElementFaders.None;
+    }
+
     public bool AutoHideHScrollBar { get; set; }
     public bool AutoHideVScrollBar { get; set; }
 
@@ -160,14 +203,14 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         ((IVirtualGridView<TDataType>)this).GrabFocus(FocusPresets.TopLeftData);
 
 
-    public bool GrabFocus<TArgument>(IViewFocusFinder<TArgument> focusFinder, IViewStartHandler<TArgument> handler, TArgument argument, SearchDirection searchDirection)
+    public bool GrabFocus<TArgument>(IViewFocusFinder<TArgument> focusFinder, IViewStartHandler<TArgument> startHandler, TArgument argument, SearchDirection searchDirection)
     {
         var wrapper = new ReadOnlyViewArray(_currentView, ViewRows, ViewColumns, BackingResolver);
         var span = searchDirection.GetSpan();
         return focusFinder.TryResolveFocus(
             in wrapper,
             in span,
-            handler,
+            startHandler,
             in argument,
             out var viewRowIndex,
             out var viewColumnIndex
@@ -185,22 +228,22 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
     }
 
-    public bool GrabFocus(IPredicateDataFocusFinder focusFinder, Predicate<TDataType> matchingArgument)
+    public bool GrabFocus(IPredicateDataFocusFinder focusFinder, Predicate<TDataType> predicate)
     {
         var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
         return focusFinder.TryResolveFocus(
-            in matchingArgument,
+            in predicate,
             in wrapper,
             out var dataSetRowIndex,
             out var dataSetColumnIndex
         ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
     }
 
-    public bool GrabFocus<TMatchingExtraArgument>(IPredicateDataFocusFinder focusFinder, Func<TDataType, TMatchingExtraArgument, bool> matchingArgument, TMatchingExtraArgument extraArgument)
+    public bool GrabFocus<TMatchingExtraArgument>(IPredicateDataFocusFinder focusFinder, Func<TDataType, TMatchingExtraArgument, bool> predicate, TMatchingExtraArgument extraArgument)
     {
         var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
         return focusFinder.TryResolveFocus(
-            in matchingArgument,
+            in predicate,
             in wrapper,
             extraArgument,
             out var dataSetRowIndex,
@@ -208,15 +251,15 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         ) && TryGrabFocusCore(dataSetRowIndex - ViewRowIndex, dataSetColumnIndex - ViewColumnIndex);
     }
 
-    public bool GrabFocus<TArgument>(IDataFocusFinder<TArgument> focusFinder, IDataStartHandler<TArgument> startPositionHandler, TArgument matchingArgument, SearchDirection searchDirection)
+    public bool GrabFocus<TArgument>(IDataFocusFinder<TArgument> focusFinder, IDataStartHandler<TArgument> startHandler, TArgument argument, SearchDirection searchDirection)
     {
         var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewRows, ViewColumns);
         var span = searchDirection.GetSpan();
         return focusFinder.TryResolveFocus(
             in wrapper,
             in span,
-            startPositionHandler,
-            in matchingArgument,
+            startHandler,
+            in argument,
             out var rowIndex,
             out var columnIndex
         ) && TryGrabFocusCore(rowIndex - ViewRowIndex, columnIndex - ViewColumnIndex);
@@ -277,7 +320,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         // We should either:
         //     Develop a new matching algorithm.
         //     Optimize the hell out of the BFSCore, as accessing cell data involves a lot of calculations.
-        if (!FocusFiners.BFSSearch.BFSCore(
+        if (!FocusFinders.BFSSearch.BFSCore(
                 in absoluteStart,
                 in readOnlyDataArray,
                 in searchDirection,
@@ -286,7 +329,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             )) return;
 
         if (!readOnlyDataArray.TryGetData(targetAbsoluteRowIndex, targetAbsoluteColumnIndex, out var data)) return;
-        GrabFocus(FocusFiners.Value, data);
+        GrabFocus(FocusFinders.Value, data);
     }
 
     private bool TryGetDataPositionRelativeToViewport(Func<TDataType, TDataType, bool> comparer, out int rowIndex, out int columnIndex, TDataType data)

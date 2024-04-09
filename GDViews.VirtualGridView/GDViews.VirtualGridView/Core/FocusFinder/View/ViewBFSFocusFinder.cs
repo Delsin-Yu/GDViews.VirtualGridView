@@ -3,7 +3,7 @@ using Godot;
 
 namespace GodotViews.VirtualGrid;
 
-public static partial class FocusFiners
+public static partial class FocusFinders
 {
     private class ViewBFSFocusFinder : IViewFocusFinder<Vector2I>
     {
