@@ -140,6 +140,7 @@ public interface IHorizontalDataLayoutBuilder<TDataType> : IFinishingBuilderAcce
 {
     /// <summary>
     /// Append the specified <paramref name="dataSet"/> to the building <see cref="IVirtualGridView{TDataType}"/>.
+    /// Call the <see cref="IFinishingBuilderAccess{TDataType}.WithArgument{TButtonType, TExtraArgument}"/> method when finished building the dataset.
     /// </summary>
     /// <param name="dataSet">The <see cref="IDynamicGridViewer{T}"/> that gets appended to the datasets.</param>
     /// <param name="repeatCount">The rows this dataset takes, increase this value is equatable for calling this API multiple times.</param>
@@ -161,6 +162,7 @@ public interface IVerticalDataLayoutBuilder<TDataType> : IFinishingBuilderAccess
 {
     /// <summary>
     /// Append the specified <paramref name="dataSet"/> to the building <see cref="IVirtualGridView{TDataType}"/>.
+    /// Call the <see cref="IFinishingBuilderAccess{TDataType}.WithArgument{TButtonType, TExtraArgument}"/> method when finished building the dataset.
     /// </summary>
     /// <param name="dataSet">The <see cref="IDynamicGridViewer{T}"/> that gets appended to the datasets.</param>
     /// <param name="repeatCount">The columns this dataset takes, increase this value is equatable for calling this API multiple times.</param>
