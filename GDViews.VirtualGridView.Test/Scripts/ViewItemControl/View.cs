@@ -4,7 +4,7 @@ namespace GodotViews.VirtualGrid.Examples;
 
 public partial class View : VirtualGridViewItem<Main.DataModel>
 {
-    protected override void _OnGridItemDraw(Main.DataModel data, Vector2I gridPosition)
+    protected override void _OnGridItemDraw(Main.DataModel data, Vector2I viewPosition)
     {
         Text = $"{data.Index:D2}\n{data.Message}";
 

@@ -10,7 +10,7 @@ namespace GodotViews.VirtualGrid;
 public interface IScrollBarTweener
 {
     /// <summary>
-    /// Called when the view controller is updating the values of a <see cref="ScrollBar"/>.
+    /// Invoked when the view controller is updating the values of a <see cref="ScrollBar"/>.
     /// </summary>
     /// <param name="scrollBar">The scroll bar to have its value updated.</param>
     /// <param name="targetValue">The target <see cref="Range.Value"/> value.</param>
@@ -18,7 +18,7 @@ public interface IScrollBarTweener
     void UpdateValue(ScrollBar scrollBar, float targetValue, float targetPage);
     
     /// <summary>
-    /// Called when the view controller is about to perform a viewport moving action.<br/>
+    /// Invoked when the view controller is about to perform a viewport moving action.<br/>
     /// The developer should interrupt and clean up the existing tweens for the given scrollBar.
     /// </summary>
     /// <param name="scrollBar">The <see cref="ScrollBar"/> that should have its associated tween interrupted.</param>

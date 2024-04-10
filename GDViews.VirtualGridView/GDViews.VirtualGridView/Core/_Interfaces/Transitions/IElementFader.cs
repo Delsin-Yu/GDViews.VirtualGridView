@@ -14,21 +14,21 @@ namespace GodotViews.VirtualGrid;
 public interface IElementFader
 {
     /// <summary>
-    /// Called when the view controller is showing a virtualized element.
+    /// Invoked when the view controller is showing a virtualized element.
     /// </summary>
     /// <param name="control">The virtualized element that gets shown.</param>
     void Appear(Control control);
     
     /// <summary>
-    /// Called when the view controller is hiding a virtualized element.
+    /// Invoked when the view controller is hiding a virtualized element.
     /// </summary>
     /// <param name="control">The virtualized element that gets hidden.</param>
-    /// <param name="onFinish">Called by the fader when finishing the hiding process,
+    /// <param name="onFinish">Invoked by the fader when finishing the hiding process,
     /// this delegate notifies the controller to hide and cache the element.</param>
     void Disappear(Control control, Action<Control> onFinish);
     
     /// <summary>
-    /// Called when the view controller is caching a virtualized element.<br/>
+    /// Invoked when the view controller is caching a virtualized element.<br/>
     /// The developer should reset every value affected by this element fader
     /// to their initial state.
     /// </summary>
@@ -36,7 +36,7 @@ public interface IElementFader
     void Reinitialize(Control control);
     
     /// <summary>
-    /// Called when the view controller is about to perform a fading action.<br/>
+    /// Invoked when the view controller is about to perform a fading action.<br/>
     /// The developer should interrupt and clean up the existing fades for the given element.
     /// </summary>
     /// <param name="control">The virtualized element that should have its associated fade interrupted.</param>

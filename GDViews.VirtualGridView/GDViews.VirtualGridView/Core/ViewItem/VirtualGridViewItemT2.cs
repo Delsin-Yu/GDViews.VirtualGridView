@@ -3,14 +3,6 @@ using Godot;
 
 namespace GodotViews.VirtualGrid;
 
-internal static class UIInputActionNames
-{
-    public static StringName UIDown = "ui_down";
-    public static StringName UIUp = "ui_up";
-    public static StringName UILeft = "ui_left";
-    public static StringName UIRight = "ui_right";
-}
-
 [Flags]
 internal enum EdgeType : byte
 {
@@ -21,8 +13,22 @@ internal enum EdgeType : byte
     None = 0
 }
 
+
+/// <summary>
+/// Inherit this type to create a script that can be attached to a <see cref="PackedScene"/>
+/// which makes it a valid prefab for use with <see cref="IVirtualGridView{TDataType}"/>.
+/// </summary>
+/// <typeparam name="TDataType">The type for the data the <see cref="IVirtualGridView{TDataType}"/> focuses on.</typeparam>
+/// <typeparam name="TExtraArgument">The extra argument passed to the various APIs
+/// of the instances of the attached <see cref="PackedScene"/>.</typeparam>
+/// <remarks>If the <typeparamref name="TExtraArgument"/> is unnecessary for the design,
+/// the developer may inherit the alternative type <see cref="VirtualGridViewItem{TDataType}"/>
+/// and use the builder argument <see cref="IFinishingBuilderAccess{TDataType}.WithArgument{TButtonType}"/>.</remarks>
 public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : Button
 {
+    private readonly Action<InputEvent> _OnGuiInputHandler;
+    private readonly Action<int> _OnNotificationHandler;
+    
     private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnAppearHandler;
     private readonly Action<TExtraArgument?> _OnDisappearHandler;
 
@@ -40,8 +46,14 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
 
     internal CellInfo? Info;
 
+    /// <summary>
+    /// Construct an instance of the <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/>
+    /// </summary>
     protected VirtualGridViewItem()
     {
+        _OnGuiInputHandler = _OnGuiInput;
+        _OnNotificationHandler = _OnNotification;
+        
         _OnDrawHandler = _OnGridItemDraw;
         _OnMoveHandler = _OnGridItemMove;
         _OnMoveInHandler = _OnGridItemMoveIn;
@@ -53,8 +65,13 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         _OnPressedHandler = _OnGridItemPressed;
     }
 
-    internal string LocalName => _cachedName ??= Name;
+    private string LocalName => _cachedName ??= Name;
 
+    /// <summary>
+    /// This method is sealed overriden by the <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/>
+    /// for providing viewport edge detection mechanism, the developer may implement the
+    /// <see cref="_OnGuiInput"/> for listening other input events.   
+    /// </summary>
     public sealed override void _GuiInput(InputEvent inputEvent)
     {
         using (inputEvent)
@@ -63,39 +80,47 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
 
             if (inputEvent.IsReleased()) return;
 
-            if (Check(UIInputActionNames.UIDown, EdgeType.Down, in info, inputEvent))
+            if (Check(Utils.UIDown, EdgeType.Down, in info, inputEvent))
             {
                 info.Parent.MoveAndGrabFocus(MoveDirection.Down, info.RowIndex, info.ColumnIndex);
+                AcceptEvent();
                 return;
             }
 
-            if (Check(UIInputActionNames.UIUp, EdgeType.Up, in info, inputEvent))
+            if (Check(Utils.UIUp, EdgeType.Up, in info, inputEvent))
             {
                 info.Parent.MoveAndGrabFocus(MoveDirection.Up, info.RowIndex, info.ColumnIndex);
+                AcceptEvent();
                 return;
             }
 
-            if (Check(UIInputActionNames.UILeft, EdgeType.Left, in info, inputEvent))
+            if (Check(Utils.UILeft, EdgeType.Left, in info, inputEvent))
             {
                 info.Parent.MoveAndGrabFocus(MoveDirection.Left, info.RowIndex, info.ColumnIndex);
+                AcceptEvent();
                 return;
             }
 
-            if (Check(UIInputActionNames.UIRight, EdgeType.Right, in info, inputEvent)) info.Parent.MoveAndGrabFocus(MoveDirection.Right, info.RowIndex, info.ColumnIndex);
+            if (Check(Utils.UIRight, EdgeType.Right, in info, inputEvent))
+            {
+                info.Parent.MoveAndGrabFocus(MoveDirection.Right, info.RowIndex, info.ColumnIndex);
+                AcceptEvent();
+                return;
+            }
+
+            DelegateRunner.RunProtected(_OnGuiInputHandler, inputEvent, "Gui Input", LocalName);
         }
     }
-
+    
     private static bool Check(
         StringName actionName,
         EdgeType edgeType,
         ref readonly CellInfo info,
         InputEvent inputEvent
-    )
-    {
-        if (!info.ViewEdgeType.HasFlag(edgeType) || info.DataSetEdgeType.HasFlag(edgeType)) return false;
-        if (!inputEvent.IsAction(actionName, true)) return false;
-        return true;
-    }
+    ) =>
+        info.ViewEdgeType.HasFlag(edgeType) &&
+        !info.DataSetEdgeType.HasFlag(edgeType) && 
+        inputEvent.IsAction(actionName, true);
 
     private bool AccessInfo(out CellInfo info)
     {
@@ -131,13 +156,23 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         );
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// This method is sealed overriden by the <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/>
+    /// for providing pressed mechanism, the developer may implement the
+    /// <see cref="_OnGridItemPressed"/> for listening to pressed event.   
+    /// </summary>
     public sealed override void _Pressed()
     {
         if (!AccessInfo(out var info)) return;
         CallDelegate(_OnPressedHandler, info, "On Press");
     }
 
+    
+    /// <summary>
+    /// This method is sealed overriden by the <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/>
+    /// for providing focus management mechanism, the developer may implement the
+    /// <see cref="_OnNotification"/> for listening other notifications.   
+    /// </summary>
     public sealed override void _Notification(int what)
     {
         if (!AccessInfo(out var info)) return;
@@ -151,6 +186,9 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
             case NotificationFocusExit:
                 Utils.CurrentActiveGridView = null;
                 CallDelegate(_OnFocusExitedHandler, info, "On Focus Exit");
+                break;
+            default:
+                DelegateRunner.RunProtected(_OnNotificationHandler, what, "Notification", LocalName);
                 break;
         }
     }
@@ -183,15 +221,84 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         CallDelegate(_OnMoveOutHandler, currentInfo, "On Move Out");
     }
 
-    protected virtual void _OnGridItemDraw(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
-    protected virtual void _OnGridItemMove(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
-    protected virtual void _OnGridItemMoveIn(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
-    protected virtual void _OnGridItemMoveOut(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
-    protected virtual void _OnGridItemAppear(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
+    /// <inheritdoc cref="Control._GuiInput"/>
+    protected virtual void _OnGuiInput(InputEvent inputEvent) { }
+    
+    /// <inheritdoc cref="GodotObject._Notification"/>
+    protected virtual void _OnNotification(int what) { }
+    
+    /// <summary>
+    /// Invoked when the internal data of the current virtualized grid element instance
+    /// has changed (or initialized) and requires developer-implemented draw logic.
+    /// </summary>
+    /// <param name="data">The data of the current virtualized grid element instance.</param>
+    /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
+    /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
+    protected virtual void _OnGridItemDraw(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+    
+    /// <summary>
+    /// Invoked when the view controller is moving this virtualized grid element inside the viewport.
+    /// </summary>
+    /// <param name="data">The data of the current virtualized grid element instance.</param>
+    /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
+    /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
+    protected virtual void _OnGridItemMove(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+    
+    /// <summary>
+    /// Invoked when the view controller is moving this newly spawned or
+    /// reused virtualized grid element instance into the viewport.  
+    /// </summary>
+    /// <param name="data">The data of the current virtualized grid element instance.</param>
+    /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
+    /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
+    protected virtual void _OnGridItemMoveIn(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+   
+    /// <summary>
+    /// Invoked when the view controller is moving this
+    /// virtualized grid element instance out from the viewport.
+    /// </summary>
+    /// <param name="data">The data of the current virtualized grid element instance.</param>
+    /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
+    /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
+    protected virtual void _OnGridItemMoveOut(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+    
+    /// <summary>
+    /// Invoked when the view controller is showing this virtualized grid element instance.
+    /// </summary>
+    /// <param name="data">The data of the current virtualized grid element instance.</param>
+    /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
+    /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
+    protected virtual void _OnGridItemAppear(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+ 
+    /// <summary>
+    /// Invoked when the view controller is hiding this virtualized grid element instance.
+    /// </summary>
+    /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
     protected virtual void _OnGridItemDisapper(TExtraArgument? extraArgument) { }
-    protected virtual void _OnGridItemFocusEntered(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
-    protected virtual void _OnGridItemFocusExited(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
-    protected virtual void _OnGridItemPressed(TDataType data, Vector2I gridPosition, TExtraArgument? extraArgument) { }
+
+    /// <summary>
+    /// Invoked when this virtualized grid element instance grabs focus.
+    /// </summary>
+    /// <param name="data">The data of the current virtualized grid element instance.</param>
+    /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
+    /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
+    protected virtual void _OnGridItemFocusEntered(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+    
+    /// <summary>
+    /// Invoked when this virtualized grid element instance loses focus.
+    /// </summary>
+    /// <param name="data">The data of the current virtualized grid element instance.</param>
+    /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
+    /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
+    protected virtual void _OnGridItemFocusExited(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+    
+    /// <summary>
+    /// Invoked when this virtualized grid element instance is pressed.
+    /// </summary>
+    /// <param name="data">The data of the current virtualized grid element instance.</param>
+    /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
+    /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
+    protected virtual void _OnGridItemPressed(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
 
     internal readonly struct CellInfo
     {
@@ -209,7 +316,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         internal readonly IVirtualGridViewParent<TDataType, TExtraArgument> Parent;
         public readonly int RowIndex;
         public readonly int ColumnIndex;
-        public readonly EdgeType DefinedViewEdgeType;
+        private readonly EdgeType DefinedViewEdgeType;
         public readonly EdgeType ViewEdgeType;
         public readonly EdgeType DataSetEdgeType;
         public readonly TDataType? Data;

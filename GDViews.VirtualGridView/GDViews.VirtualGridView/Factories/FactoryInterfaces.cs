@@ -229,7 +229,7 @@ public interface IFinishingArgumentBuilder<TDataType, TButtonType, in TExtraArgu
     );
 
     /// <summary>
-    /// Sets the extra argument that will passed to the script attached to the virtualized gird elements.
+    /// Sets the extra argument that will passed to the script attached to the virtualized grid elements.
     /// </summary>
     /// <param name="extraArgument">The value of the extra argument.</param>
     /// <returns>The same <see cref="IFinishingArgumentBuilder{TDataType,TButtonType,TExtraArgument}"/>

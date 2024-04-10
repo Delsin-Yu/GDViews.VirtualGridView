@@ -58,7 +58,7 @@ public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IGodotT
     public abstract void Reinitialize(Control control);
 
     /// <summary>
-    /// Called before starting an interpolation, developer should use the specified value
+    /// Invoked before starting an interpolation, developer should use the specified value
     /// to fast-forward the state of the affected properties for the provided control.
     /// </summary>
     /// <param name="control">The control to have its affected properties fast-forwarded.</param>
@@ -66,7 +66,7 @@ public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IGodotT
     public abstract void FastForwardState(Control control, TCachedArgument previousTarget);
 
     /// <summary>
-    /// Called for setting up the tween for the target control.
+    /// Invoked for setting up the tween for the target control.
     /// </summary>
     /// <param name="type">The type of the tween.</param>
     /// <param name="targetValue">The target position this control is meant to get moved to.</param>

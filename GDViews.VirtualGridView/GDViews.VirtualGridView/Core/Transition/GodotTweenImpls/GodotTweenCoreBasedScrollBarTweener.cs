@@ -49,7 +49,7 @@ public abstract class GodotTweenCoreBasedScrollBarTweener<TCachedArgument> : IGo
     public TCachedArgument InitializeTween(NoExtraArgument type, in (float targetValue, float targetPage) targetValue, Control control, Tween tween) => InitializeTween(in targetValue, (ScrollBar)control, tween);
 
     /// <summary>
-    /// Called for setting up the tween for the target scroll bar.
+    /// Invoked for setting up the tween for the target scroll bar.
     /// </summary>
     /// <param name="targetValue">The target value this scroll bar is meant to get updated.</param>
     /// <param name="scrollBar">The scroll bar to update.</param>
@@ -59,7 +59,7 @@ public abstract class GodotTweenCoreBasedScrollBarTweener<TCachedArgument> : IGo
     protected abstract TCachedArgument InitializeTween(in (float targetValue, float targetPage) targetValue, ScrollBar scrollBar, Tween tween);
     
     /// <summary>
-    /// Called before starting an interpolation, developer should use the specified value
+    /// Invoked before starting an interpolation, developer should use the specified value
     /// to fast-forward the state of the affected properties for the provided scroll bar.
     /// </summary>
     /// <param name="scrollBar">The scroll bar to have its affected properties fast-forwarded.</param>

@@ -549,10 +549,10 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
             var eventName = simulatedMoveDirection switch
             {
-                MoveDirection.Up => Utils._uiUp,
-                MoveDirection.Down => Utils._uiDown,
-                MoveDirection.Left => Utils._uiLeft,
-                MoveDirection.Right => Utils._uiRight,
+                MoveDirection.Up => Utils.UIUp,
+                MoveDirection.Down => Utils.UIDown,
+                MoveDirection.Left => Utils.UILeft,
+                MoveDirection.Right => Utils.UIRight,
                 _ => throw new InvalidOperationException()
             };
 

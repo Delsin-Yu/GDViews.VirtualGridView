@@ -6,10 +6,10 @@ namespace GodotViews.VirtualGrid;
 
 internal static class Utils
 {
-    internal static readonly StringName _uiUp = "ui_up";
-    internal static readonly StringName _uiDown = "ui_down";
-    internal static readonly StringName _uiLeft = "ui_left";
-    internal static readonly StringName _uiRight = "ui_right";
+    internal static readonly StringName UIUp = "ui_up";
+    internal static readonly StringName UIDown = "ui_down";
+    internal static readonly StringName UILeft = "ui_left";
+    internal static readonly StringName UIRight = "ui_right";
 
     internal static object? CurrentActiveGridView { get; set; }
     
