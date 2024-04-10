@@ -2,7 +2,7 @@
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GDViews.VirtualGridView.Tests", "GDViews.VirtualGridView.Tests.csproj", "{1A927B5F-3AB8-4BE0-8F05-A24B61D754FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GDViews.VirtualGridView", "..\GDViews.VirtualGridView\GDViews.VirtualGridView\GDViews.VirtualGridView.csproj", "{33ED55B5-45AA-467C-882A-5910CEC43CA0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GDViews.VirtualGridView", "..\GDViews.VirtualGridView\GDViews.VirtualGridView.csproj", "{33ED55B5-45AA-467C-882A-5910CEC43CA0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

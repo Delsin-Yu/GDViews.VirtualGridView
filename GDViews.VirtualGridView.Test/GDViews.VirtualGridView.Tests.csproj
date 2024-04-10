@@ -9,7 +9,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\GDViews.VirtualGridView\GDViews.VirtualGridView\GDViews.VirtualGridView.csproj"/>
+    <ProjectReference Include="..\GDViews.VirtualGridView\GDViews.VirtualGridView.csproj"/>
     <PackageReference Include="Bogus" Version="*"/>
     <TrimmerRootAssembly Include="GodotSharp" />
     <TrimmerRootAssembly Include="$(TargetName)" />
