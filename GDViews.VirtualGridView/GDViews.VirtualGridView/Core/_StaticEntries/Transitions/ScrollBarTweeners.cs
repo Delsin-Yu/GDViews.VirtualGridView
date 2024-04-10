@@ -9,7 +9,7 @@ public static partial class ScrollBarTweeners
     /// This scroll bar tweener does not perform any form of visual transitions,
     /// it is also the most efficient and snappy choice if the absolute performance is required.
     /// </summary>
-    public static readonly IScrollBarTweener None = new NoneTweenerImpl();
+    public static readonly IScrollBarTweener None = new NoneImpl();
 
     /// <summary>
     /// Create an scroll bar tweener that does value interpolation based on the provided arguments.
@@ -20,5 +20,5 @@ public static partial class ScrollBarTweeners
     /// can be passed to the <see cref="IVirtualGridView{TDataType}"/>
     /// for handling the scroll bar value interpolation.</returns>
     public static IGodotTweenScrollBarTweener CreateLerp(float duration, TweenSetup? tweenSetup = null) =>
-        new LerpTweenerImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
+        new LerpImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
 }

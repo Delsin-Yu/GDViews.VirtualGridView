@@ -4,7 +4,7 @@ namespace GodotViews.VirtualGrid;
 
 public static partial class StartHandlers
 {
-    private class DataStartPositionHandler : IDataStartHandler<Vector2I>
+    private class DataImpl : IDataStartHandler<Vector2I>
     {
         public Vector2I ResolveStartPosition<TDataType>(ref readonly ReadOnlyDataArray<TDataType> currentView, Vector2I position) =>
             new(

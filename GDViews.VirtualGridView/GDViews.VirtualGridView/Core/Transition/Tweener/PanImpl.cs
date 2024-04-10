@@ -4,7 +4,7 @@ namespace GodotViews.VirtualGrid;
 
 public static partial class ElementTweeners
 {
-    private class PanTweenerImpl(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedElementTweener<Vector2>(duration, tweenSetup)
+    private class PanImpl(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedElementTweener<Vector2>(duration, tweenSetup)
     {
         private static readonly NodePath PositionPath = new(Control.PropertyName.Position);
 

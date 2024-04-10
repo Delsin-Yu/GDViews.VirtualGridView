@@ -5,7 +5,7 @@ namespace GodotViews.VirtualGrid;
 
 public static partial class FocusFinders
 {
-    private class DataEqualityFocusFinder : IEqualityDataFocusFinder
+    private class DataEqualityImpl : IEqualityDataFocusFinder
     {
         public bool TryResolveFocus<TDataType>(
             ref readonly TDataType matchingArgument,

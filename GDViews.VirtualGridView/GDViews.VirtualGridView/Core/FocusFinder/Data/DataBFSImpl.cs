@@ -5,7 +5,7 @@ namespace GodotViews.VirtualGrid;
 
 public static partial class FocusFinders
 {
-    private class DataBFSFocusFinder : IDataFocusFinder<Vector2I>
+    private class DataBFSImpl : IDataFocusFinder<Vector2I>
     {
         public bool TryResolveFocus<TDataType>(
             ref readonly ReadOnlyDataArray<TDataType> currentView,

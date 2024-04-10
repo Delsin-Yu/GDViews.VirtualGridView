@@ -8,10 +8,10 @@ public static partial class ElementPositioners
     /// <summary>
     /// This element positioner adjusts the viewport accordingly when the focused element lies outside of the viewport. 
     /// </summary>
-    public static IElementPositioner Side { get; } = new SideElementPositioner();
+    public static IElementPositioner Side { get; } = new SideImpl();
     
     /// <summary>
     /// This element positioner places the focused element in the center of the viewport.
     /// </summary>
-    public static IElementPositioner Centered { get; } = new CenteredElementPositioner();
+    public static IElementPositioner Centered { get; } = new CenteredImpl();
 }

@@ -4,7 +4,7 @@ namespace GodotViews.VirtualGrid;
 
 public static partial class ScrollBarTweeners
 {
-    private class NoneTweenerImpl : IScrollBarTweener
+    private class NoneImpl : IScrollBarTweener
     {
         public void UpdateValue(ScrollBar scrollBar, float targetValue, float targetPage)
         {

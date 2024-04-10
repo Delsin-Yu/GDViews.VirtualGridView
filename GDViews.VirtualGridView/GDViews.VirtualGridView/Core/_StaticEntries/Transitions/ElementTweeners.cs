@@ -9,7 +9,7 @@ public static partial class ElementTweeners
     /// This element tweener does not perform any form of visual transitions,
     /// it is also the most efficient and snappy choice if the absolute performance is required.
     /// </summary>
-    public static readonly IElementTweener None = new NoneTweenerImpl();
+    public static readonly IElementTweener None = new NoneImpl();
 
     /// <summary>
     /// Create an element tweener that does position interpolation based on the provided arguments.
@@ -20,5 +20,5 @@ public static partial class ElementTweeners
     /// can be passed to the <see cref="IVirtualGridView{TDataType}"/>
     /// for handling the virtual grid element positional interpolation.</returns>
     public static IGodotTweenTweener CreatePan(float duration, TweenSetup? tweenSetup = null) => 
-        new PanTweenerImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
+        new PanImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
 }

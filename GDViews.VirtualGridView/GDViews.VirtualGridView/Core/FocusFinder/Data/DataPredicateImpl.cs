@@ -4,7 +4,7 @@ namespace GodotViews.VirtualGrid;
 
 public static partial class FocusFinders
 {
-    private class DataPredicateFocusFinder : IPredicateDataFocusFinder
+    private class DataPredicateImpl : IPredicateDataFocusFinder
     {
         public bool TryResolveFocus<TDataType>(
             ref readonly Predicate<TDataType> matchingArgument,

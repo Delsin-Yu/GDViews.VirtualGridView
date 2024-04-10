@@ -5,7 +5,7 @@ namespace GodotViews.VirtualGrid;
 
 public static partial class DynamicGridViewers
 {
-    private class CollectionGridViewerImpl<T>(IReadOnlyList<T> backing) : IDynamicGridViewer<T>
+    private class CollectionImpl<T>(IReadOnlyList<T> backing) : IDynamicGridViewer<T>
     {
         public int FixedMetric { get; set; }
 

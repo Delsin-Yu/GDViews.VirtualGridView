@@ -5,7 +5,7 @@ namespace GodotViews.VirtualGrid;
 
 public static partial class ElementTweeners
 {
-    private class NoneTweenerImpl : IElementTweener
+    private class NoneImpl : IElementTweener
     {
         public void MoveTo(Control control, Vector2 targetPosition) => control.Position = targetPosition;
 

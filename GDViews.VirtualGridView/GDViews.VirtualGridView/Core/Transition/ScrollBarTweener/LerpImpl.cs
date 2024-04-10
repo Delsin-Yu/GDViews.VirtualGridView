@@ -4,7 +4,7 @@ namespace GodotViews.VirtualGrid;
 
 public static partial class ScrollBarTweeners
 {
-    private class LerpTweenerImpl(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedScrollBarTweener<(float targetValue, float targetPage)>(duration, tweenSetup)
+    private class LerpImpl(float duration, TweenSetup tweenSetup) : GodotTweenCoreBasedScrollBarTweener<(float targetValue, float targetPage)>(duration, tweenSetup)
     {
         private static readonly NodePath ValuePath = new(ScrollBar.PropertyName.Value);
         private static readonly NodePath PagePath = new(ScrollBar.PropertyName.Page);

@@ -16,5 +16,5 @@ public static partial class DynamicGridViewers
     /// can be passed to the builders of <see cref="IVirtualGridView{TDataType}"/>
     /// for constructing the datasets.</returns>
     public static IDynamicGridViewer<T> CreateList<T>(IReadOnlyList<T> list) => 
-        new CollectionGridViewerImpl<T>(list);
+        new CollectionImpl<T>(list);
 }

@@ -13,5 +13,5 @@ public static partial class InfiniteLayoutGrids
     /// <returns>The instance of the created dynamic grid viewer that
     /// can be passed to the builders of <see cref="IVirtualGridView{TDataType}"/>.</returns>
     public static IInfiniteLayoutGrid CreateSimple(Vector2 itemSize, Vector2? itemSeparation = null) => 
-        new SimpleInfiniteLayoutGrid(itemSize, itemSeparation ?? Vector2.Zero);
+        new SimpleImpl(itemSize, itemSeparation ?? Vector2.Zero);
 }
