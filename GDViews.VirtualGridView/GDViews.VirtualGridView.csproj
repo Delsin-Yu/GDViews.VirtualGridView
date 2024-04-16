@@ -18,7 +18,7 @@
         <Authors>DE-YU</Authors>
         <Description>Based on DotNet, GDViews.VirtualGridView provides classes that are useful for creating highly customizable virtualized grid views.</Description>
         <PackageProjectUrl>https://www.nuget.org/packages/GDViews.VirtualGridView</PackageProjectUrl>
-<!--        <PackageReadmeFile>README.md</PackageReadmeFile>-->
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <RepositoryUrl>https://github.com/Delsin-Yu/GDViews.VirtualGridView</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>Godot TabView</PackageTags>
@@ -32,9 +32,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-
         <PackageReference Include="GodotSharp" Version="4.1.0"/>
         <PackageReference Include="Godot.SourceGenerators" Version="4.1.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="../README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
     
 </Project>

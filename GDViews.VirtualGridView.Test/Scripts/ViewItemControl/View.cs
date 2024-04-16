@@ -2,9 +2,9 @@ using Godot;
 
 namespace GodotViews.VirtualGrid.Examples;
 
-public partial class View : VirtualGridViewItem<Main.DataModel>
+public partial class View : VirtualGridViewItem<DataModel>
 {
-    protected override void _OnGridItemDraw(Main.DataModel data, Vector2I viewPosition)
+    protected override void _OnGridItemDraw(DataModel data, Vector2I viewPosition)
     {
         Text = $"{data.Index:D2}\n{data.Message}";
 

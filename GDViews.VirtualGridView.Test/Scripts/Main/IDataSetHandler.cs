@@ -4,6 +4,6 @@ namespace GodotViews.VirtualGrid.Examples;
 
 public interface IDataSetHandler
 {
-    public Main.DataModel CreateElement(int dataSetIndex, IReadOnlyList<Main.DataModel> dataSet);
+    public DataModel CreateElement(int dataSetIndex, IReadOnlyList<DataModel> dataSet);
     public void NotifyUpdate();
 }

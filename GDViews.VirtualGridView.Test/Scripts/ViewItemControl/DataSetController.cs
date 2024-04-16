@@ -16,7 +16,7 @@ public partial class DataSetController : Node
     [Export] private Button _scramble;
     [Export] private Button _clear;
 
-    private List<Main.DataModel> _backingSet;
+    private List<DataModel> _backingSet;
     private IDataSetHandler _handler;
     private int _dataSetIndex;
 
@@ -81,7 +81,7 @@ public partial class DataSetController : Node
         _handler.NotifyUpdate();
     }
 
-    public void Initialize(List<Main.DataModel> set, IDataSetHandler handler, int setId)
+    public void Initialize(List<DataModel> set, IDataSetHandler handler, int setId)
     {
         _num.Text = $"数据集{setId}";
         _dataSetIndex = setId;

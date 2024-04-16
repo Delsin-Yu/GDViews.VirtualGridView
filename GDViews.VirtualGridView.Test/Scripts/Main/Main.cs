@@ -7,7 +7,6 @@ namespace GodotViews.VirtualGrid.Examples;
 
 public partial class Main : Node, IDataSetHandler
 {
-    public record struct DataModel(int Index, int DataSetIndex, string Message);
 
     #region Exports
 
