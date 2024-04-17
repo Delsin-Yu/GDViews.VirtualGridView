@@ -1,15 +1,34 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Godot;
 
 namespace GodotViews.VirtualGrid;
 
+/// <summary>
+/// Defines the edge type of the current virtualized grid element.
+/// </summary>
 [Flags]
-internal enum EdgeType : byte
+public enum EdgeType : byte
 {
+    /// <summary>
+    /// The element is a part of the up edge.
+    /// </summary>
     Up = 0b1000,
+    /// <summary>
+    /// The element is a part of the down edge.
+    /// </summary>
     Down = 0b0100,
+    /// <summary>
+    /// The element is a part of the left edge.
+    /// </summary>
     Left = 0b0010,
+    /// <summary>
+    /// The element is a part of the right edge.
+    /// </summary>
     Right = 0b0001,
+    /// <summary>
+    /// The element does not belongs to any edge.
+    /// </summary>
     None = 0
 }
 
@@ -45,7 +64,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
     private string? _cachedName;
 
     internal CellInfo? Info;
-
+    
     /// <summary>
     /// Construct an instance of the <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/>
     /// </summary>
@@ -76,7 +95,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
     {
         using (inputEvent)
         {
-            if (!AccessInfo(out var info)) return;
+            if (!TryGetInfo(out var info)) return;
 
             if (inputEvent.IsReleased()) return;
 
@@ -122,7 +141,13 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         !info.DataSetEdgeType.HasFlag(edgeType) && 
         inputEvent.IsAction(actionName, true);
 
-    private bool AccessInfo(out CellInfo info)
+    /// <summary>
+    /// Try to get the info associated with this instance of virtualized grid element.
+    /// </summary>
+    /// <param name="info">The info associated with this instance of virtualized grid element.</param>
+    /// <returns><see langword="true" /> if the current virtualized grid element has data associated to;
+    /// otherwise, <see langword="false" />.</returns>
+    protected bool TryGetInfo(out CellInfo info)
     {
         if (Info is null)
         {
@@ -163,7 +188,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
     /// </summary>
     public sealed override void _Pressed()
     {
-        if (!AccessInfo(out var info)) return;
+        if (!TryGetInfo(out var info)) return;
         CallDelegate(_OnPressedHandler, info, "On Press");
     }
 
@@ -175,7 +200,7 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
     /// </summary>
     public sealed override void _Notification(int what)
     {
-        if (!AccessInfo(out var info)) return;
+        if (!TryGetInfo(out var info)) return;
         switch ((long)what)
         {
             case NotificationFocusEnter:
@@ -300,9 +325,19 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
     /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
     protected virtual void _OnGridItemPressed(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
 
-    internal readonly struct CellInfo
+    /// <summary>
+    /// Stores the associated info assigned to the current virtualized grid element.
+    /// </summary>
+    public readonly struct CellInfo
     {
-        internal CellInfo(IVirtualGridViewParent<TDataType, TExtraArgument> parent, int rowIndex, int columnIndex, EdgeType definedViewEdgeType, EdgeType viewEdgeType, EdgeType dataSetEdgeType, TDataType? data)
+        internal CellInfo(
+            IVirtualGridViewParent<TDataType, TExtraArgument> parent,
+            int rowIndex,
+            int columnIndex,
+            EdgeType definedViewEdgeType,
+            EdgeType viewEdgeType,
+            EdgeType dataSetEdgeType,
+            TDataType? data)
         {
             Parent = parent;
             RowIndex = rowIndex;
@@ -314,14 +349,51 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         }
 
         internal readonly IVirtualGridViewParent<TDataType, TExtraArgument> Parent;
+
+        /// <summary>
+        /// The extra argument associated to this virtualized grid element. 
+        /// </summary>
+        public TExtraArgument? ExtraArgument => Parent.ExtraArgument;
+        
+        /// <summary>
+        /// The viewport row index this virtualized grid element belongs to.
+        /// </summary>
         public readonly int RowIndex;
+        
+        /// <summary>
+        /// The viewport column index this virtualized grid element belongs to.
+        /// </summary>
         public readonly int ColumnIndex;
-        private readonly EdgeType DefinedViewEdgeType;
+        
+        /// <summary>
+        /// The edge of the defined viewport this virtualized grid element belongs to.
+        /// </summary>
+        public readonly EdgeType DefinedViewEdgeType;
+        
+        /// <summary>
+        /// The edge of the current displayed viewport this virtualized grid element belongs to.
+        /// </summary>
         public readonly EdgeType ViewEdgeType;
+        
+        /// <summary>
+        /// The edge of the dataset this virtualized grid element belongs to.
+        /// </summary>
         public readonly EdgeType DataSetEdgeType;
+        
+        /// <summary>
+        /// The associated data for this virtualized grid element.
+        /// </summary>
         public readonly TDataType? Data;
 
-
-        public override string ToString() => $"({RowIndex},{ColumnIndex}), DefinedViewEdge: {DefinedViewEdgeType}, ViewEdge: {ViewEdgeType}, DataEdge: {DataSetEdgeType}, Data: {Data}";
+        /// <summary>
+        /// Returns the string representation for this <see cref="CellInfo"/>.
+        /// </summary>
+        /// <returns>The string representation for this <see cref="CellInfo"/>.</returns>
+        public override string ToString() =>
+            $"({RowIndex},{ColumnIndex}), " +
+            $"DefinedViewEdge: {DefinedViewEdgeType}, " +
+            $"ViewEdge: {ViewEdgeType}, " +
+            $"DataEdge: {DataSetEdgeType}, " +
+            $"Data: {Data}";
     }
 }

@@ -64,11 +64,11 @@ For `csproj` PackageReference
 
 ---
 
-<!-- ## Glossarys
+## Glossarys
 
 ### `VirtualGridView / GridView`
 
-The C# type that controls a group of associated `GridViewItem` and handles the all the necessary item virtualization, event method invoking, input processing; it provides APIs that allow the developer to control the internal focused items, movement of virtual viewports and triggering redraws.
+The C# type that controls a group of associated `GridViewItem` and handles the all the necessary item virtualization, layout calculations, event method invoking, and input processing; it provides APIs that allow the developer to control the internal focused items, movement of virtual viewports and triggering redraws.
 
 ### `VirtualGridViewItem / GridViewItem`
 
@@ -80,164 +80,243 @@ The script(s) inheriting the or `VirtualGridViewItemT`, attaching the script to 
 
 Attach the following script to a `Control` to make it a `GridViewItem`.  
 
-#### A Simple Example
+#### Example
 
-This view item displays the current system time.
+This time log view item displays the time for each log entry, and contains a button that allows user to remove the current entry when pressed.
 
 ```csharp
-using Godot;
-using GodotViews.FreeTab;
+/// <summary>
+/// The model that describes the data within each cell.
+/// </summary>
+/// <param name="ID">The data ID.</param>
+/// <param name="CurrentTime">The time when adding the data.</param>
+public record struct DataModel(int ID, DateTime CurrentTime);
 
 /// <summary>
-/// Attach this script to a <see cref="Control"/> to make it a ViewItem.
+/// The type that handles logics related to per-virtualized grid element interactions, attach this script to a <see cref="Button"/> to make it a grid item.
 /// </summary>
-public partial class MyViewItem : VirtualGridViewItem
+public partial class ExampleGridItem : VirtualGridViewItem<DataModel, ExampleMain>
 {
-    [Export] private Label _text;
+    // Assigned from the inspector.
+    [Export] private Label _id;
+    [Export] private Label _time;
+    [Export] private Button _deleteButton;
 
-    public override void _Process(double delta)
+    /// <summary>
+    /// Invoked when the internal data of the current virtualized grid element instance
+    /// has changed (or initialized) and requires developer-implemented draw logic.
+    /// </summary>
+    /// <param name="data">The data of the current virtualized grid element instance.</param>
+    protected override void _OnGridItemDraw(DataModel data, Vector2I _, ExampleMain __)
     {
-        base._Process(delta);
-        _text.Text = Time.GetTimeStringFromSystem();
+        // Developer defined draw logic.
+        _id.Text = data.ID.ToString("D2");
+        _time.Text = data.CurrentTime.ToLongTimeString();
+        
+        // Bind the remove self method to the button
+        _deleteButton.Pressed += RemoveSelf;
     }
-}
-```
 
-#### A Complex Example
-
-This view item displays `Hello World!` when shown, and shows `Click: Number` when clicking the `_pressButton`.
-
-```csharp
-using Godot;
-
-/// <summary>
-/// Attach this script to a <see cref="Control"/> to make it a ViewItem.
-/// </summary>
-public partial class MyViewItem2 : VirtualGridViewItem
-{
-    [Export] private Label _text;
-    [Export] private Button _pressButton;
-
-    private int _clickCount;
+    /// <summary>
+    /// Invoked when the view controller is moving this
+    /// virtualized grid element instance out from the viewport.
+    /// </summary>
+    protected override void _OnGridItemMoveOut(DataModel _, Vector2I __, ExampleMain ___)
+    {
+        // Unbind the remove self method from the button
+        _deleteButton.Pressed -= RemoveSelf;
+    }
     
-    /// <summary>
-    /// Called when the <see cref="VirtualGridView"/> is initializing the view item.
-    /// </summary>
-    protected override void _OnViewItemInitialize()
+    private void RemoveSelf()
     {
-        _pressButton.Pressed += () => _text.Text = $"Clicked: {_clickCount++}";
-    }
-
-    /// <summary>
-    /// Called when the <see cref="VirtualGridView"/> is showing the view item.
-    /// </summary>
-    protected override void _OnViewShow()
-    {
-        _text.Text = "Hello World!";
-        _pressButton.GrabFocus();
+        // Do nothing if the current element is invalid (hidden or empty)
+        if(!TryGetInfo(out var info)) return;
+        
+        // Do nothing if the associated value is null (moving out)
+        if(info.ExtraArgument is null || info.Data == default) return;
+        
+        // Notify the controller to remove the data
+        // associated to this element from the dataset, and performs a redraw. 
+        info.ExtraArgument.RemoveEntry(info.Data);
     }
 }
 ```
 
 ### Creating a `GridView`
 
-The `VirtualGridView` is pure C# implementation, so instead of attaching a script to a node in the scene tree, developers need to create and use it in scripts, there are two ways for constructing a `VirtualGridView` instance.
+The `VirtualGridView` is pure C# implementation, so instead of attaching a script to a node in the scene tree, developers need to create and reference it in scripts, due to the complexity of the creation process, `the builder design pattern` is used.
 
-#### Create from existing `ViewItem` Instances
-
-For use cases where the developer wishes to instantiate their instance of `ViewItem`, or simply leave them in the scene tree, `VirtualGridView.CreateFromInstance` can be used to construct the `VirtualGridView`.
 
 ```csharp
-using Godot;
-
 /// <summary>
-/// Attached to a node in scene tree.
+/// Attach this script to a node from the scene tree, and assigning the required exported fields.
 /// </summary>
-public partial class Main : Node
+public partial class ExampleMain : Node
 {
-    // Assigned in Godot Editor, through inspector.
-    [Export] private MyViewItem _viewItem1;
-    [Export] private MyViewItem2 _viewItem2;
+    [Export] private Button _addData;
+    
+    [Export] private PackedScene _itemPrefab;
+    [Export] private Control _itemContainer;
+    [Export] private Vector2 _itemSize;
+    [Export] private Vector2 _itemSeparation;
+    [Export] private ScrollBar _verticalScrollBar;
 
-    [Export] private CheckButton _tab1;
-    [Export] private CheckButton _tab2;
+    private IVirtualGridView<DataModel> _virtualGridView;
+    private readonly List<DataModel> _dataset = [];
 
-    private VirtualGridView _GridView;
-
+    /// <summary>
+    /// Called when the node is "ready", i.e. when both the node and its children have entered the scene tree.
+    /// </summary>
     public override void _Ready()
     {
-        // Construct a tab view on ready.
-        _GridView = VirtualGridView.CreateFromInstance(
-            [
-                // Associate a tab to its corresponding view item instance.
-                new TabInstanceSetup(_tab1, _viewItem1), 
-                new TabInstanceSetup(_tab2, _viewItem2), 
-            ]
-        );
-        
-        // Make the tab view displays the first view item.
-        _GridView.Show(0);
+        _virtualGridView = 
+    
+            // Call the Create function under this static class to initiate a build.
+            VirtualGridView
+                // Here we are specifying the viewport dimensions
+                .Create(viewportColumns: 1, viewportRows: 10)
+                // Call the WithHandlers function to specifying the visual logic.
+                .WithHandlers(
+                
+                    // Handles the positioning of the virtual viewport,
+                    // side positioner does not move the viewport
+                    // unless the selected item lies outside of the viewport.
+                    elementPositioner: 
+                    ElementPositioners.Side,
+                    
+                    // Manages the visual positional interpolation of the
+                    // elements when user moves the virtualized viewport.
+                    // pan tweener does position interpolation.
+                    elementTweener: 
+                    ElementTweeners.CreatePan(duration: 0.1f, tweenSetup: TweenSetups.EaseOut.Quad),
+                    
+                    // Manages the hiding and showing of the virtualized elements.
+                    // fade fader does Modulate interpolation.
+                    elementFader: 
+                    ElementFaders.CreateFade(duration: 0.1f, tweenSetup: TweenSetups.EaseInOut.Sine)
+                    
+                )
+                
+                // Specifying the dataset positioning, developer may choose to
+                // horizontally or vertically layout their dataset(s).
+                // Here we choose to layout our data set vertically,
+                // so it will show like:
+                //
+                //     [Column 0]
+                //     [DataSet0]
+                //    |    00    |
+                //    |    01    |
+                //    |    02    |
+                //    |    03    |
+                //    |    04    |
+                //
+                // Specifying the type of the dataset as well.
+                .WithVerticalDataLayout<DataModel>()
+                
+                    // Append our dataset to the building datasets
+                    // developer may append multiple datasets, under 
+                    // the vertical data layout, it will show like:
+                    //
+                    //     [Column 0] [Column 1] [Column 2]
+                    //     [DataSet0] [DataSet0] [DataSet1]
+                    //    |    00    |    01    |    00    |
+                    //    |    02    |    03    |    01    |
+                    //    |    04    |    05    |    02    |
+                    //    |    08    |    09    |    04    |
+                    //    |    06    |    07    |    03    |
+                    //                           ^^ +New ^^
+                    //
+                    // the developer may also choose to make one dataset
+                    // to occupy multiple columns by increasing the repeat
+                    // argument or add the same IDynamicGridViewer multiple times
+                    .AppendColumnDataSet(
+                    
+                            // The dynamic grid viewer emulates a 2D list access
+                            // from the backing list we passes in.
+                            DynamicGridViewers.CreateList(_dataset)
+                            
+                        )
+                // Call the WithArgument function to specifying the rest of the arguments.
+                .WithArgument<ExampleGridItem, ExampleMain>(
+                    
+                    // The prefab that's used to create
+                    // instances of the virtualized elements.
+                    _itemPrefab,
+                    
+                    // The container for the virtualized elements.
+                    // this container is also used for receiving inputs.
+                    _itemContainer,
+                    
+                    // Infinite Layout Grid is the abstraction of a layout grid that has infinite amount of cells.
+                    // simple infinite layout grid that has functions equivalent to a GridContainer.
+                    InfiniteLayoutGrids.CreateSimple(
+                        
+                        // Size of one virtualized element.
+                        _itemSize,
+                        
+                        // Separation between the elements
+                        _itemSeparation
+                        
+                        )
+                )
+                
+                    // Pass the current instance to the view
+                    // so that we can get this instance from
+                    // the virtualized instance
+                    .ConfigureExtraArgument(this)
+                
+                    // The vertical scroll bar use to indicate
+                    // the current viewport position relative to the
+                    // data sets. Setting autohide to true will make the
+                    // view hide the scroll bar when it's unnecessary.
+                    .ConfigureVerticalScrollBar(_verticalScrollBar, autoHide: true)
+                
+                // Finish the build and get the built instance.
+                .Build();
+
+        // Press this button to add an entry to the dataset,
+        // and triggers the view redraw.
+        _addData.Pressed += AddEntry;
     }
 
-    public override void _Process(double delta)
+    /// <summary>
+    /// Add an entry to the dataset and triggers the redraw.
+    /// </summary>
+    private void AddEntry()
     {
-        // Developer may use their own preferred way to handle switching between tabs.
-        if (Input.IsActionJustPressed("ui_left")) _GridView.ShowPrevious();
-        if (Input.IsActionJustPressed("ui_right")) _GridView.ShowNext();
+        var id = _dataset.Count;
+        var time = DateTime.Now;
+
+        // Add to the dataset.
+        _dataset.Add(new(id, time));
+        
+        // Make the view to redraw.
+        _virtualGridView.Redraw();
+        
+        // Make sure we have a focus
+        // (for platforms that do not have pointing device).
+        _virtualGridView.GrabFocus();
+    }
+
+    /// <summary>
+    /// Removes the specified value from the dataset and triggers the redraw.
+    /// </summary>
+    public void RemoveEntry(DataModel dataModelToRemove)
+    {
+        // Remove from the dataset.
+        _dataset.Remove(dataModelToRemove);
+        
+        // Make the view to redraw.
+        _virtualGridView.Redraw();
+        
+        // Make sure we have a focus
+        // (for platforms that do not have pointing device).
+        _virtualGridView.GrabFocus();
     }
 }
 ```
 
-#### Create from `PackedScenes`
-
-For use cases where the developer wishes to store the `ViewItem`s as `PackedScenes`, `VirtualGridView.CreateFromPrefab` can be used to construct the `VirtualGridView`.
-
-```csharp
-using Godot;
-
-/// <summary>
-/// Attached to a node in scene tree.
-/// </summary>
-public partial class Main : Node
-{
-    // Assigned in Godot Editor, through inspector.
-    [Export] private PackedScene _viewItem1;
-    [Export] private PackedScene _viewItem2;
-
-    [Export] private CheckButton _tab1;
-    [Export] private CheckButton _tab2;
-
-    // Required for storing the instances.
-    [Export] private Control _container;
-
-    private VirtualGridView _GridView;
-
-    public override void _Ready()
-    {
-        // Construct a tab view on ready.
-        _GridView = VirtualGridView.CreateFromPrefab(
-            [
-                // Associate a tab to a instance for the provided packed scene.
-                new TabPrefabSetup(_tab1, _viewItem1), 
-                new TabPrefabSetup(_tab2, _viewItem2), 
-            ],
-            _container
-        );
-        
-        // Make the tab view displays the first view item.
-        _GridView.Show(0);
-    }
-
-    public override void _Process(double delta)
-    {
-        // Developer may use their own preferred way to handle switching between tabs.
-        if (Input.IsActionJustPressed("ui_left")) _GridView.ShowPrevious();
-        if (Input.IsActionJustPressed("ui_right")) _GridView.ShowNext();
-    }
-}
-```
-
-## Component Documentation
+<!-- ## Component Documentation
 
 ### The `VirtualGridView`
 
