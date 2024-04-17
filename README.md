@@ -81,6 +81,7 @@ The script(s) inheriting the or `VirtualGridViewItemT`, attaching the script to 
 Attach the following script to a `Control` to make it a `GridViewItem`.  
 This time log view item displays the time for each log entry, and contains a button that allows user to remove the current entry when pressed.
 
+
 ```csharp
 /// <summary>
 /// The model that describes the data within each cell.
@@ -135,7 +136,6 @@ public partial class ExampleGridItem : VirtualGridViewItem<DataModel, ExampleMai
 ### Creating a `GridView`
 
 The `VirtualGridView` is pure C# implementation, so instead of attaching a script to a node in the scene tree, developers need to create and reference it in scripts, due to the complexity of the creation process, `the builder design pattern` is used.
-
 
 ```csharp
 /// <summary>
@@ -322,10 +322,98 @@ public partial class ExampleMain : Node
 
 ### The `VirtualGridView`
 
-#### Static Factory Methods
+#### Instantiation
 
-Use builder functions to initialize a builder for a `VirtualGridView`.
+##### `VirtualGridView.Create`
+
+> Initiate a build process of the VirtualGridView instance by setting up the viewport metrics, or the amount of elements displayed concurrently by the control.
+
+|Argument Name|Description|
+|:-|:-|
+|viewportColumns|The number of columns for the concurrently displayed virtualized grid items.|
+|viewportRows|The number of rows for the concurrently displayed virtualized grid items.|
 
 ```csharp
-IViewHandlerBuilder builder = VirtualGridView.Create(viewportColumns, viewportRows);
+IViewHandlerBuilder viewHandlerBuilder = VirtualGridView.Create(viewportColumns, viewportRows);
+```
+
+##### `IViewHandlerBuilder.WithHandlers`
+
+> Sets the visual transition behavior for the grid elements, and moves to the next build process.
+
+|Argument Name|Description|
+|:-|:-|
+|elementPositioner|The Positioner assigned to the VirtualGridView, handles the positioning of the virtual viewport|
+|elementTweener|The Tweener assigned to the VirtualGridView, manages the visual positional interpolation of the elements when user moves the virtualized viewport.|
+|elementFader|The Fader assigned to the VirtualGridView, manages the hiding and showing of the virtualized elements.|
+
+```csharp
+IDataLayoutBuilder dataLayoutBuilder = viewHandlerBuilder.WithHandlers(elementPositioner, elementTweener, elementFader)
+```
+
+##### `IDataLayoutBuilder`
+
+> The builder that continues the building process of the VirtualGridView instance. Use the `WithHorizontalDataLayout` or the `WithVerticalDataLayout` method to choose between the layout of the data sets.
+
+###### `IDataLayoutBuilder.WithHorizontalDataLayout<TDataType>`
+
+> Instruct the view controller to layout the datasets horizontally, which will results in a data set looks like the following, each data set is allowed to occupy more than one row:
+> |Row Index|Data Set Number|Data Set Content|
+> |:-|:-|:-|
+> |Row 0|Data Set 0|00, 02, 04, 06, 08|
+> |Row 1|Data Set 0|01, 03, 05, 07, 09|
+> |Row 2|Data Set 1|00, 02, 04, 06, 08|
+> |Row 3|Data Set 1|01, 03, 05, 07, 09|
+> |Row 4|Data Set 2|00, 01, 02, 03, 04, 05|
+> |Row 5|Data Set 3|00, 01, 02, 03, 04, 05|
+>
+> When the reverseLocalLayout is set to true:
+> |Row Index|Data Set Number|Data Set Content|
+> |:-|:-|:-|
+> |Row 0|Data Set 0|01, 03, 05, 07, 09|
+> |Row 1|Data Set 0|00, 02, 04, 06, 08|
+> |Row 2|Data Set 1|01, 03, 05, 07, 09|
+> |Row 3|Data Set 1|00, 02, 04, 06, 08|
+> |Row 4|Data Set 2|00, 01, 02, 03, 04, 05|
+> |Row 5|Data Set 3|00, 01, 02, 03, 04, 05|
+
+|Argument Name|Description|
+|:-|:-|
+|equalityComparer|The IEqualityComparer used to determine if the data associated to certain grid element has changed, setting to null will fallback to the Default.|
+|reverseLocalLayout|When set to true, the view controller will reverse the layout of the provided datasets.|
+
+```csharp
+IHorizontalDataLayoutBuilder<int> horizontalBuilder = dataLayoutBuilder.WithHorizontalDataLayout<int>()
+```
+
+###### `IDataLayoutBuilder.WithVerticalDataLayout<DataModel>`
+
+> Instruct the view controller to layout the datasets vertically, which will results in a data set looks like the following, each data set is allowed to occupy more than one column:
+> |Column Index|Column 0|Column 1|Column 2|Column 3|Column 4|Column 5|
+> |:-|:-|:-|:-|:-|:-|:-|
+> |**Data Set Number**|DataSet0|DataSet0|DataSet1|DataSet1|DataSet2|DataSet3|
+> |**Data Set Content**|00|01|00|01|00|00|
+> ||02|03|02|03|01|01|
+> ||04|05|04|05|02|02|
+> ||06|07|06|07|03|03|
+> ||08|09|08|09|04|04|
+>
+> When the reverseLocalLayout is set to true:
+>
+> |Column Index|Column 0|Column 1|Column 2|Column 3|Column 4|Column 5|
+> |:-|:-|:-|:-|:-|:-|:-|
+> |**Data Set Number**|DataSet0|DataSet0|DataSet1|DataSet1|DataSet2|DataSet3|
+> |**Data Set Content**|01|00|01|00|00|00|
+> ||03|02|03|02|01|01|
+> ||05|04|05|04|02|02|
+> ||07|06|07|06|03|03|
+> ||09|08|09|08|04|04|
+
+|Argument Name|Description|
+|:-|:-|
+|equalityComparer|The IEqualityComparer used to determine if the data associated to certain grid element has changed, setting to null will fallback to the Default.|
+|reverseLocalLayout|When set to true, the view controller will reverse the layout of the provided datasets.|
+
+```csharp
+IVerticalDataLayoutBuilder<int> verticalBuilder = dataLayoutBuilder.WithVerticalDataLayout<int>()
 ```

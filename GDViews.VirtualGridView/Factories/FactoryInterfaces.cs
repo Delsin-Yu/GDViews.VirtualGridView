@@ -10,7 +10,7 @@ namespace GodotViews.VirtualGrid;
 public interface IViewHandlerBuilder
 {
     /// <summary>
-    /// Sets the visual transition behavior for the grid elements.
+    /// Sets the visual transition behavior for the grid elements, and moves to the next build process.
     /// </summary>
     /// <param name="elementPositioner">The Positioner assigned to the <see cref="IVirtualGridView{TDataType}"/>.</param>
     /// <param name="elementTweener">The Tweener assigned to the <see cref="IVirtualGridView{TDataType}"/>.</param>
