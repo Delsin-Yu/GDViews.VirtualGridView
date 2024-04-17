@@ -126,6 +126,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         for (var i = 0; i < preloadAmount; i++)
         {
             var instance = itemPrefab.Instantiate<TButtonType>();
+            instance.CallCreate();
             _buttonPool.Push(instance);
         }
 
@@ -520,13 +521,16 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
                     break;
                 case InputEventMouseMotion mouseMotion:
+                    
                     if (_isDragging == false) return;
+                    
                     if (!TryGetMoveDirection(
                             ref _startDragPosition,
                             mouseMotion.GlobalPosition,
                             _cellItemSize,
                             out simulatedMoveDirection
                         )) return;
+                    
                     break;
                 default: return;
             }
@@ -600,7 +604,11 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         int dataSetMaxColumnIndex
     )
     {
-        if (!_buttonPool.TryPop(out var instance)) instance = _itemPrefab.Instantiate<TButtonType>();
+        if (!_buttonPool.TryPop(out var instance))
+        {
+            instance = _itemPrefab.Instantiate<TButtonType>();
+            instance.CallCreate();
+        }
         else instance.Show();
 
         _itemContainer.AddChild(instance);

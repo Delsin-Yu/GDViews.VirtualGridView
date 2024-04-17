@@ -182,7 +182,7 @@ internal class FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
     )
     {
         _verticalScrollBar = verticalScrollBar;
-        _autoHideHorizontalScrollBar = autoHide;
+        _autoHideVerticalScrollBar = autoHide;
         _verticalScrollBarTweener = tweener;
         _verticalScrollBarFader = fader;
         return this;
@@ -196,7 +196,7 @@ internal class FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
     )
     {
         _horizontalScrollBar = horizontalScrollBar;
-        _autoHideVerticalScrollBar = autoHide;
+        _autoHideHorizontalScrollBar = autoHide;
         _horizontalScrollBarTweener = tweener;
         _horizontalScrollBarFader = fader;
         return this;

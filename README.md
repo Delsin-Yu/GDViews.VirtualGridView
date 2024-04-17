@@ -79,9 +79,6 @@ The script(s) inheriting the or `VirtualGridViewItemT`, attaching the script to 
 ### Creating a `GridViewItem`
 
 Attach the following script to a `Control` to make it a `GridViewItem`.  
-
-#### Example
-
 This time log view item displays the time for each log entry, and contains a button that allows user to remove the current entry when pressed.
 
 ```csharp
@@ -103,6 +100,25 @@ public partial class ExampleGridItem : VirtualGridViewItem<DataModel, ExampleMai
     [Export] private Button _deleteButton;
 
     /// <summary>
+    /// Invoked when the view controller has just create this virtualized grid element instance.
+    /// </summary>
+    protected override void _OnGridItemCreate()
+    {
+        _deleteButton.Pressed += () =>
+        {
+            // Do nothing if the current element is invalid (hidden or empty)
+            if (!TryGetInfo(out var info)) return;
+
+            // Do nothing if the associated value is null (moving out)
+            if (info.ExtraArgument is null || info.Data == default) return;
+
+            // Notify the controller to remove the data
+            // associated to this element from the dataset, and performs a redraw. 
+            info.ExtraArgument.RemoveEntry(info.Data);
+        };
+    }
+
+    /// <summary>
     /// Invoked when the internal data of the current virtualized grid element instance
     /// has changed (or initialized) and requires developer-implemented draw logic.
     /// </summary>
@@ -111,33 +127,7 @@ public partial class ExampleGridItem : VirtualGridViewItem<DataModel, ExampleMai
     {
         // Developer defined draw logic.
         _id.Text = data.ID.ToString("D2");
-        _time.Text = data.CurrentTime.ToLongTimeString();
-        
-        // Bind the remove self method to the button
-        _deleteButton.Pressed += RemoveSelf;
-    }
-
-    /// <summary>
-    /// Invoked when the view controller is moving this
-    /// virtualized grid element instance out from the viewport.
-    /// </summary>
-    protected override void _OnGridItemMoveOut(DataModel _, Vector2I __, ExampleMain ___)
-    {
-        // Unbind the remove self method from the button
-        _deleteButton.Pressed -= RemoveSelf;
-    }
-    
-    private void RemoveSelf()
-    {
-        // Do nothing if the current element is invalid (hidden or empty)
-        if(!TryGetInfo(out var info)) return;
-        
-        // Do nothing if the associated value is null (moving out)
-        if(info.ExtraArgument is null || info.Data == default) return;
-        
-        // Notify the controller to remove the data
-        // associated to this element from the dataset, and performs a redraw. 
-        info.ExtraArgument.RemoveEntry(info.Data);
+        _time.Text = data.CurrentTime.ToString("yyyy-MM-dd HH:mm:ss:ffff");
     }
 }
 ```
@@ -154,7 +144,8 @@ The `VirtualGridView` is pure C# implementation, so instead of attaching a scrip
 public partial class ExampleMain : Node
 {
     [Export] private Button _addData;
-    
+
+    [Export] private int _displayedItems;
     [Export] private PackedScene _itemPrefab;
     [Export] private Control _itemContainer;
     [Export] private Vector2 _itemSize;
@@ -174,7 +165,7 @@ public partial class ExampleMain : Node
             // Call the Create function under this static class to initiate a build.
             VirtualGridView
                 // Here we are specifying the viewport dimensions
-                .Create(viewportColumns: 1, viewportRows: 10)
+                .Create(viewportColumns: 1, viewportRows: _displayedItems)
                 // Call the WithHandlers function to specifying the visual logic.
                 .WithHandlers(
                 
@@ -267,9 +258,20 @@ public partial class ExampleMain : Node
                 
                     // The vertical scroll bar use to indicate
                     // the current viewport position relative to the
-                    // data sets. Setting autohide to true will make the
-                    // view hide the scroll bar when it's unnecessary.
-                    .ConfigureVerticalScrollBar(_verticalScrollBar, autoHide: true)
+                    // data sets.
+                    .ConfigureVerticalScrollBar(
+                    
+                        _verticalScrollBar, 
+                        
+                        // Managing the Value and Page value interpolation
+                        // of the ScrollBar when user moves the virtualized viewport.
+                        ScrollBarTweeners.CreateLerp(0.1f, TweenSetups.EaseInOut.Sine), 
+                        
+                        // Setting autohide to true will make the
+                        // view hide the scroll bar when it's unnecessary.
+                        autoHide: true
+                        
+                        )
                 
                 // Finish the build and get the built instance.
                 .Build();
@@ -316,227 +318,14 @@ public partial class ExampleMain : Node
 }
 ```
 
-<!-- ## Component Documentation
+## Component Documentation
 
 ### The `VirtualGridView`
 
 #### Static Factory Methods
 
-Use factory functions to instantiate `VirtualGridViews`.
-
-##### `VirtualGridView.CreateFromPrefab`
-
-Create an instance of the `VirtualGridView` from the given `TabPrefabSetups`, this overload instantiates the given `PackedScenes` under the `viewsContainer`.
+Use builder functions to initialize a builder for a `VirtualGridView`.
 
 ```csharp
-
-[Export] private PackedScene _viewItem1;
-[Export] private PackedScene _viewItem2;
-
-[Export] private CheckButton _tab1;
-[Export] private CheckButton _tab2;
-
-_GridView = VirtualGridView.CreateFromPrefab(
-    [
-        new(_tab1, _viewItem1), 
-        new(_tab2, _viewItem2), 
-    ],
-    _container
-);
+IViewHandlerBuilder builder = VirtualGridView.Create(viewportColumns, viewportRows);
 ```
-
-##### `VirtualGridView.CreateFromInstance`
-
-Create an instance of the `VirtualGridView` from the given `TabPrefabSetups`, this overload references the given `IVirtualGridViewItems`.
-
-```csharp
-
-[Export] private PackedScene _viewItem1;
-[Export] private PackedScene _viewItem2;
-
-[Export] private CheckButton _tab1;
-[Export] private CheckButton _tab2;
-
-_GridView = VirtualGridView.CreateFromPrefab(
-    [
-        new(_tab1, _viewItem1), 
-        new(_tab2, _viewItem2), 
-    ],
-    _container
-);
-```
-
-#### Instance Methods
-
-A `VirtualGridView` exposes four functions to the developer to switch between the `ViewItems`.
-
-##### `Show(int index)` / `Show(int index, object? optionalArg)`
-
-Shows a view item at the given index, the latter overload supports passing an optional argument to the target view item.
-
-```csharp
-// Shows the first view item.
-_GridView.Show(0);
-
-// Shows the second view item, 
-// and pass the "Hello World" to its `_OnViewItemShow` method.
-_GridView.Show(1, "Hello World");
-```
-
-##### `ShowNext` / `ShowPrevious`
-
-Shows the next/previous view item. If no view item is shown at the moment, the first view item will be shown.  
-The first argument determines if the `GridView` should warp to the first/last view item if the current shown view item is the last/first.
-
-```csharp
-// Shows the first view item.
-_GridView.Show(0);
-
-// Shows the previous view item.
-_GridView.ShowPrevious();
-_GridView.ShowNext();
-```
-
-#### `ArgumentResolver`
-
-When using the `ShowNext`/`ShowPrevious` API or `CheckButtons` to switch between view items, it is hard to pass the argument to the displaying view items, in this case, the developer may pass an `argument resolver delegate` when constructing the `VirtualGridView` or to the `ShowNext`/`ShowPrevious` API.
-
-##### Default Resolver
-
-Passing a delegate with the following signature `Func<IVirtualGridViewItem, object?>` to the factory method as the default `ArgumentResolver`, this resolver gets called when calling `Show(0)`, `Show(0, null)`, `ShowPrevious()`, and `ShowNext()` API, the developer may write their logic to return the desired argument based on the given `IVirtualGridViewItem` instance.
-
-```csharp
-using Godot;
-
-/// <summary>
-/// Attached to a node in scene tree.
-/// </summary>
-public partial class Main : Node
-{
-    // Assigned in Godot Editor, through inspector.
-    [Export] private MyViewItem _viewItem1;
-    [Export] private MyViewItem2 _viewItem2;
-
-    [Export] private CheckButton _tab1;
-    [Export] private CheckButton _tab2;
-
-    private VirtualGridView _GridView;
-
-    public override void _Ready()
-    {
-        // Construct a tab view on ready.
-        _GridView = VirtualGridView.CreateFromInstance(
-            [
-                // Associate a tab to its corresponding view item instance.
-                new TabInstanceSetup(_tab1, _viewItem1), 
-                new TabInstanceSetup(_tab2, _viewItem2), 
-            ],
-            ArgumentResolver
-        );
-        
-        return;
-        
-        object? ArgumentResolver(IVirtualGridViewItem arg)
-        {
-            if (arg == _viewItem1) return "Hello World!";
-            if (arg == _viewItem2) return 10;
-            return null;
-        }
-    }
-}
-```
-
-##### Resolver for `ShowNext` / `ShowPrevious`
-
-Passing a delegate with the following signature `Func<IVirtualGridViewItem, object?>` to the `ShowPrevious()`, and `ShowNext()` API as the `ArgumentResolver`, the developer may write their logic to return the desired argument based on the given `IVirtualGridViewItem` instance. Passing null to these two APIs will fall back to the `default ArgumentResolver`.
-
-```csharp
-object? ArgumentResolver(IVirtualGridViewItem arg)
-{
-    if (arg == _viewItem1) return "Hello World!";
-    if (arg == _viewItem2) return 10;
-    return null;
-}
-
-_GridView.ShowPrevious(argumentResolver: ArgumentResolver);
-_GridView.ShowNext(argumentResolver: ArgumentResolver);
-```
-
-### The `VirtualGridViewItem` / `VirtualGridViewItemT`
-
-Inheriting the `VirtualGridViewItem` or `VirtualGridViewItemT` type, and attach the script to a `Control` node for it to work.
-
-#### Event Methods Diagram
-
-While working with `ViewItems`, certain methods get called at a certain lifetime of a view item, a brief diagram can be summarised as follows.
-
-```mermaid
----
-title: The Summary of Event Methods throughout the lifetime of a ViewItem
----
-flowchart TD
-
-id1["_OnViewItemInitialize()"]
-id2["_OnViewItemShow()"]
-id4["_OnViewItemHide()"]
-id5["_OnViewItemPredelete()"]
-id6["_OnViewItemNotification()"]
-
-id0[["Component Calls"]] -.-> id1
-id1 -..->|Component Calls|id2
-
-subgraph Called Multiple Times before the View Item gets Freed
-id4 -..->|Component Calls|id2
-id2 -..->|Component Calls|id4
-end
-id6 -.->|Component Calls|id5
-id7[["Godot Calls"]] -.-> id6
-```
-
-1. When calling one of the factory methods (`VirtualGridView.CreateFromInstance`/`VirtualGridView.CreateFromPrefab`), after the component has done basic initializing, the `_OnViewItemInitialize` method of each associated view item instance gets invoked.
-2. When calling any of the `Show` APIs on a `GridView`, the tab view will call `_OnViewItemHide` on the currently shown view item and call `_OnViewItemShown` on the target view item.
-3. A `GridViewItem` delegates the `_Notification` engine call to `_OnViewItemNotification`, and calls `_OnViewItemPredelete` when necessary.
-
-### ViewItemTweeners
-
-Developers may customize a view item's `visual transition behavior when showing/hiding` by accessing its `ViewItemTweener` property.
-
-#### Built-in Tweeners
-
-There are two preconfigured Tweenrs provided with the component.
-
-1. NoneViewItemTweener: This tweener simply hides and shows the view items, it is also the default value of a `ViewItemTweener`, you may access the global instance of this tweener from `NoneViewItemTweener.Instance`.
-2. FadeViewItemTweener: This tweener performs fade transition for the view items' showing and hiding, after instantiating the tweener, you may configure the transition time by accessing its `FadeTime` property.
-
-#### Customize Tweeners
-
-By inheriting the `IViewItemTweener` interface, the developer may customize their transition effects.
-
-```csharp
-/// <summary>
-/// Defines the behavior for view transitions.
-/// </summary>
-public interface IViewItemTweener
-{
-    /// <summary>
-    /// This sets the default visual appearance for a view item.
-    /// </summary>
-    /// <param name="viewItem">The target view item.</param>
-    /// <param name="additionalData">Optional additional data required by this tweener.</param>
-    void Init(Control viewItem, ref object? additionalData);
-    
-    /// <summary>
-    /// This async method manages the behavior when the view item is showing up.
-    /// </summary>
-    /// <param name="viewItem">The target view item.</param>
-    /// <param name="additionalData">Optional additional data required by this tweener.</param>
-    void Show(Control viewItem, object? additionalData);
-    
-    /// <summary>
-    /// This async method manages the behavior when the view item is hiding out.
-    /// </summary>
-    /// <param name="viewItem">The target view item.</param>
-    /// <param name="additionalData">Optional additional data required by this tweener.</param>
-    void Hide(Control viewItem, object? additionalData);
-}
-``` -->

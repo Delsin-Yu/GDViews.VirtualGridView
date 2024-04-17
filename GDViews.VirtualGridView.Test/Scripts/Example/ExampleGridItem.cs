@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Godot;
 using GodotViews.VirtualGrid;
 // ReSharper disable InvalidXmlDocComment
@@ -23,6 +23,25 @@ public partial class ExampleGridItem : VirtualGridViewItem<DataModel, ExampleMai
     [Export] private Button _deleteButton;
 
     /// <summary>
+    /// Invoked when the view controller has just create this virtualized grid element instance.
+    /// </summary>
+    protected override void _OnGridItemCreate()
+    {
+        _deleteButton.Pressed += () =>
+        {
+            // Do nothing if the current element is invalid (hidden or empty)
+            if (!TryGetInfo(out var info)) return;
+
+            // Do nothing if the associated value is null (moving out)
+            if (info.ExtraArgument is null || info.Data == default) return;
+
+            // Notify the controller to remove the data
+            // associated to this element from the dataset, and performs a redraw. 
+            info.ExtraArgument.RemoveEntry(info.Data);
+        };
+    }
+
+    /// <summary>
     /// Invoked when the internal data of the current virtualized grid element instance
     /// has changed (or initialized) and requires developer-implemented draw logic.
     /// </summary>
@@ -31,32 +50,6 @@ public partial class ExampleGridItem : VirtualGridViewItem<DataModel, ExampleMai
     {
         // Developer defined draw logic.
         _id.Text = data.ID.ToString("D2");
-        _time.Text = data.CurrentTime.ToLongTimeString();
-        
-        // Bind the remove self method to the button
-        _deleteButton.Pressed += RemoveSelf;
-    }
-
-    /// <summary>
-    /// Invoked when the view controller is moving this
-    /// virtualized grid element instance out from the viewport.
-    /// </summary>
-    protected override void _OnGridItemMoveOut(DataModel _, Vector2I __, ExampleMain ___)
-    {
-        // Unbind the remove self method from the button
-        _deleteButton.Pressed -= RemoveSelf;
-    }
-    
-    private void RemoveSelf()
-    {
-        // Do nothing if the current element is invalid (hidden or empty)
-        if(!TryGetInfo(out var info)) return;
-        
-        // Do nothing if the associated value is null (moving out)
-        if(info.ExtraArgument is null || info.Data == default) return;
-        
-        // Notify the controller to remove the data
-        // associated to this element from the dataset, and performs a redraw. 
-        info.ExtraArgument.RemoveEntry(info.Data);
+        _time.Text = data.CurrentTime.ToString("yyyy-MM-dd HH:mm:ss:ffff");
     }
 }

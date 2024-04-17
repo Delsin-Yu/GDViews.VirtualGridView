@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Godot;
 using GodotViews.VirtualGrid;
@@ -11,7 +11,8 @@ namespace GDViews.VirtualGrid.Example;
 public partial class ExampleMain : Node
 {
     [Export] private Button _addData;
-    
+
+    [Export] private int _displayedItems;
     [Export] private PackedScene _itemPrefab;
     [Export] private Control _itemContainer;
     [Export] private Vector2 _itemSize;
@@ -31,7 +32,7 @@ public partial class ExampleMain : Node
             // Call the Create function under this static class to initiate a build.
             VirtualGridView
                 // Here we are specifying the viewport dimensions
-                .Create(viewportColumns: 1, viewportRows: 10)
+                .Create(viewportColumns: 1, viewportRows: _displayedItems)
                 // Call the WithHandlers function to specifying the visual logic.
                 .WithHandlers(
                 
@@ -124,9 +125,20 @@ public partial class ExampleMain : Node
                 
                     // The vertical scroll bar use to indicate
                     // the current viewport position relative to the
-                    // data sets. Setting autohide to true will make the
-                    // view hide the scroll bar when it's unnecessary.
-                    .ConfigureVerticalScrollBar(_verticalScrollBar, autoHide: true)
+                    // data sets.
+                    .ConfigureVerticalScrollBar(
+                    
+                        _verticalScrollBar, 
+                        
+                        // Managing the Value and Page value interpolation
+                        // of the ScrollBar when user moves the virtualized viewport.
+                        ScrollBarTweeners.CreateLerp(0.1f, TweenSetups.EaseInOut.Sine), 
+                        
+                        // Setting autohide to true will make the
+                        // view hide the scroll bar when it's unnecessary.
+                        autoHide: true
+                        
+                        )
                 
                 // Finish the build and get the built instance.
                 .Build();

@@ -48,6 +48,8 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
     private readonly Action<InputEvent> _OnGuiInputHandler;
     private readonly Action<int> _OnNotificationHandler;
     
+    private readonly Action _OnCreateHandler;
+    
     private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnAppearHandler;
     private readonly Action<TExtraArgument?> _OnDisappearHandler;
 
@@ -72,6 +74,8 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
     {
         _OnGuiInputHandler = _OnGuiInput;
         _OnNotificationHandler = _OnNotification;
+
+        _OnCreateHandler = _OnGridItemCreate;
         
         _OnDrawHandler = _OnGridItemDraw;
         _OnMoveHandler = _OnGridItemMove;
@@ -218,6 +222,8 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
         }
     }
 
+    internal void CallCreate() => DelegateRunner.RunProtected(_OnCreateHandler, "On Create", LocalName);
+
     internal void DrawGridItem(in CellInfo info)
     {
         Info = info;
@@ -251,6 +257,11 @@ public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : B
     
     /// <inheritdoc cref="GodotObject._Notification"/>
     protected virtual void _OnNotification(int what) { }
+    
+    /// <summary>
+    /// Invoked when the view controller has just create this virtualized grid element instance.
+    /// </summary>
+    protected virtual void _OnGridItemCreate() { }
     
     /// <summary>
     /// Invoked when the internal data of the current virtualized grid element instance

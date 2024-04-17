@@ -1,0 +1,40 @@
+[gd_scene load_steps=2 format=3 uid="uid://co8xeivh2dbt7"]
+
+[ext_resource type="Script" path="res://Scripts/Example/ExampleGridItem.cs" id="1_fm2uw"]
+
+[node name="ViewItem" type="Button" node_paths=PackedStringArray("_id", "_time", "_deleteButton")]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(1000, 80)
+script = ExtResource("1_fm2uw")
+_id = NodePath("ID")
+_time = NodePath("Time")
+_deleteButton = NodePath("RemoveButton")
+
+[node name="ID" type="Label" parent="."]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 128.0
+offset_bottom = 72.0
+text = "ID"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Time" type="Label" parent="."]
+auto_translate_mode = 1
+layout_mode = 0
+offset_left = 136.0
+offset_top = 8.0
+offset_right = 824.0
+offset_bottom = 72.0
+text = "Time Stamp"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RemoveButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 832.0
+offset_top = 8.0
+offset_right = 992.0
+offset_bottom = 72.0
+text = "Remove"

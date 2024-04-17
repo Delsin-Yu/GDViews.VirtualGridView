@@ -1,0 +1,55 @@
+[gd_scene load_steps=4 format=3 uid="uid://0xfyoo3f1na7"]
+
+[ext_resource type="Script" path="res://Scripts/Example/ExampleMain.cs" id="1_6ho51"]
+[ext_resource type="PackedScene" uid="uid://co8xeivh2dbt7" path="res://Prefab/Example/view_item.tscn" id="2_m5mc7"]
+
+[sub_resource type="Theme" id="Theme_ym7fg"]
+Button/font_sizes/font_size = 25
+Label/font_sizes/font_size = 30
+
+[node name="ExampleMain" type="Panel" node_paths=PackedStringArray("_addData", "_itemContainer", "_verticalScrollBar")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_ym7fg")
+script = ExtResource("1_6ho51")
+_addData = NodePath("Button")
+_displayedItems = 10
+_itemPrefab = ExtResource("2_m5mc7")
+_itemContainer = NodePath("Container")
+_itemSize = Vector2(1000, 80)
+_itemSeparation = Vector2(0, 5)
+_verticalScrollBar = NodePath("VScrollBar")
+
+[node name="Container" type="Control" parent="."]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -500.0
+offset_top = -422.5
+offset_right = 500.0
+offset_bottom = 422.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VScrollBar" type="VScrollBar" parent="."]
+layout_mode = 0
+offset_left = 416.0
+offset_top = 120.0
+offset_right = 440.0
+offset_bottom = 960.0
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 0
+offset_left = 1488.0
+offset_top = 832.0
+offset_right = 1728.0
+offset_bottom = 960.0
+focus_mode = 0
+text = "Add New Data"
