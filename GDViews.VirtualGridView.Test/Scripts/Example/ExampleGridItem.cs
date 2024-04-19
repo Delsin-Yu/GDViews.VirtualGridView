@@ -1,6 +1,7 @@
 using System;
 using Godot;
 using GodotViews.VirtualGrid;
+
 // ReSharper disable InvalidXmlDocComment
 
 namespace GDViews.VirtualGrid.Example;

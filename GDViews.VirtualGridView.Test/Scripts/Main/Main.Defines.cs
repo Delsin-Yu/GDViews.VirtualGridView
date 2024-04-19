@@ -1,4 +1,8 @@
 ﻿using Godot;
+using GodotViews.VirtualGrid.FocusFinding;
+using GodotViews.VirtualGrid.Positioner;
+using GodotViews.VirtualGrid.Transition.GodotTween;
+using GodotViews.VirtualGrid.Transition;
 
 namespace GodotViews.VirtualGrid.Examples;
 
