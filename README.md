@@ -1,4 +1,4 @@
-# GDViews.VirtualGridView [Work in Progress]
+# GDViews.VirtualGridView
 
 [![GitHub Release](https://img.shields.io/github/v/release/Delsin-Yu/GDViews.VirtualGridView)](https://github.com/Delsin-Yu/GDViews.VirtualGridView/releases/latest) [![NuGet Version](https://img.shields.io/nuget/v/GDViews.VirtualGridView)](https://www.nuget.org/packages/GDViews.VirtualGridView) ![NuGet Downloads](https://img.shields.io/nuget/dt/GDViews.VirtualGridView) [![Stars](https://img.shields.io/github/stars/Delsin-Yu/GDViews.VirtualGridView?color=brightgreen)](https://github.com/Delsin-Yu/GDViews.VirtualGridView/stargazers) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Delsin-Yu/GDViews.VirtualGridView/blob/main/LICENSE)
 
