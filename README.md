@@ -7,7 +7,7 @@
 Supports in `Godot 4.1+` with .Net module.  
 ***GDViews.VirtualGridView*** is a `Godot 4` UI Component that provides classes that's useful for creating highly customizable, fully virtualized list/grid views.
 
-You may visit this GITHUB PAGES LINK for detailed documentation.
+You may visit this the [**API Documentations Page**](https://delsin-yu.github.io/GDViews.VirtualGridView/) for detailed documentation.
 
 ## Installation
 
