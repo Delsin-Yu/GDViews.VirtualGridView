@@ -31,34 +31,15 @@ For `csproj` PackageReference
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-<!-- ## Table of Contents
+## Table of Contents
 
 - [Glossarys](#glossarys)
-  - [`VirtualGridView / GridView`](#VirtualGridView--GridView)
-  - [`VirtualGridViewItem / GridViewItem`](#VirtualGridViewitem--GridViewitem)
+  - [`VirtualGridView / GridView`](#virtualgridview--gridview)
+  - [`VirtualGridViewItem / GridViewItem`](#virtualgridviewitem--gridviewitem)
 - [API Usage](#api-usage)
-  - [Creating a `ViewItem`](#creating-a-viewitem)
-    - [A Simple Example](#a-simple-example)
-    - [A Complex Example](#a-complex-example)
-  - [Creating a `GridView`](#creating-a-GridView)
-    - [Create from existing `ViewItem` Instances](#create-from-existing-viewitem-instances)
-    - [Create from `PackedScenes`](#create-from-packedscenes)
+  - [Creating a `GridViewItem`](#creating-a-gridviewitem)
+  - [Creating a `GridView`](#creating-a-gridview)
 - [Component Documentation](#component-documentation)
-  - [The `VirtualGridView`](#the-VirtualGridView)
-    - [Static Factory Methods](#static-factory-methods)
-      - [`VirtualGridView.CreateFromPrefab`](#VirtualGridViewcreatefromprefab)
-      - [`VirtualGridView.CreateFromInstance`](#VirtualGridViewcreatefrominstance)
-    - [Instance Methods](#instance-methods)
-      - [`Show(int index)` / `Show(int index, object? optionalArg)`](#showint-index--showint-index-object-optionalarg)
-      - [`ShowNext` / `ShowPrevious`](#shownext--showprevious)
-    - [`ArgumentResolver`](#argumentresolver)
-      - [Default Resolver](#default-resolver)
-      - [Resolver for `ShowNext` / `ShowPrevious`](#resolver-for-shownext--showprevious)
-  - [The `VirtualGridViewItem` / `VirtualGridViewItemT`](#the-VirtualGridViewitem--VirtualGridViewitemt)
-    - [Event Methods Diagram](#event-methods-diagram)
-  - [ViewItemTweeners](#viewitemtweeners)
-    - [Built-in Tweeners](#built-in-tweeners)
-    - [Customize Tweeners](#customize-tweeners) -->
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -80,7 +61,6 @@ The script(s) inheriting the or `VirtualGridViewItemT`, attaching the script to 
 
 Attach the following script to a `Control` to make it a `GridViewItem`.  
 This time log view item displays the time for each log entry, and contains a button that allows user to remove the current entry when pressed.
-
 
 ```csharp
 /// <summary>
@@ -319,101 +299,3 @@ public partial class ExampleMain : Node
 ```
 
 ## Component Documentation
-
-### The `VirtualGridView`
-
-#### Instantiation
-
-##### `VirtualGridView.Create`
-
-> Initiate a build process of the VirtualGridView instance by setting up the viewport metrics, or the amount of elements displayed concurrently by the control.
-
-|Argument Name|Description|
-|:-|:-|
-|viewportColumns|The number of columns for the concurrently displayed virtualized grid items.|
-|viewportRows|The number of rows for the concurrently displayed virtualized grid items.|
-
-```csharp
-IViewHandlerBuilder viewHandlerBuilder = VirtualGridView.Create(viewportColumns, viewportRows);
-```
-
-##### `IViewHandlerBuilder.WithHandlers`
-
-> Sets the visual transition behavior for the grid elements, and moves to the next build process.
-
-|Argument Name|Description|
-|:-|:-|
-|elementPositioner|The Positioner assigned to the VirtualGridView, handles the positioning of the virtual viewport|
-|elementTweener|The Tweener assigned to the VirtualGridView, manages the visual positional interpolation of the elements when user moves the virtualized viewport.|
-|elementFader|The Fader assigned to the VirtualGridView, manages the hiding and showing of the virtualized elements.|
-
-```csharp
-IDataLayoutBuilder dataLayoutBuilder = viewHandlerBuilder.WithHandlers(elementPositioner, elementTweener, elementFader)
-```
-
-##### `IDataLayoutBuilder`
-
-> The builder that continues the building process of the VirtualGridView instance. Use the `WithHorizontalDataLayout` or the `WithVerticalDataLayout` method to choose between the layout of the data sets.
-
-###### `IDataLayoutBuilder.WithHorizontalDataLayout<TDataType>`
-
-> Instruct the view controller to layout the datasets horizontally, which will results in a data set looks like the following, each data set is allowed to occupy more than one row:
-> |Row Index|Data Set Number|Data Set Content|
-> |:-|:-|:-|
-> |Row 0|Data Set 0|00, 02, 04, 06, 08|
-> |Row 1|Data Set 0|01, 03, 05, 07, 09|
-> |Row 2|Data Set 1|00, 02, 04, 06, 08|
-> |Row 3|Data Set 1|01, 03, 05, 07, 09|
-> |Row 4|Data Set 2|00, 01, 02, 03, 04, 05|
-> |Row 5|Data Set 3|00, 01, 02, 03, 04, 05|
->
-> When the reverseLocalLayout is set to true:
-> |Row Index|Data Set Number|Data Set Content|
-> |:-|:-|:-|
-> |Row 0|Data Set 0|01, 03, 05, 07, 09|
-> |Row 1|Data Set 0|00, 02, 04, 06, 08|
-> |Row 2|Data Set 1|01, 03, 05, 07, 09|
-> |Row 3|Data Set 1|00, 02, 04, 06, 08|
-> |Row 4|Data Set 2|00, 01, 02, 03, 04, 05|
-> |Row 5|Data Set 3|00, 01, 02, 03, 04, 05|
-
-|Argument Name|Description|
-|:-|:-|
-|equalityComparer|The IEqualityComparer used to determine if the data associated to certain grid element has changed, setting to null will fallback to the Default.|
-|reverseLocalLayout|When set to true, the view controller will reverse the layout of the provided datasets.|
-
-```csharp
-IHorizontalDataLayoutBuilder<int> horizontalBuilder = dataLayoutBuilder.WithHorizontalDataLayout<int>()
-```
-
-###### `IDataLayoutBuilder.WithVerticalDataLayout<DataModel>`
-
-> Instruct the view controller to layout the datasets vertically, which will results in a data set looks like the following, each data set is allowed to occupy more than one column:
-> |Column Index|Column 0|Column 1|Column 2|Column 3|Column 4|Column 5|
-> |:-|:-|:-|:-|:-|:-|:-|
-> |**Data Set Number**|DataSet0|DataSet0|DataSet1|DataSet1|DataSet2|DataSet3|
-> |**Data Set Content**|00|01|00|01|00|00|
-> ||02|03|02|03|01|01|
-> ||04|05|04|05|02|02|
-> ||06|07|06|07|03|03|
-> ||08|09|08|09|04|04|
->
-> When the reverseLocalLayout is set to true:
->
-> |Column Index|Column 0|Column 1|Column 2|Column 3|Column 4|Column 5|
-> |:-|:-|:-|:-|:-|:-|:-|
-> |**Data Set Number**|DataSet0|DataSet0|DataSet1|DataSet1|DataSet2|DataSet3|
-> |**Data Set Content**|01|00|01|00|00|00|
-> ||03|02|03|02|01|01|
-> ||05|04|05|04|02|02|
-> ||07|06|07|06|03|03|
-> ||09|08|09|08|04|04|
-
-|Argument Name|Description|
-|:-|:-|
-|equalityComparer|The IEqualityComparer used to determine if the data associated to certain grid element has changed, setting to null will fallback to the Default.|
-|reverseLocalLayout|When set to true, the view controller will reverse the layout of the provided datasets.|
-
-```csharp
-IVerticalDataLayoutBuilder<int> verticalBuilder = dataLayoutBuilder.WithVerticalDataLayout<int>()
-```
