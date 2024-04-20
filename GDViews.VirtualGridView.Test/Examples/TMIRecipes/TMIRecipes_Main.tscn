@@ -122,7 +122,7 @@ stay_seconds = 3
 
 [node name="Description" type="Label" parent="HBoxContainer/Detail/DescriptionContainer"]
 auto_translate_mode = 1
-custom_minimum_size = Vector2(473, 375)
+custom_minimum_size = Vector2(465, 375)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ipsum suspendisse ultrices gravida dict
@@ -146,7 +146,7 @@ stay_seconds = 3
 
 [node name="Tags" type="Label" parent="HBoxContainer/Detail/TagsContainer"]
 auto_translate_mode = 1
-custom_minimum_size = Vector2(692, 72)
+custom_minimum_size = Vector2(684, 72)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "[Lorem Ipsum]    [dolor sit amet]    [consectetur]    [adipiscing elit]    [Lorem Ipsum]    [dolor sit amet]    [consectetur]    [adipiscing elit]    [Lorem Ipsum]    [dolor sit amet]    [consectetur]    [adipiscing elit]    [Lorem Ipsum]    [dolor sit amet]    [consectetur]    [adipiscing elit]"
