@@ -7,9 +7,9 @@ using GodotViews.VirtualGrid.Transition.GodotTween;
 using GodotViews.VirtualGrid.Positioner;
 using GodotViews.VirtualGrid.Transition;
 
-namespace GodotViews.VirtualGrid.Examples;
+namespace GodotViews.VirtualGrid.Examples.Playground;
 
-public partial class Main : Node, IDataSetHandler
+public partial class Playground_Main : Node
 {
 
     #region Exports
@@ -21,11 +21,11 @@ public partial class Main : Node, IDataSetHandler
     [Export] private Vector2 _size;
     [Export] private Vector2 _padding;
 
-    [Export] private DataSetController _dataSetController1;
-    [Export] private DataSetController _dataSetController2;
-    [Export] private DataSetController _dataSetController3;
-    [Export] private DataSetController _dataSetController4;
-    [Export] private DataSetController _dataSetController5;
+    [Export] private Playground_DataSetController _dataSetController1;
+    [Export] private Playground_DataSetController _dataSetController2;
+    [Export] private Playground_DataSetController _dataSetController3;
+    [Export] private Playground_DataSetController _dataSetController4;
+    [Export] private Playground_DataSetController _dataSetController5;
 
     [Export] private Button _grabByViewPosition;
     [Export] private Button _grabByDataPosition;
@@ -201,15 +201,15 @@ public partial class Main : Node, IDataSetHandler
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        DataBindings.Bind(_duration, static (value, instance) => instance.CurrentDuration = value, _currentDuration, this);
-        DataBindings.Bind(_listOfTweens, _tweenType, static (x, instance) => instance.CurrentTweenSetup = x, tweenSetupDefaultSelection, this);
-        DataBindings.Bind(_listOfFaderTypes, _faderType, static (x, instance) => instance.CurrentFader = x, faderDefaultSelection, this);
-        DataBindings.Bind(_listOfTweenerTypes, _tweenerType, static (x, instance) => instance.CurrentTweener = x, tweenerDefaultSelection, this);
-        DataBindings.Bind(_listOfScrollBarTweenerTypes, _scrollBarTweenerType, static (x, instance) => instance.CurrentScrollBarTweener = x, scrollBarTweenerDefaultSelection, this);
-        DataBindings.Bind(_listOfPositionerTypes, _positionerType, static (x, instance) => instance.CurrentPositioner = x, positionerDefaultSelection, this);
-        DataBindings.Bind(_listOfStartPositionsTypes, _startPositionsType, static (x, instance) => instance._currentStartPosition = x, startPositionHandlerDefaultSelection, this);
-        DataBindings.Bind(_listOfSearchDirectionsTypes, _searchDirectionsType, static (x, instance) => instance._currentSearchDirection = x, searchDirectionDefaultSelection, this);
-        DataBindings.Bind(
+        DataBindingUtility.Bind(_duration, static (value, instance) => instance.CurrentDuration = value, _currentDuration, this);
+        DataBindingUtility.Bind(_listOfTweens, _tweenType, static (x, instance) => instance.CurrentTweenSetup = x, tweenSetupDefaultSelection, this);
+        DataBindingUtility.Bind(_listOfFaderTypes, _faderType, static (x, instance) => instance.CurrentFader = x, faderDefaultSelection, this);
+        DataBindingUtility.Bind(_listOfTweenerTypes, _tweenerType, static (x, instance) => instance.CurrentTweener = x, tweenerDefaultSelection, this);
+        DataBindingUtility.Bind(_listOfScrollBarTweenerTypes, _scrollBarTweenerType, static (x, instance) => instance.CurrentScrollBarTweener = x, scrollBarTweenerDefaultSelection, this);
+        DataBindingUtility.Bind(_listOfPositionerTypes, _positionerType, static (x, instance) => instance.CurrentPositioner = x, positionerDefaultSelection, this);
+        DataBindingUtility.Bind(_listOfStartPositionsTypes, _startPositionsType, static (x, instance) => instance._currentStartPosition = x, startPositionHandlerDefaultSelection, this);
+        DataBindingUtility.Bind(_listOfSearchDirectionsTypes, _searchDirectionsType, static (x, instance) => instance._currentSearchDirection = x, searchDirectionDefaultSelection, this);
+        DataBindingUtility.Bind(
             _listOfDataSets,
             _searchDataSet,
             (x, instance) =>
@@ -222,8 +222,8 @@ public partial class Main : Node, IDataSetHandler
             this
         );
 
-        DataBindings.Bind(_enableClipChildren, (on, instance) => instance._container.ClipContents = on, true, this);
-        DataBindings.Bind(
+        DataBindingUtility.Bind(_enableClipChildren, (on, instance) => instance._container.ClipContents = on, true, this);
+        DataBindingUtility.Bind(
             _autoHideScrollBar,
             (on, instance) =>
             {
@@ -235,11 +235,11 @@ public partial class Main : Node, IDataSetHandler
             this
         );
 
-        DataBindings.Bind(_grabByViewPosition, static instance => instance._virtualGridView.GrabFocus(FocusPresets.ViewPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
-        DataBindings.Bind(_grabByDataPosition, static instance => instance._virtualGridView.GrabFocus(FocusPresets.DataPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
-        DataBindings.Bind(_grabByMatching, static instance => instance._virtualGridView.GrabFocus(FocusPresets.Value, instance._currentDataSet[(int)instance._searchDataSetIndex.Value]), this);
-        DataBindings.Bind(_grabByPattern, static instance => instance._virtualGridView.GrabFocus(FocusPresets.Predicate, static (x, instance) => x.Message.Contains(instance._matchPattern.Text, StringComparison.OrdinalIgnoreCase), instance), this);
-        DataBindings.Bind(_killFocus, static instance => instance.GetViewport().GuiReleaseFocus(), this);
+        DataBindingUtility.Bind(_grabByViewPosition, static instance => instance._virtualGridView.GrabFocus(FocusPresets.ViewPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
+        DataBindingUtility.Bind(_grabByDataPosition, static instance => instance._virtualGridView.GrabFocus(FocusPresets.DataPosition, instance._currentStartPosition, instance._currentSearchDirection), this);
+        DataBindingUtility.Bind(_grabByMatching, static instance => instance._virtualGridView.GrabFocus(FocusPresets.Value, instance._currentDataSet[(int)instance._searchDataSetIndex.Value]), this);
+        DataBindingUtility.Bind(_grabByPattern, static instance => instance._virtualGridView.GrabFocus(FocusPresets.Predicate, static (x, instance) => x.Message.Contains(instance._matchPattern.Text, StringComparison.OrdinalIgnoreCase), instance), this);
+        DataBindingUtility.Bind(_killFocus, static instance => instance.GetViewport().GuiReleaseFocus(), this);
 
         var dataSet1GridView = DynamicGridViewers.CreateList(dataSet1);
         var dataSet2GridView = DynamicGridViewers.CreateList(dataSet2);
@@ -256,7 +256,7 @@ public partial class Main : Node, IDataSetHandler
                 .AppendColumnDataSet(dataSet3GridView, 2)
                 .AppendColumnDataSet(dataSet4GridView, 2)
                 .AppendColumnDataSet(dataSet5GridView, 2)
-            .WithArgument<View>(
+            .WithArgument<Playground_GridItem>(
                 _packedScene,
                 _container,
                 InfiniteLayoutGrids.CreateSimple(

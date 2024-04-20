@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="GDViews.VirtualGridView.Tests"
-run/main_scene="res://Scene/example_main.tscn"
+run/main_scene="res://Examples/SimpleLogView/SimpleLogView_Main.tscn"
 config/features=PackedStringArray("4.3", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 

@@ -1,8 +1,10 @@
 using Godot;
 
-namespace GodotViews.VirtualGrid.Examples;
+namespace GodotViews.VirtualGrid.Examples.Playground;
 
-public partial class View : VirtualGridViewItem<DataModel>
+public record struct DataModel(int Index, int DataSetIndex, string Message);
+
+public partial class Playground_GridItem : VirtualGridViewItem<DataModel>
 {
     protected override void _OnGridItemDraw(DataModel data, Vector2I viewPosition)
     {

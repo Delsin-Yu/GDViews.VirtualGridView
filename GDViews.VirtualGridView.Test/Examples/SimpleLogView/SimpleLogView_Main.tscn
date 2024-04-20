@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://0xfyoo3f1na7"]
 
-[ext_resource type="Script" path="res://Scripts/Example/ExampleMain.cs" id="1_6ho51"]
-[ext_resource type="PackedScene" uid="uid://co8xeivh2dbt7" path="res://Prefab/Example/view_item.tscn" id="2_m5mc7"]
+[ext_resource type="Script" path="res://Examples/SimpleLogView/Scripts/SimpleLogView_Main.cs" id="1_6ho51"]
+[ext_resource type="PackedScene" uid="uid://co8xeivh2dbt7" path="res://Examples/SimpleLogView/Prefabs/SimpleLogView_GridItem.tscn" id="2_m5mc7"]
 
 [sub_resource type="Theme" id="Theme_ym7fg"]
 Button/font_sizes/font_size = 25
@@ -15,12 +15,12 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = SubResource("Theme_ym7fg")
 script = ExtResource("1_6ho51")
-_addData = NodePath("Button")
 _displayedItems = 10
 _itemPrefab = ExtResource("2_m5mc7")
-_itemContainer = NodePath("Container")
 _itemSize = Vector2(1000, 80)
 _itemSeparation = Vector2(0, 5)
+_addData = NodePath("Button")
+_itemContainer = NodePath("Container")
 _verticalScrollBar = NodePath("VScrollBar")
 
 [node name="Container" type="Control" parent="."]

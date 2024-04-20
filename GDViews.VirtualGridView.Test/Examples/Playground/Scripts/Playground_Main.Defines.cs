@@ -4,9 +4,9 @@ using GodotViews.VirtualGrid.Positioner;
 using GodotViews.VirtualGrid.Transition.GodotTween;
 using GodotViews.VirtualGrid.Transition;
 
-namespace GodotViews.VirtualGrid.Examples;
+namespace GodotViews.VirtualGrid.Examples.Playground;
 
-public partial class Main
+public partial class Playground_Main
 {
     private readonly (string TweenName, TweenSetup TweenSetup)[] _listOfTweens =
     {

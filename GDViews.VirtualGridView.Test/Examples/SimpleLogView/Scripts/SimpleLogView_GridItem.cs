@@ -4,7 +4,7 @@ using GodotViews.VirtualGrid;
 
 // ReSharper disable InvalidXmlDocComment
 
-namespace GDViews.VirtualGrid.Example;
+namespace GDViews.VirtualGrid.Example.SimpleLogView;
 
 /// <summary>
 /// The model that describes the data within each cell.
@@ -16,7 +16,7 @@ public record struct DataModel(int ID, DateTime CurrentTime);
 /// <summary>
 /// The type that handles logics related to per-virtualized grid element interactions, attach this script to a <see cref="Button"/> to make it a grid item.
 /// </summary>
-public partial class ExampleGridItem : VirtualGridViewItem<DataModel, ExampleMain>
+public partial class SimpleLogView_GridItem : VirtualGridViewItem<DataModel, SimpleLogView_Main>
 {
     // Assigned from the inspector.
     [Export] private Label _id;
@@ -47,7 +47,7 @@ public partial class ExampleGridItem : VirtualGridViewItem<DataModel, ExampleMai
     /// has changed (or initialized) and requires developer-implemented draw logic.
     /// </summary>
     /// <param name="data">The data of the current virtualized grid element instance.</param>
-    protected override void _OnGridItemDraw(DataModel data, Vector2I _, ExampleMain __)
+    protected override void _OnGridItemDraw(DataModel data, Vector2I _, SimpleLogView_Main __)
     {
         // Developer defined draw logic.
         _id.Text = data.ID.ToString("D2");

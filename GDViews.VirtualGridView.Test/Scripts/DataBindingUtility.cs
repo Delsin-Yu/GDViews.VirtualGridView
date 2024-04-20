@@ -2,9 +2,9 @@
 using Godot;
 using Range = Godot.Range;
 
-namespace GodotViews.VirtualGrid.Examples;
+namespace GodotViews.VirtualGrid.Examples.Playground;
 
-public static class DataBindings
+public static class DataBindingUtility
 {
     public static void Bind<TObject>(Range range, Action<float, TObject> valueChangedHandler, float defaultValue, TObject obj)
     {

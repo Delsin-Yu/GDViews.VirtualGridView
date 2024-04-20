@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-namespace GodotViews.VirtualGrid.Examples;
+namespace GodotViews.VirtualGrid.Examples.Playground;
 
 [GlobalClass]
-public partial class DataSetController : Node
+public partial class Playground_DataSetController : Node
 {
     [Export] private Label _num;
     [Export] private Button _add1;
@@ -17,17 +17,17 @@ public partial class DataSetController : Node
     [Export] private Button _clear;
 
     private List<DataModel> _backingSet;
-    private IDataSetHandler _handler;
+    private Playground_Main _handler;
     private int _dataSetIndex;
 
     public override void _Ready()
     {
-        DataBindings.Bind(_add1, instance => instance.Add1(), this);
-        DataBindings.Bind(_add10, instance => instance.Add10(), this);
-        DataBindings.Bind(_remove1, instance => instance.Remove1(), this);
-        DataBindings.Bind(_remove10, instance => instance.Remove10(), this);
-        DataBindings.Bind(_scramble, instance => instance.Scramble(), this);
-        DataBindings.Bind(_clear, instance => instance.Clear(), this);
+        DataBindingUtility.Bind(_add1, instance => instance.Add1(), this);
+        DataBindingUtility.Bind(_add10, instance => instance.Add10(), this);
+        DataBindingUtility.Bind(_remove1, instance => instance.Remove1(), this);
+        DataBindingUtility.Bind(_remove10, instance => instance.Remove10(), this);
+        DataBindingUtility.Bind(_scramble, instance => instance.Scramble(), this);
+        DataBindingUtility.Bind(_clear, instance => instance.Clear(), this);
     }
 
     private void Clear()
@@ -81,7 +81,7 @@ public partial class DataSetController : Node
         _handler.NotifyUpdate();
     }
 
-    public void Initialize(List<DataModel> set, IDataSetHandler handler, int setId)
+    public void Initialize(List<DataModel> set, Playground_Main handler, int setId)
     {
         _num.Text = $"数据集{setId}";
         _dataSetIndex = setId;

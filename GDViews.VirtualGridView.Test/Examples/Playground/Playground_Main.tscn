@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=3 uid="uid://73yxo01kqtsi"]
 
-[ext_resource type="Script" path="res://Scripts/Main/Main.cs" id="1_wuctx"]
-[ext_resource type="PackedScene" uid="uid://bbflxig4up0wr" path="res://Prefab/view.tscn" id="2_7ef37"]
-[ext_resource type="PackedScene" uid="uid://djj3jan54wgsy" path="res://Prefab/data_set_control.tscn" id="3_2ams4"]
+[ext_resource type="Script" path="res://Examples/Playground/Scripts/Playground_Main.cs" id="1_wuctx"]
+[ext_resource type="PackedScene" uid="uid://bbflxig4up0wr" path="res://Examples/Playground/Prefabs/Playground_GridItem.tscn" id="2_7ef37"]
+[ext_resource type="PackedScene" uid="uid://djj3jan54wgsy" path="res://Examples/Playground/Prefabs/Playground_DataSetController.tscn" id="3_2ams4"]
 
 [sub_resource type="Theme" id="Theme_p8tds"]
 BoxContainer/constants/separation = 10
@@ -23,6 +23,8 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 2.0
+offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(1.00056, 1)

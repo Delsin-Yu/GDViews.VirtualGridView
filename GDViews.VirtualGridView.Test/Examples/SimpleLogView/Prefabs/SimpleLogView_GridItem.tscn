@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://co8xeivh2dbt7"]
 
-[ext_resource type="Script" path="res://Scripts/Example/ExampleGridItem.cs" id="1_fm2uw"]
+[ext_resource type="Script" path="res://Examples/SimpleLogView/Scripts/SimpleLogView_GridItem.cs" id="1_fm2uw"]
 
 [node name="ViewItem" type="Button" node_paths=PackedStringArray("_id", "_time", "_deleteButton")]
 auto_translate_mode = 1

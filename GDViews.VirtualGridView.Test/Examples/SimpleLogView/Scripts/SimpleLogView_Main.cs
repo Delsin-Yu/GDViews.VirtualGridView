@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using Godot;
 using GodotViews.VirtualGrid;
+using GodotViews.VirtualGrid.Examples.Playground;
 
-namespace GDViews.VirtualGrid.Example;
+namespace GDViews.VirtualGrid.Example.SimpleLogView;
 
 /// <summary>
 /// Attach this script to a node from the scene tree, and assigning the required exported fields.
 /// </summary>
-public partial class ExampleMain : Node
+public partial class SimpleLogView_Main : Node
 {
     [Export] private Button _addData;
 
@@ -95,7 +96,7 @@ public partial class ExampleMain : Node
                             
                         )
                 // Call the WithArgument function to specifying the rest of the arguments.
-                .WithArgument<ExampleGridItem, ExampleMain>(
+                .WithArgument<SimpleLogView_GridItem, SimpleLogView_Main>(
                     
                     // The prefab that's used to create
                     // instances of the virtualized elements.
@@ -145,7 +146,7 @@ public partial class ExampleMain : Node
 
         // Press this button to add an entry to the dataset,
         // and triggers the view redraw.
-        _addData.Pressed += AddEntry;
+        DataBindingUtility.Bind(_addData, instance => instance.AddEntry(), this);
     }
 
     /// <summary>
