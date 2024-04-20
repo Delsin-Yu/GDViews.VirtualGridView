@@ -10,7 +10,8 @@
   
   <ItemGroup>
     <PackageReference Include="Bogus" Version="*"/>
-    <PackageReference Include="GDViews.VirtualGridView" Version="*"/>
+<!--    <PackageReference Include="GDViews.VirtualGridView" Version="*"/>-->
+    <ProjectReference Include="..\GDViews.VirtualGridView\GDViews.VirtualGridView.csproj" />
     <TrimmerRootAssembly Include="GodotSharp" />
     <TrimmerRootAssembly Include="$(TargetName)" />
   </ItemGroup>

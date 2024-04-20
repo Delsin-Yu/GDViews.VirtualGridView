@@ -18,13 +18,13 @@ MarginContainer/constants/margin_top = 20
 OptionButton/font_sizes/font_size = 25
 PopupMenu/font_sizes/font_size = 25
 
-[node name="Main" type="Control" node_paths=PackedStringArray("_container", "_verticalScrollBar", "_horizontalScrollBar", "_dataSetController1", "_dataSetController2", "_dataSetController3", "_dataSetController4", "_dataSetController5", "_grabByViewPosition", "_grabByDataPosition", "_grabByMatching", "_grabByPattern", "_killFocus", "_tweenType", "_faderType", "_tweenerType", "_scrollBarTweenerType", "_positionerType", "_startPositionsType", "_searchDirectionsType", "_searchDataSet", "_searchDataSetIndex", "_matchPattern", "_duration", "_durationText", "_enableClipChildren", "_autoHideScrollBar")]
+[node name="Playground_Main" type="Control" node_paths=PackedStringArray("_container", "_verticalScrollBar", "_horizontalScrollBar", "_dataSetController1", "_dataSetController2", "_dataSetController3", "_dataSetController4", "_dataSetController5", "_grabByViewPosition", "_grabByDataPosition", "_grabByMatching", "_grabByPattern", "_killFocus", "_tweenType", "_faderType", "_tweenerType", "_scrollBarTweenerType", "_positionerType", "_startPositionsType", "_searchDirectionsType", "_searchDataSet", "_searchDataSetIndex", "_matchPattern", "_duration", "_durationText", "_enableClipChildren", "_autoHideScrollBar")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 2.0
-offset_bottom = 2.0
+offset_top = 3.0
+offset_bottom = 3.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(1.00056, 1)

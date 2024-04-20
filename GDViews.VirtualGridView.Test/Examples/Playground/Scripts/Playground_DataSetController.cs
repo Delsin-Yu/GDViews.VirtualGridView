@@ -5,7 +5,6 @@ using Godot;
 
 namespace GodotViews.VirtualGrid.Examples.Playground;
 
-[GlobalClass]
 public partial class Playground_DataSetController : Node
 {
     [Export] private Label _num;
