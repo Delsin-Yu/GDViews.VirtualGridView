@@ -22,8 +22,7 @@ public static partial class ElementFaders
     /// <returns>The instance of the created element fader that
     /// can be passed to the <see cref="IVirtualGridView{TDataType}"/>
     /// for handling the virtual grid element fade interpolation.</returns>
-    public static IGodotTweenFader CreateFade(float duration, TweenSetup? tweenSetup = null) => 
-        new FadeFaderImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
+    public static IGodotTweenFader CreateFade(float duration, TweenSetup? tweenSetup = null) => new FadeFaderImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
 
     /// <summary>
     /// Create an element fader that does <see cref="Godot.Control.Scale"/> interpolation based on the provided arguments.
@@ -33,8 +32,7 @@ public static partial class ElementFaders
     /// <returns>The instance of the created element fader that
     /// can be passed to the <see cref="IVirtualGridView{TDataType}"/>
     /// for handling the virtual grid element fade interpolation.</returns>
-    public static IGodotTweenFader CreateScale(float duration, TweenSetup? tweenSetup = null) =>
-        new ScaleFaderImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
+    public static IGodotTweenFader CreateScale(float duration, TweenSetup? tweenSetup = null) => new ScaleFaderImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
 
     /// <summary>
     /// Create an element fader that does <see cref="Godot.Control.Scale"/> and <see cref="Godot.Control.Rotation"/> interpolation based on the provided arguments.
@@ -44,6 +42,5 @@ public static partial class ElementFaders
     /// <returns>The instance of the created element fader that
     /// can be passed to the <see cref="IVirtualGridView{TDataType}"/>
     /// for handling the virtual grid element fade interpolation.</returns>
-    public static IGodotTweenFader CreateScaleRotate(float duration, TweenSetup? tweenSetup = null) => 
-        new ScaleRotateFaderImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
+    public static IGodotTweenFader CreateScaleRotate(float duration, TweenSetup? tweenSetup = null) => new ScaleRotateFaderImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
 }

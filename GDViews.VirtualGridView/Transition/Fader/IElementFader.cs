@@ -18,7 +18,7 @@ public interface IElementFader
     /// </summary>
     /// <param name="control">The virtualized element that gets shown.</param>
     void Appear(Control control);
-    
+
     /// <summary>
     /// Invoked when the view controller is hiding a virtualized element.
     /// </summary>
@@ -26,7 +26,7 @@ public interface IElementFader
     /// <param name="onFinish">Invoked by the fader when finishing the hiding process,
     /// this delegate notifies the controller to hide and cache the element.</param>
     void Disappear(Control control, Action<Control> onFinish);
-    
+
     /// <summary>
     /// Invoked when the view controller is caching a virtualized element.<br/>
     /// The developer should reset every value affected by this element fader
@@ -34,7 +34,7 @@ public interface IElementFader
     /// </summary>
     /// <param name="control">The virtualized element that gets reset.</param>
     void Reinitialize(Control control);
-    
+
     /// <summary>
     /// Invoked when the view controller is about to perform a fading action.<br/>
     /// The developer should interrupt and clean up the existing fades for the given element.

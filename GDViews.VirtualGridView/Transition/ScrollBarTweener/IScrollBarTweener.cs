@@ -16,7 +16,7 @@ public interface IScrollBarTweener
     /// <param name="targetValue">The target <see cref="Range.Value"/> value.</param>
     /// <param name="targetPage">The target <see cref="Range.Page"/> value.</param>
     void UpdateValue(ScrollBar scrollBar, float targetValue, float targetPage);
-    
+
     /// <summary>
     /// Invoked when the view controller is about to perform a viewport moving action.<br/>
     /// The developer should interrupt and clean up the existing tweens for the given scrollBar.

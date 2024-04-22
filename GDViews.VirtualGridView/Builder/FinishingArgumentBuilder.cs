@@ -13,10 +13,9 @@ internal class FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
     TExtraArgument extraArgument) : IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>
     where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
 {
+    private readonly TExtraArgument? _extraArgument = extraArgument;
     private bool _autoHideHorizontalScrollBar;
     private bool _autoHideVerticalScrollBar;
-
-    private readonly TExtraArgument? _extraArgument = extraArgument;
     private ScrollBar? _horizontalScrollBar;
     private IElementFader? _horizontalScrollBarFader;
     private IScrollBarTweener? _horizontalScrollBarTweener;

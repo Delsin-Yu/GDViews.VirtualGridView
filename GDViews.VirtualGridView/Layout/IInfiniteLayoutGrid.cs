@@ -12,12 +12,12 @@ public interface IInfiniteLayoutGrid
     /// The size of a cell.
     /// </summary>
     Vector2 ItemSize { get; }
-    
+
     /// <summary>
     /// The distance between cells.
     /// </summary>
     Vector2 ItemSeparation { get; }
-    
+
     /// <summary>
     /// Calculate the layout position for the given <paramref name="gridPosition"/>.
     /// </summary>

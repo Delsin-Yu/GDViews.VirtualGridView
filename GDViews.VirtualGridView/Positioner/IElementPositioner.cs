@@ -35,6 +35,5 @@ public interface IElementPositioner
     /// This method is here, under the side circumstances, to move the cursor to the viewport side
     /// so that the drag motion always translates to the emulated "viewport" movement. 
     /// </remarks>
-    void GetDragViewPosition(Vector2I viewportSize, MoveDirection dragDirection, Vector2I positionRelativeToViewport, out Vector2I destPositionRelativeToViewport) => 
-        destPositionRelativeToViewport = positionRelativeToViewport;
+    void GetDragViewPosition(Vector2I viewportSize, MoveDirection dragDirection, Vector2I positionRelativeToViewport, out Vector2I destPositionRelativeToViewport) => destPositionRelativeToViewport = positionRelativeToViewport;
 }

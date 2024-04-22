@@ -13,24 +13,23 @@ public abstract class GodotTweenCoreBasedScrollBarTweener<TCachedArgument> : IGo
 {
     private readonly GodotTweenCore<NoExtraArgument, (float targetValue, float targetPage), TCachedArgument> _tweenCore;
 
-    /// <summary> The duration takes to complete the interpolation. </summary>
-    public float Duration { get; set; }
-    
-    /// <summary> ZThe <see cref="TweenSetup"/> used for doing the interpolation. </summary>
-    public TweenSetup TweenSetup { get; set; }
-  
     /// <summary>
     /// Construct an instance of this <see cref="GodotTweenCoreBasedScrollBarTweener{TCachedArgument}"/>
     /// </summary>
     /// <param name="duration">The duration takes to complete the interpolation.</param>
     /// <param name="tweenSetup">The <see cref="TweenSetup"/> used for doing the interpolation.</param>
-
     protected GodotTweenCoreBasedScrollBarTweener(float duration, TweenSetup tweenSetup)
     {
         _tweenCore = new(this);
         Duration = duration;
         TweenSetup = tweenSetup;
     }
+
+    /// <summary> The duration takes to complete the interpolation. </summary>
+    public float Duration { get; set; }
+
+    /// <summary> ZThe <see cref="TweenSetup"/> used for doing the interpolation. </summary>
+    public TweenSetup TweenSetup { get; set; }
 
 
     /// <inheritdoc/>
@@ -41,10 +40,10 @@ public abstract class GodotTweenCoreBasedScrollBarTweener<TCachedArgument> : IGo
 
     /// <inheritdoc cref="GodotTweenCoreBasedElementFader{TCachedArgument}.IsTweenSupported"/>
     public bool IsTweenSupported(NoExtraArgument type) => true;
-    
+
     /// <inheritdoc cref="GodotTweenCoreBasedElementFader{TCachedArgument}.FastForwardState"/>
     public void FastForwardState(Control control, TCachedArgument previousTarget) => FastForwardState((ScrollBar)control, previousTarget);
-    
+
     /// <inheritdoc cref="GodotTweenCoreBasedElementFader{TCachedArgument}.InitializeTween"/>
     public TCachedArgument InitializeTween(NoExtraArgument type, in (float targetValue, float targetPage) targetValue, Control control, Tween tween) => InitializeTween(in targetValue, (ScrollBar)control, tween);
 
@@ -57,7 +56,7 @@ public abstract class GodotTweenCoreBasedScrollBarTweener<TCachedArgument> : IGo
     /// <returns>The target argument this tween updates,
     /// this value will be use for fast-forwarding this scroll bar's state when interrupting the interpolation.</returns>
     protected abstract TCachedArgument InitializeTween(in (float targetValue, float targetPage) targetValue, ScrollBar scrollBar, Tween tween);
-    
+
     /// <summary>
     /// Invoked before starting an interpolation, developer should use the specified value
     /// to fast-forward the state of the affected properties for the provided scroll bar.

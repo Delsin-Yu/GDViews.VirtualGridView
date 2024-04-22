@@ -10,7 +10,7 @@ public interface IGodotTween
     /// The duration required to perform the interpolating.
     /// </summary>
     float Duration { get; set; }
-    
+
     /// <summary>
     /// The <see cref="TweenSetup"/> controller uses when doing the interpolation.
     /// </summary>

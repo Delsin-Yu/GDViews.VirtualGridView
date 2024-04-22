@@ -9,14 +9,16 @@ namespace GodotViews.VirtualGrid
     /// </summary>
     public static class TweenSetups
     {
+        /// <inheritdoc cref="Tween.TransitionType.Linear"/>
+        public static readonly TweenSetup Linear = new(Tween.EaseType.InOut, Tween.TransitionType.Linear);
+
         /// <summary>
         /// Access the default 
         /// </summary>
         public static TweenSetup Default { get; set; } = EaseOut.Quad;
 
-        /// <inheritdoc cref="Tween.TransitionType.Linear"/>
-        public static readonly TweenSetup Linear = new(Tween.EaseType.InOut, Tween.TransitionType.Linear);
-    
+        internal static TweenSetup CurrentOrDefault(TweenSetup? current) => current ?? Default;
+
         /// <summary>
         /// Contains a set of <see cref="Tween.TransitionType"/> with an ease type of <see cref="Tween.EaseType.In"/>.
         /// </summary>
@@ -124,8 +126,6 @@ namespace GodotViews.VirtualGrid
             /// <inheritdoc cref="Tween.TransitionType.Bounce"/>
             public static readonly TweenSetup Bounce = new(Tween.EaseType.InOut, Tween.TransitionType.Bounce);
         }
-    
-        internal static TweenSetup CurrentOrDefault(TweenSetup? current) => current ?? Default;
     }
 }
 

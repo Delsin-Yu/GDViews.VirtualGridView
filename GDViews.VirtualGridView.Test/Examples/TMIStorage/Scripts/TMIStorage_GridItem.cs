@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using GodotViews.VirtualGrid;
 
 namespace GDViews.VirtualGrid.Example.TMI.Storage;

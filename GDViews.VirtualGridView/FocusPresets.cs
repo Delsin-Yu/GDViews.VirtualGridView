@@ -19,13 +19,13 @@ public static class FocusPresets
     /// the developer need to provide a value for matching against each data from the datasets.
     /// </summary>
     public static readonly IEqualityDataFocusFinder Value = FocusFinders.Value;
-    
+
     /// <summary>
     /// Instructs the <see cref="IVirtualGridView{TDataType}"/> to grab focus by <see cref="FocusFinders.Predicate"/>,
     /// the developer need to provide a predicate for matching against each data from the datasets.
     /// </summary>   
     public static readonly IPredicateDataFocusFinder Predicate = FocusFinders.Predicate;
-    
+
     /// <summary>
     /// Instructs the <see cref="IVirtualGridView{TDataType}"/> to grab focus by <see cref="FocusFinders.ViewPosition"/>,
     /// the developer need to specify the start <see cref="Corners"/> and <see cref="SearchDirections"/> in addition.

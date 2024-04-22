@@ -17,20 +17,16 @@ public abstract class GodotTweenCoreBasedElementTweener<TCachedArgument> : IGodo
     {
         /// <summary> Instruct this <see cref="IGodotTweenTweener"/> to move the specified control inside the viewport.</summary>
         MoveTo,
+
         /// <summary> Instruct this <see cref="IGodotTweenTweener"/> to move the specified control from outside into the viewport.</summary>
         MoveIn,
+
         /// <summary> Instruct this <see cref="IGodotTweenTweener"/> to move the specified control out from viewport.</summary>
         MoveOut
     }
 
     private readonly GodotTweenCore<TweenType, Vector2, TCachedArgument> _tweenCore;
-  
-    /// <inheritdoc cref="GodotTweenCoreBasedElementFader{TCachedArgument}.Duration"/>
-    public float Duration { get; set; }
-    
-    /// <inheritdoc cref="GodotTweenCoreBasedElementFader{TCachedArgument}.TweenSetup"/>
-    public TweenSetup TweenSetup { get; set; }
-    
+
     /// <summary>
     /// Construct an instance of this <see cref="GodotTweenCoreBasedElementTweener{TCachedArgument}"/>
     /// </summary>
@@ -42,7 +38,13 @@ public abstract class GodotTweenCoreBasedElementTweener<TCachedArgument> : IGodo
         Duration = duration;
         TweenSetup = tweenSetup;
     }
-    
+
+    /// <inheritdoc cref="GodotTweenCoreBasedElementFader{TCachedArgument}.Duration"/>
+    public float Duration { get; set; }
+
+    /// <inheritdoc cref="GodotTweenCoreBasedElementFader{TCachedArgument}.TweenSetup"/>
+    public TweenSetup TweenSetup { get; set; }
+
     /// <inheritdoc/> 
     public void KillTween(Control control) => _tweenCore.KillTween(control);
 
@@ -57,7 +59,7 @@ public abstract class GodotTweenCoreBasedElementTweener<TCachedArgument> : IGodo
 
     /// <inheritdoc cref="GodotTweenCoreBasedElementFader{TCachedArgument}.InitializeTween"/>
     public abstract TCachedArgument InitializeTween(TweenType type, in Vector2 targetValue, Control control, Tween tween);
-    
+
     /// <inheritdoc cref="GodotTweenCoreBasedElementFader{TCachedArgument}.FastForwardState"/>
     public abstract void FastForwardState(Control control, TCachedArgument previousTarget);
 

@@ -22,6 +22,5 @@ public static partial class ScrollBarTweeners
     /// <returns>The instance of the created scroll bar tweener that
     /// can be passed to the <see cref="IVirtualGridView{TDataType}"/>
     /// for handling the scroll bar value interpolation.</returns>
-    public static IGodotTweenScrollBarTweener CreateLerp(float duration, TweenSetup? tweenSetup = null) =>
-        new LerpImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
+    public static IGodotTweenScrollBarTweener CreateLerp(float duration, TweenSetup? tweenSetup = null) => new LerpImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
 }

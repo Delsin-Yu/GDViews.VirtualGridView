@@ -10,10 +10,13 @@ public static class SearchDirections
 {
     /// <summary>Instruct the <see cref="FocusFinders"/> to make a query to the right for each BFS search pass.</summary>
     public static readonly Vector2I SearchRight = new(0, 1);
+
     /// <summary>Instruct the <see cref="FocusFinders"/> to make a query to the down for each BFS search pass.</summary>
     public static readonly Vector2I SearchDown = new(1, 0);
+
     /// <summary>Instruct the <see cref="FocusFinders"/> to make a query to the left for each BFS search pass.</summary>
     public static readonly Vector2I SearchLeft = new(0, -1);
+
     /// <summary>Instruct the <see cref="FocusFinders"/> to make a query to the up for each BFS search pass.</summary>
     public static readonly Vector2I SearchUp = new(-1, 0);
 

@@ -35,8 +35,8 @@ public interface IDataLayoutBuilder
     ///   [Row 5] [DataSet3: 00, 01, 02, 03, 04, 05]
     /// </code></remarks>
     IHorizontalDataLayoutBuilder<TDataType> WithHorizontalDataLayout<TDataType>(IEqualityComparer<TDataType>? equalityComparer = null, bool reverseLocalLayout = false);
-    
-    
+
+
     /// <summary>
     /// Instruct the view controller to layout the datasets vertically. 
     /// </summary>

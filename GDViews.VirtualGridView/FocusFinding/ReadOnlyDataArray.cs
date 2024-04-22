@@ -13,11 +13,12 @@ public readonly struct ReadOnlyDataArray<TDataType>
     /// The current rows of the viewport.
     /// </summary>
     public readonly int DataSetRows;
-    
+
     /// <summary>
     /// The current columns of the viewport.
     /// </summary>
     public readonly int DataSetColumns;
+
     private readonly IDataInspector<TDataType> _dataInspector;
     private readonly int _viewRows;
     private readonly int _viewColumns;

@@ -41,7 +41,6 @@ For `csproj` PackageReference
 - [API Usage](#api-usage)
   - [Creating a `GridViewItem`](#creating-a-gridviewitem)
   - [Creating a `GridView`](#creating-a-gridview)
-- [Component Documentation](#component-documentation)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 

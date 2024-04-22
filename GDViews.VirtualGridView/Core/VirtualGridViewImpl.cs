@@ -31,20 +31,18 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     private readonly Stack<TButtonType> _pendingRemove = [];
     private readonly ScrollBar? _verticalScrollBar;
     private readonly Vector2I _viewportSize;
-    
-    private IElementPositioner _elementPositioner;
-    private IElementTweener _elementTweener;
-    private IElementFader _elementFader;
-    private IScrollBarTweener _hScrollBarTweener;
-    private IScrollBarTweener _vScrollBarTweener;
-    private IElementFader _hScrollBarFader;
-    private IElementFader _vScrollBarFader;
 
     private NullableData<TDataType> _currentSelectedData;
     private int _currentSelectedViewColumnIndex;
     private int _currentSelectedViewRowIndex;
 
     private DataView[,] _currentView;
+    private IElementFader _elementFader;
+
+    private IElementPositioner _elementPositioner;
+    private IElementTweener _elementTweener;
+    private IElementFader _hScrollBarFader;
+    private IScrollBarTweener _hScrollBarTweener;
     private bool _isDragging;
 
     private bool _isHorizontalScrollBarVisible = true;
@@ -52,6 +50,8 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     private DataView[,] _nextView;
 
     private Vector2 _startDragPosition;
+    private IElementFader _vScrollBarFader;
+    private IScrollBarTweener _vScrollBarTweener;
 
     internal VirtualGridViewImpl(
         int viewportRows,
@@ -78,11 +78,11 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         ViewRows = viewportRows;
         ViewColumns = viewportColumns;
 
-        
+
         _elementPositioner = elementPositioner;
         _elementTweener = elementTweener;
         _elementFader = elementFader;
-        
+
         _hScrollBarTweener = horizontalScrollBarTweener;
         _hScrollBarFader = horizontalScrollBarFader;
         _vScrollBarTweener = verticalScrollBarTweener;
@@ -153,7 +153,7 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     public int ViewColumns { get; }
     public int ViewRows { get; }
-    
+
     public IElementPositioner ElementPositioner
     {
         get => _elementPositioner;
@@ -501,9 +501,9 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             switch (inputEvent)
             {
                 case InputEventMouseButton mouseButton:
-                    
-                    if(mouseButton.IsReleased()) return;
-                    
+
+                    if (mouseButton.IsReleased()) return;
+
                     var mouseButtonButtonIndex = mouseButton.ButtonIndex;
 
                     var mapVH = mouseButton.GetModifiersMask().HasFlag(KeyModifierMask.MaskShift);
@@ -527,16 +527,16 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
                     break;
                 case InputEventMouseMotion mouseMotion:
-                    
+
                     if (_isDragging == false) return;
-                    
+
                     if (!TryGetMoveDirection(
                             ref _startDragPosition,
                             mouseMotion.GlobalPosition,
                             _cellItemSize,
                             out simulatedMoveDirection
                         )) return;
-                    
+
                     break;
                 default: return;
             }
@@ -615,7 +615,10 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             instance = _itemPrefab.Instantiate<TButtonType>();
             instance.CallCreate();
         }
-        else instance.Show();
+        else
+        {
+            instance.Show();
+        }
 
         _itemContainer.AddChild(instance);
 

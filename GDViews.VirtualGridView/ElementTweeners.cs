@@ -22,6 +22,5 @@ public static partial class ElementTweeners
     /// <returns>The instance of the created element tweener that
     /// can be passed to the <see cref="IVirtualGridView{TDataType}"/>
     /// for handling the virtual grid element positional interpolation.</returns>
-    public static IGodotTweenTweener CreatePan(float duration, TweenSetup? tweenSetup = null) => 
-        new PanImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
+    public static IGodotTweenTweener CreatePan(float duration, TweenSetup? tweenSetup = null) => new PanImpl(duration, TweenSetups.CurrentOrDefault(tweenSetup));
 }

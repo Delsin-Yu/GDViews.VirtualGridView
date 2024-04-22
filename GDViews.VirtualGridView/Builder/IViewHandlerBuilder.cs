@@ -3,7 +3,6 @@ using GodotViews.VirtualGrid.Transition;
 
 namespace GodotViews.VirtualGrid.Builder;
 
-
 /// <summary>
 /// The builder that continues the building process of the <see cref="IVirtualGridView{TDataType}"/> instance.<br/>
 /// Use the <see cref="WithHandlers"/> method to set up the visual transition behavior for the grid elements.

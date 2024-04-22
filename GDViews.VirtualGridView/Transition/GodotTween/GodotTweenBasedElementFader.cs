@@ -19,6 +19,7 @@ public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IGodotT
     {
         /// <summary> Instruct this <see cref="IGodotTweenFader"/> to hide the specified control </summary>
         Disappear,
+
         /// <summary> Instruct this <see cref="IGodotTweenFader"/> to show the specified control </summary>
         Appear
     }
@@ -26,13 +27,7 @@ public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IGodotT
     private readonly GodotTweenCore<FadeType, Vector2, TCachedArgument> _tweenCore;
 
     private TweenSetup _tweenSetup;
-    
-    /// <summary> The duration takes to complete the interpolation. </summary>
-    public float Duration { get; set; }
-    
-    /// <summary> ZThe <see cref="TweenSetup"/> used for doing the interpolation. </summary>
-    public TweenSetup TweenSetup { get => _tweenSetup; set => _tweenSetup = TweenSetups.CurrentOrDefault(value); }
-    
+
     /// <summary>
     /// Construct an instance of this <see cref="GodotTweenCoreBasedElementFader{TCachedArgument}"/>
     /// </summary>
@@ -43,6 +38,16 @@ public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IGodotT
         _tweenCore = new(this);
         Duration = duration;
         TweenSetup = tweenSetup;
+    }
+
+    /// <summary> The duration takes to complete the interpolation. </summary>
+    public float Duration { get; set; }
+
+    /// <summary> ZThe <see cref="TweenSetup"/> used for doing the interpolation. </summary>
+    public TweenSetup TweenSetup
+    {
+        get => _tweenSetup;
+        set => _tweenSetup = TweenSetups.CurrentOrDefault(value);
     }
 
     /// <inheritdoc/> 
@@ -75,7 +80,7 @@ public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IGodotT
     /// <returns>The target argument this tween updates,
     /// this value will be use for fast-forwarding this control's state when interrupting the interpolation.</returns>
     public abstract TCachedArgument InitializeTween(FadeType type, in Vector2 targetValue, Control control, Tween tween);
-    
+
     /// <summary>
     /// Use to check if the specified type of interpolation is supported by this fader.
     /// </summary>

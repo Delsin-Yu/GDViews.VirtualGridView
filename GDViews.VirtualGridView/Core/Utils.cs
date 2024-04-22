@@ -13,7 +13,7 @@ internal static class Utils
     internal static readonly StringName UIRight = "ui_right";
 
     internal static object? CurrentActiveGridView { get; set; }
-    
+
     internal static bool TryGetMoveDirection(ref Vector2I vector, out Vector2I moveDirection)
     {
         moveDirection = Vector2I.Zero;

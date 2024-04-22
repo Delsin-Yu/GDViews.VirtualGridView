@@ -19,14 +19,14 @@ public interface IElementTweener
     /// <param name="control">The moving virtualized element.</param>
     /// <param name="targetPosition">The target position this element is meant to get moves to.</param>
     void MoveTo(Control control, Vector2 targetPosition);
-    
+
     /// <summary>
     /// Invoked when the view controller is moving a newly spawned or reused virtualized element into the viewport.
     /// </summary>
     /// <param name="control">The newly spawned or reused virtualized element, outside of the viewport.</param>
     /// <param name="targetPosition">The target position this element is meant to get moves to.</param>
     void MoveIn(Control control, Vector2 targetPosition);
-    
+
     /// <summary>
     /// Invoked when the view controller is moving a virtualized element out from the viewport.
     /// </summary>
@@ -35,7 +35,7 @@ public interface IElementTweener
     /// <param name="onFinish">Invoked by the tweener when finishing the moving process,
     /// this delegate notifies the controller to hide and cache the element.</param>
     void MoveOut(Control control, Vector2 targetPosition, Action<Control> onFinish);
-    
+
     /// <summary>
     /// Invoked when the view controller is about to perform a moving action.<br/>
     /// The developer should interrupt and clean up the existing tweens for the given element.
