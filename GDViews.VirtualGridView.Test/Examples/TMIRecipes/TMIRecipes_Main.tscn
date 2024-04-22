@@ -133,7 +133,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-scroll_vertical = 197
 script = ExtResource("4_kpyl8")
 scroll_speed = 100
 stay_seconds = 3
