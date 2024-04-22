@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Bogus;
 using GodotViews.VirtualGrid;
@@ -19,19 +20,25 @@ public record struct DataModel(
 
 public partial class TMIRecipes_Main : Control
 {
-    [ExportGroup("List")]
-    [Export] private PackedScene _itemPrefab;
+    [ExportGroup("List")] [Export] private PackedScene _itemPrefab;
     [Export] private Control _itemContainer;
     [Export] private Vector2 _itemSize;
     [Export] private float _itemSeparation;
     [Export] private int _viewportItemCount;
     [Export] private ScrollBar _scrollBar;
 
-    [ExportGroup("Detail")] 
-    [Export] private Label _name;
+    [ExportGroup("Detail")] [Export] private Label _name;
     [Export] private Label _description;
     [Export] private Label _level;
-    [Export] private Label _tags;
+    [Export] private Label _cooker;
+    [Export] private Label _cookTime;
+    [Export] private Control _tagContainer;
+    [Export] private PackedScene _tagPrefab;
+    [Export] private Control _ingredientContainer;
+    [Export] private PackedScene _ingredientPrefab;
+
+    private TextPrinter _tagsPrinter;
+    private TextPrinter _ingredientsPrinter;
 
     private readonly List<DataModel> _dataSet = [];
 
@@ -39,6 +46,9 @@ public partial class TMIRecipes_Main : Control
 
     public override void _Ready()
     {
+        _tagsPrinter = new(_tagContainer, _tagPrefab);
+        _ingredientsPrinter = new(_ingredientContainer, _ingredientPrefab);
+
         _virtualGridView =
             VirtualGridView
                 .Create(1, _viewportItemCount)
@@ -59,9 +69,9 @@ public partial class TMIRecipes_Main : Control
                 )
                 .ConfigureExtraArgument(this)
                 .Build();
-        
+
         PopulateDataSet(_dataSet, 50);
-        
+
         _virtualGridView.Redraw();
         _virtualGridView.GrabFocus();
     }
@@ -100,6 +110,9 @@ public partial class TMIRecipes_Main : Control
         _name.Text = data.Name;
         _description.Text = data.Description;
         _level.Text = $"Lv {data.Level}";
-        _tags.Text = string.Join("    ", data.Tags.Select(x => $"[{x}]"));
+        _tagsPrinter.Draw(data.Tags);
+        _cooker.Text = data.Cooker;
+        _cookTime.Text = data.CookTime.ToString("N2");
+        _ingredientsPrinter.Draw(data.Ingredients);
     }
 }

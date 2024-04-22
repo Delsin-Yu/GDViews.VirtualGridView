@@ -1,11 +1,13 @@
-[gd_scene load_steps=5 format=3 uid="uid://c3wwbn00uutul"]
+[gd_scene load_steps=7 format=3 uid="uid://c3wwbn00uutul"]
 
 [ext_resource type="PackedScene" uid="uid://oqsqpg0wam7" path="res://Examples/TMIRecipes/Prefabs/TMIRecipes_GridItem.tscn" id="1_1mjsy"]
 [ext_resource type="Script" path="res://Examples/TMIRecipes/Scripts/TMIRecipes_Main.cs" id="1_twvfh"]
+[ext_resource type="PackedScene" uid="uid://dh3btcobxnmqw" path="res://Examples/TMIRecipes/Prefabs/TMIRecipes_Tag.tscn" id="3_qntvq"]
 [ext_resource type="Texture2D" uid="uid://dwfm2vk55mikr" path="res://icon.svg" id="3_th28t"]
 [ext_resource type="Script" path="res://Scripts/auto_scroller.gd" id="4_kpyl8"]
+[ext_resource type="PackedScene" uid="uid://bvh2b3kjceaal" path="res://Examples/TMIRecipes/Prefabs/TMIRecipes_Ingredient.tscn" id="6_q2g04"]
 
-[node name="TMIRecipes_Main" type="Control" node_paths=PackedStringArray("_itemContainer", "_scrollBar", "_name", "_description", "_level", "_tags")]
+[node name="TMIRecipes_Main" type="Control" node_paths=PackedStringArray("_itemContainer", "_scrollBar", "_name", "_description", "_level", "_cooker", "_cookTime", "_tagContainer", "_ingredientContainer")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -22,9 +24,14 @@ _itemSeparation = 15.0
 _viewportItemCount = 11
 _scrollBar = NodePath("HBoxContainer/List/VScrollBar")
 _name = NodePath("HBoxContainer/Detail/Name")
-_description = NodePath("HBoxContainer/Detail/DescriptionContainer/Description")
+_description = NodePath("HBoxContainer/Detail/DescriptionBG/DescriptionContainer/Description")
 _level = NodePath("HBoxContainer/Detail/Visual/Level")
-_tags = NodePath("HBoxContainer/Detail/TagsContainer/Tags")
+_cooker = NodePath("HBoxContainer/Detail/CookerName")
+_cookTime = NodePath("HBoxContainer/Detail/CookTimeValue")
+_tagContainer = NodePath("HBoxContainer/Detail/TagsBG/TagsContainer/HFlowContainer")
+_tagPrefab = ExtResource("3_qntvq")
+_ingredientContainer = NodePath("HBoxContainer/Detail/ColorRect/GridContainer")
+_ingredientPrefab = ExtResource("6_q2g04")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 1
@@ -110,17 +117,28 @@ text = "Lv1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DescriptionContainer" type="ScrollContainer" parent="HBoxContainer/Detail"]
+[node name="DescriptionBG" type="ColorRect" parent="HBoxContainer/Detail"]
 layout_mode = 0
 offset_left = 268.0
 offset_top = 125.0
 offset_right = 741.0
 offset_bottom = 500.0
+color = Color(1, 1, 1, 0.184314)
+
+[node name="DescriptionContainer" type="ScrollContainer" parent="HBoxContainer/Detail/DescriptionBG"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+scroll_vertical = 197
 script = ExtResource("4_kpyl8")
 scroll_speed = 100
 stay_seconds = 3
 
-[node name="Description" type="Label" parent="HBoxContainer/Detail/DescriptionContainer"]
+[node name="Description" type="Label" parent="HBoxContainer/Detail/DescriptionBG/DescriptionContainer"]
 auto_translate_mode = 1
 custom_minimum_size = Vector2(465, 375)
 layout_mode = 2
@@ -132,23 +150,105 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="TagsContainer" type="ScrollContainer" parent="HBoxContainer/Detail"]
-auto_translate_mode = 1
+[node name="TagsBG" type="ColorRect" parent="HBoxContainer/Detail"]
 layout_mode = 0
 offset_left = 49.0
-offset_top = 515.0
+offset_top = 530.0
 offset_right = 741.0
-offset_bottom = 587.0
-scroll_vertical = 49
+offset_bottom = 602.0
+color = Color(1, 1, 1, 0.137255)
+
+[node name="TagsContainer" type="ScrollContainer" parent="HBoxContainer/Detail/TagsBG"]
+auto_translate_mode = 1
+layout_mode = 0
+offset_right = 692.0
+offset_bottom = 72.0
+mouse_filter = 2
 script = ExtResource("4_kpyl8")
 scroll_speed = 100
 stay_seconds = 3
 
-[node name="Tags" type="Label" parent="HBoxContainer/Detail/TagsContainer"]
-auto_translate_mode = 1
+[node name="HFlowContainer" type="HFlowContainer" parent="HBoxContainer/Detail/TagsBG/TagsContainer"]
 custom_minimum_size = Vector2(684, 72)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "[Lorem Ipsum]    [dolor sit amet]    [consectetur]    [adipiscing elit]    [Lorem Ipsum]    [dolor sit amet]    [consectetur]    [adipiscing elit]    [Lorem Ipsum]    [dolor sit amet]    [consectetur]    [adipiscing elit]    [Lorem Ipsum]    [dolor sit amet]    [consectetur]    [adipiscing elit]"
+size_flags_vertical = 4
+alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="HBoxContainer/Detail"]
+layout_mode = 0
+offset_left = 49.0
+offset_top = 630.0
+offset_right = 741.0
+offset_bottom = 797.0
+color = Color(1, 1, 1, 0.12549)
+
+[node name="GridContainer" type="GridContainer" parent="HBoxContainer/Detail/ColorRect"]
+layout_mode = 0
+offset_right = 692.0
+offset_bottom = 167.0
+columns = 2
+
+[node name="Ingredient" parent="HBoxContainer/Detail/ColorRect/GridContainer" node_paths=PackedStringArray("_label") instance=ExtResource("6_q2g04")]
+layout_mode = 2
+_label = NodePath("MarginContainer/Label")
+
+[node name="CookerName" type="Label" parent="HBoxContainer/Detail"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -490.0
+offset_top = -158.0
+offset_right = -215.0
+offset_bottom = -116.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 30
+text = "Lorem Ipsum"
 horizontal_alignment = 1
-autowrap_mode = 3
+
+[node name="CookTime" type="Label" parent="HBoxContainer/Detail"]
+auto_translate_mode = 1
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -490.0
+offset_top = -104.0
+offset_right = -290.0
+offset_bottom = -62.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 30
+text = "Lorem Ipsum:"
+horizontal_alignment = 2
+
+[node name="CookTimeValue" type="Label" parent="HBoxContainer/Detail"]
+auto_translate_mode = 1
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -290.0
+offset_top = -104.0
+offset_right = -215.0
+offset_bottom = -62.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 30
+text = "21"
+horizontal_alignment = 1
+
+[node name="TextureRect" type="TextureRect" parent="HBoxContainer/Detail"]
+layout_mode = 0
+offset_left = 611.0
+offset_top = 827.0
+offset_right = 739.0
+offset_bottom = 955.0
+texture = ExtResource("3_th28t")

@@ -1,0 +1,33 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvh2b3kjceaal"]
+
+[ext_resource type="Script" path="res://Examples/TMIRecipes/Scripts/TMIRecipes_TextView.cs" id="1_qla41"]
+
+[node name="Ingredient" type="PanelContainer" node_paths=PackedStringArray("_label")]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(0, 60)
+size_flags_horizontal = 3
+script = ExtResource("1_qla41")
+_label = NodePath("MarginContainer/Label")
+
+[node name="TextureRect" type="ColorRect" parent="."]
+auto_translate_mode = 1
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(1, 1, 1, 0.403922)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+auto_translate_mode = 1
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="Label" type="Label" parent="MarginContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Lorem Ipsum"
+horizontal_alignment = 1
+vertical_alignment = 1
