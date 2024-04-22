@@ -502,7 +502,9 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             switch (inputEvent)
             {
                 case InputEventMouseButton mouseButton:
-
+                    
+                    if(mouseButton.IsReleased()) return;
+                    
                     var mouseButtonButtonIndex = mouseButton.ButtonIndex;
 
                     var mapVH = mouseButton.GetModifiersMask().HasFlag(KeyModifierMask.MaskShift);
