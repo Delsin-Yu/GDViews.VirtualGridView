@@ -116,13 +116,13 @@ public partial class SimpleLogView_Main : Node
                         // Separation between the elements
                         _itemSeparation
                         
-                        )
-                )
-                
+                        ),
+                    
                     // Pass the current instance to the view
                     // so that we can get this instance from
                     // the virtualized instance
-                    .ConfigureExtraArgument(this)
+                    this
+                )
                 
                     // The vertical scroll bar use to indicate
                     // the current viewport position relative to the

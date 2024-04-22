@@ -1,79 +1,88 @@
 using Godot;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Bogus;
 using GodotViews.VirtualGrid;
 
-namespace GDViews.VirtualGrid.Example.TMI.Recipes;
+namespace GDViews.VirtualGrid.Example.TMI.Storage;
 
 public record struct DataModel(
     string Name,
     string Description,
     string[] Tags,
-    string[] Ingredients,
-    string Cooker,
-    float CookTime,
     int Price,
-    int Level
+    int Level,
+    int Count
 );
 
-public partial class TMIRecipes_Main : Control
+public partial class TMIStorage_Main : Node
 {
     [ExportGroup("List")] [Export] private PackedScene _itemPrefab;
     [Export] private Control _itemContainer;
     [Export] private Vector2 _itemSize;
-    [Export] private float _itemSeparation;
-    [Export] private int _viewportItemCount;
+    [Export] private Vector2 _itemSeparation;
+    [Export] private Vector2I _viewportItemCount;
     [Export] private ScrollBar _scrollBar;
-
+    
+    
     [ExportGroup("Detail")] [Export] private Label _name;
     [Export] private Label _description;
     [Export] private Label _level;
-    [Export] private Label _cooker;
-    [Export] private Label _cookTime;
+    [Export] private Label _price;
     [Export] private Control _tagContainer;
     [Export] private PackedScene _tagPrefab;
-    [Export] private Control _ingredientContainer;
-    [Export] private PackedScene _ingredientPrefab;
-
+    
     private TextPrinter _tagsPrinter;
-    private TextPrinter _ingredientsPrinter;
-
-    private readonly List<DataModel> _dataSet = [];
+    
+    private readonly List<DataModel> _dataSet1 = [];
+    private readonly List<DataModel> _dataSet2 = [];
+    private readonly List<DataModel> _dataSet3 = [];
+    private readonly List<DataModel> _dataSet4 = [];
 
     private IVirtualGridView<DataModel> _virtualGridView;
 
     public override void _Ready()
     {
-        _tagsPrinter = new(_tagContainer, _tagPrefab);
-        _ingredientsPrinter = new(_ingredientContainer, _ingredientPrefab);
+        var gridViewer1 = DynamicGridViewers.CreateList(_dataSet1);
+        var gridViewer2 = DynamicGridViewers.CreateList(_dataSet2);
+        var gridViewer3 = DynamicGridViewers.CreateList(_dataSet3);
+        var gridViewer4 = DynamicGridViewers.CreateList(_dataSet4);
 
+        _tagsPrinter = new(_tagContainer, _tagPrefab);
         _virtualGridView =
             VirtualGridView
-                .Create(1, _viewportItemCount)
+                .Create(_viewportItemCount.X, _viewportItemCount.Y)
                 .WithHandlers(
-                    ElementPositioners.Centered,
+                    ElementPositioners.Side,
                     ElementTweeners.CreatePan(0.1f, TweenSetups.EaseOut.Quad),
                     ElementFaders.None
-                ).WithVerticalDataLayout<DataModel>()
-                .AppendColumnDataSet(DynamicGridViewers.CreateList(_dataSet))
-                .WithArgument<TMIRecipes_GridItem, TMIRecipes_Main>(
+                )
+                .WithVerticalDataLayout<DataModel>()
+                    .AppendColumnDataSet(gridViewer1)
+                    .AppendColumnDataSet(gridViewer2)
+                    .AppendColumnDataSet(gridViewer3)
+                    .AppendColumnDataSet(gridViewer4)
+                    .AppendColumnDataSet(gridViewer4)
+                .WithArgument<TMIStorage_GridItem, TMIStorage_Main>(
                     _itemPrefab,
                     _itemContainer,
-                    InfiniteLayoutGrids.CreateSimple(_itemSize, new(0, _itemSeparation)),
+                    InfiniteLayoutGrids.CreateSimple(_itemSize, new(_itemSeparation.X, _itemSeparation.Y)),
                     this
                 )
-                .ConfigureVerticalScrollBar(
-                    _scrollBar,
-                    ScrollBarTweeners.CreateLerp(0.1f, TweenSetups.EaseOut.Quad)
-                )
+                    .ConfigureVerticalScrollBar(_scrollBar, ScrollBarTweeners.CreateLerp(0.1f, TweenSetups.EaseOut.Quad))
                 .Build();
-
-        PopulateDataSet(_dataSet, 50);
+        
+        PopulateDataSet(_dataSet1, Random.Shared.Next(5, 30));
+        PopulateDataSet(_dataSet2, Random.Shared.Next(5, 30));
+        PopulateDataSet(_dataSet3, Random.Shared.Next(5, 30));
+        PopulateDataSet(_dataSet4, Random.Shared.Next(5, 30));
 
         _virtualGridView.Redraw();
         _virtualGridView.GrabFocus();
     }
-
+    
+    
     public static void PopulateDataSet(IList<DataModel> dataModels, int populateAmount)
     {
         dataModels.Clear();
@@ -83,34 +92,29 @@ public partial class TMIRecipes_Main : Control
             var name = faker.Lorem.Sentence(1, 3);
             var description = faker.Lorem.Paragraphs();
             var tags = faker.Lorem.Words(10);
-            var ingredients = faker.Lorem.Words(5);
-            var cooker = faker.Lorem.Word();
-            var cookTime = faker.Random.Float(1, 20);
             var price = faker.Random.Int(15, 500);
             var level = faker.Random.Int(1, 6);
+            var count = faker.Random.Int(0, 200);
             dataModels.Add(
                 new(
                     name,
                     description,
                     tags,
-                    ingredients,
-                    cooker,
-                    cookTime,
                     price,
-                    level
+                    level,
+                    count
                 )
             );
         }
     }
-
+    
+    
     public void Print(ref readonly DataModel data)
     {
         _name.Text = data.Name;
         _description.Text = data.Description;
         _level.Text = $"Lv {data.Level}";
+        _price.Text = data.Price.ToString("C0", CultureInfo.CurrentCulture);
         _tagsPrinter.Draw(data.Tags);
-        _cooker.Text = data.Cooker;
-        _cookTime.Text = data.CookTime.ToString("N2");
-        _ingredientsPrinter.Draw(data.Ingredients);
     }
 }

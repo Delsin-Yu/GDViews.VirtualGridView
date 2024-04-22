@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dh3btcobxnmqw"]
 
-[ext_resource type="Script" path="res://Examples/TMIRecipes/Scripts/TMIRecipes_TextView.cs" id="1_2ypg7"]
+[ext_resource type="Script" path="res://Scripts/TextView.cs" id="1_2ypg7"]
 
 [node name="Tag" type="PanelContainer" node_paths=PackedStringArray("_label")]
 auto_translate_mode = 1

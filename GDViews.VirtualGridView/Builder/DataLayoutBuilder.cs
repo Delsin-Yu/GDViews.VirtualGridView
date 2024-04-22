@@ -38,7 +38,8 @@ internal partial class DataLayoutBuilder<TDataType>(
     public IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> WithArgument<TButtonType, TExtraArgument>(
         PackedScene itemPrefab,
         Control itemContainer,
-        IInfiniteLayoutGrid layoutGrid
+        IInfiniteLayoutGrid layoutGrid,
+        TExtraArgument extraArgument
     ) where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
     {
         var dataSetDefinitions = CollectionsMarshal.AsSpan(_dataSetDefinitions);
@@ -79,7 +80,8 @@ internal partial class DataLayoutBuilder<TDataType>(
             dataInspector,
             itemPrefab,
             itemContainer,
-            layoutGrid
+            layoutGrid,
+            extraArgument
         );
     }
 }

@@ -1,0 +1,162 @@
+[gd_scene load_steps=5 format=3 uid="uid://chi2oixxqlev7"]
+
+[ext_resource type="Script" path="res://Examples/TMIStorage/Scripts/TMIStorage_Main.cs" id="1_gp34q"]
+[ext_resource type="PackedScene" uid="uid://c0htupbd4dx7s" path="res://Examples/TMIStorage/Prefabs/TMIStorage_GridItem.tscn" id="2_jp2up"]
+[ext_resource type="PackedScene" uid="uid://dh3btcobxnmqw" path="res://Prefabs/TextView.tscn" id="3_eskoq"]
+[ext_resource type="Texture2D" uid="uid://dwfm2vk55mikr" path="res://icon.svg" id="5_rqahd"]
+
+[node name="TMIRecipes_Main" type="Control" node_paths=PackedStringArray("_itemContainer", "_scrollBar", "_name", "_description", "_level", "_price", "_tagContainer")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 1.0
+offset_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_gp34q")
+_itemPrefab = ExtResource("2_jp2up")
+_itemContainer = NodePath("HBoxContainer/List/ListItems")
+_itemSize = Vector2(100, 100)
+_itemSeparation = Vector2(10, 10)
+_viewportItemCount = Vector2i(5, 8)
+_scrollBar = NodePath("HBoxContainer/List/VScrollBar")
+_name = NodePath("HBoxContainer/Detail/PanelContainer/MarginContainer/VBoxContainer/Name")
+_description = NodePath("HBoxContainer/Detail/PanelContainer/MarginContainer/VBoxContainer/Description")
+_level = NodePath("HBoxContainer/Detail/PanelContainer/MarginContainer/VBoxContainer/Visual/Level")
+_price = NodePath("HBoxContainer/Detail/PanelContainer/MarginContainer/VBoxContainer/Price")
+_tagContainer = NodePath("HBoxContainer/Detail/PanelContainer/MarginContainer/VBoxContainer/HFlowContainer")
+_tagPrefab = ExtResource("3_eskoq")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="List" type="Panel" parent="HBoxContainer"]
+custom_minimum_size = Vector2(800, 1000)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+
+[node name="ListItems" type="Panel" parent="HBoxContainer/List"]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -434.0
+offset_right = 290.0
+offset_bottom = 434.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VScrollBar" type="VScrollBar" parent="HBoxContainer/List"]
+layout_mode = 0
+offset_left = 84.0
+offset_top = 132.0
+offset_right = 121.0
+offset_bottom = 882.0
+
+[node name="Detail" type="Panel" parent="HBoxContainer"]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(800, 1000)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+
+[node name="PanelContainer" type="PanelContainer" parent="HBoxContainer/Detail"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -342.0
+offset_top = -332.0
+offset_right = 342.0
+offset_bottom = 333.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/Detail/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/Detail/PanelContainer/MarginContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Name" type="Label" parent="HBoxContainer/Detail/PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(684, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Lorem Ipsum Dolor Sit Amet"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Price" type="Label" parent="HBoxContainer/Detail/PanelContainer/MarginContainer/VBoxContainer"]
+auto_translate_mode = 1
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Lv1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Visual" type="Panel" parent="HBoxContainer/Detail/PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(180, 180)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Sprite" type="TextureRect" parent="HBoxContainer/Detail/PanelContainer/MarginContainer/VBoxContainer/Visual"]
+layout_mode = 1
+offset_left = 19.0
+offset_top = 12.5
+offset_right = 147.0
+offset_bottom = 140.5
+texture = ExtResource("5_rqahd")
+
+[node name="Level" type="Label" parent="HBoxContainer/Detail/PanelContainer/MarginContainer/VBoxContainer/Visual"]
+auto_translate_mode = 1
+layout_mode = 1
+offset_left = 101.0
+offset_top = 136.0
+offset_right = 176.0
+offset_bottom = 178.0
+theme_override_font_sizes/font_size = 30
+text = "Lv1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Description" type="Label" parent="HBoxContainer/Detail/PanelContainer/MarginContainer/VBoxContainer"]
+auto_translate_mode = 1
+custom_minimum_size = Vector2(465, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ipsum suspendisse ultrices gravida dict
+
+um fusce ut placerat. Arcu dui vivamus arcu felis. Interdum velit laoreet id donec ultrices tincidunt. Sed velit dignissim sodales ut. Non quam lacus suspendisse faucibus interdum posuere lorem ipsum dolor. Fringilla urna porttitor rhoncus dolor purus non. Viverra nam libero justo laoreet sit amet cursus sit. Ultrices in iaculis nunc sed augue lacus viverra. Risus quis varius quam quisque id diam vel quam elementum. Purus in mollis nunc sed id semper. Scelerisque purus semper eget duis at tellus at urna condimentum. Et odio pellentesque diam volutpat. Tristique magna sit amet purus gravida quis blandit turpis cursus. Mi ipsum faucibus vitae aliquet nec."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="HFlowContainer" type="HFlowContainer" parent="HBoxContainer/Detail/PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(684, 0)
+layout_mode = 2
+size_flags_vertical = 4
+alignment = 1

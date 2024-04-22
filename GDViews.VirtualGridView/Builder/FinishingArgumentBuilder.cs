@@ -9,13 +9,14 @@ internal class FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
     IDataInspector<TDataType> dataInspector,
     PackedScene itemPrefab,
     Control itemContainer,
-    IInfiniteLayoutGrid layoutGrid) : IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>
+    IInfiniteLayoutGrid layoutGrid,
+    TExtraArgument extraArgument) : IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>
     where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
 {
     private bool _autoHideHorizontalScrollBar;
     private bool _autoHideVerticalScrollBar;
 
-    private TExtraArgument? _extraArgument;
+    private readonly TExtraArgument? _extraArgument = extraArgument;
     private ScrollBar? _horizontalScrollBar;
     private IElementFader? _horizontalScrollBarFader;
     private IScrollBarTweener? _horizontalScrollBarTweener;
@@ -49,12 +50,6 @@ internal class FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
         _autoHideHorizontalScrollBar = autoHide;
         _horizontalScrollBarTweener = tweener;
         _horizontalScrollBarFader = fader;
-        return this;
-    }
-
-    public IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> ConfigureExtraArgument(TExtraArgument extraArgument)
-    {
-        _extraArgument = extraArgument;
         return this;
     }
 

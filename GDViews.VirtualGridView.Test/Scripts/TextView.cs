@@ -1,8 +1,8 @@
 ﻿using Godot;
 
-namespace GDViews.VirtualGrid.Example.TMI.Recipes;
+namespace GDViews.VirtualGrid.Example.TMI;
 
-public partial class TMIRecipes_TextView : Control
+public partial class TextView : Control
 {
     [Export] private Label _label;
 

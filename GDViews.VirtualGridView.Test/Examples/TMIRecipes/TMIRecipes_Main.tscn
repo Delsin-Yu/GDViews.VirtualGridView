@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://oqsqpg0wam7" path="res://Examples/TMIRecipes/Prefabs/TMIRecipes_GridItem.tscn" id="1_1mjsy"]
 [ext_resource type="Script" path="res://Examples/TMIRecipes/Scripts/TMIRecipes_Main.cs" id="1_twvfh"]
-[ext_resource type="PackedScene" uid="uid://dh3btcobxnmqw" path="res://Examples/TMIRecipes/Prefabs/TMIRecipes_Tag.tscn" id="3_qntvq"]
+[ext_resource type="PackedScene" uid="uid://dh3btcobxnmqw" path="res://Prefabs/TextView.tscn" id="3_qntvq"]
 [ext_resource type="Texture2D" uid="uid://dwfm2vk55mikr" path="res://icon.svg" id="3_th28t"]
 [ext_resource type="Script" path="res://Scripts/auto_scroller.gd" id="4_kpyl8"]
 [ext_resource type="PackedScene" uid="uid://bvh2b3kjceaal" path="res://Examples/TMIRecipes/Prefabs/TMIRecipes_Ingredient.tscn" id="6_q2g04"]

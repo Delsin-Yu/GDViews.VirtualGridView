@@ -18,13 +18,15 @@ public interface IFinishingBuilderAccess<TDataType>
     /// that have a script inherits <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/> attached.</param>
     /// <param name="itemContainer">The <see cref="Control"/> used for the container of all virtualized grid elements.</param>
     /// <param name="layoutGrid">The <see cref="InfiniteLayoutGrids"/> used to handle the layout positioning of all virtualized grid elements.</param>
+    /// <param name="extraArgument">Sets the extra argument that will passed to the script attached to the virtualized grid elements.</param>
     /// <typeparam name="TButtonType">The type of the script attached to the <paramref name="itemPrefab"/>.</typeparam>
     /// <typeparam name="TExtraArgument">The extra argument passed to the script attached to the virtualized grid elements.</typeparam>
     /// <returns>A builder that concludes the building process of the <see cref="IVirtualGridView{TDataType}"/> instance.</returns>
     IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument> WithArgument<TButtonType, TExtraArgument>(
         PackedScene itemPrefab,
         Control itemContainer,
-        IInfiniteLayoutGrid layoutGrid
+        IInfiniteLayoutGrid layoutGrid,
+        TExtraArgument extraArgument
     ) where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>;
 
     /// <summary>
@@ -44,6 +46,7 @@ public interface IFinishingBuilderAccess<TDataType>
         WithArgument<TButtonType, NoExtraArgument>(
             itemPrefab,
             itemContainer,
-            layoutGrid
+            layoutGrid,
+            NoExtraArgument.Default
         );
 }
