@@ -42,7 +42,6 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     private NullableData<TDataType> _currentSelectedData;
     private int _currentSelectedViewColumnIndex;
-
     private int _currentSelectedViewRowIndex;
 
     private DataView[,] _currentView;
@@ -797,9 +796,10 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         }
         else
         {
-            rowProgress = ViewRowIndex / (float)(dataRows - ViewRows);
+            var fixedDataRows = (float)dataRows;
+            rowProgress = ViewRowIndex / fixedDataRows;
             rowProgress = Math.Max(rowProgress, 0f);
-            rowPage = ViewRows / (float)dataRows;
+            rowPage = ViewRows / fixedDataRows;
             canAutoHideRowScrollBar = false;
         }
 
@@ -811,9 +811,10 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         }
         else
         {
-            columnProgress = ViewColumnIndex / (float)(dataColumns - ViewColumns);
+            var fixedDataColumns = (float)dataColumns;
+            columnProgress = ViewColumnIndex / fixedDataColumns;
             columnProgress = Math.Max(columnProgress, 0f);
-            columnPage = ViewColumns / (float)dataColumns;
+            columnPage = ViewColumns / fixedDataColumns;
             canAutoHideColumnScrollBar = false;
         }
 
