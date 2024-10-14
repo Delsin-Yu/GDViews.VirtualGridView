@@ -10,7 +10,7 @@ namespace GodotViews.VirtualGrid;
 /// to navigate through and customise the virtualized grid view.   
 /// </summary>
 /// <typeparam name="TDataType">The type for the data this controller focuses on.</typeparam>
-public interface IVirtualGridView<TDataType>
+public interface IVirtualGridView<TDataType> : IDisposable
 {
     /// <summary>
     /// Accessor for the currently active ElementPositioner,

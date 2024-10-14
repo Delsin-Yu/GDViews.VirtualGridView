@@ -1183,4 +1183,10 @@ internal class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         public NullableData<TDataType> Data;
         public override string ToString() => $"Button: {AssignedButton?.Name ?? "Null"}, Data: {Data}";
     }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        while (_buttonPool.TryPop(out var instance)) instance.QueueFree();       
+    }
 }
