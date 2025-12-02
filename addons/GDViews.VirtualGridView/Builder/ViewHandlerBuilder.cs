@@ -4,19 +4,19 @@ using GodotViews.VirtualGrid.Transition;
 
 namespace GodotViews.VirtualGrid.Builder;
 
-internal class ViewHandlerBuilder : IViewHandlerBuilder
+class ViewHandlerBuilder : IViewHandlerBuilder
 {
-    public ViewHandlerBuilder(int viewportColumns, int viewportRows)
+    public ViewHandlerBuilder(int viewportXCount, int viewportYCount)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(viewportColumns);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(viewportRows);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(viewportXCount);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(viewportYCount);
 
-        ViewportColumns = viewportColumns;
-        ViewportRows = viewportRows;
+        ViewportXCount = viewportXCount;
+        ViewportYCount = viewportYCount;
     }
 
-    public int ViewportColumns { get; }
-    public int ViewportRows { get; }
+    public int ViewportXCount { get; }
+    public int ViewportYCount { get; }
 
     public IDataLayoutBuilder WithHandlers(
         IElementPositioner elementPositioner,

@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://73yxo01kqtsi"]
 
-[ext_resource type="Script" path="res://Examples/Playground/Scripts/Playground_Main.cs" id="1_wuctx"]
+[ext_resource type="Script" uid="uid://biwmh2v04fod5" path="res://Examples/Playground/Scripts/Playground_Main.cs" id="1_wuctx"]
 [ext_resource type="PackedScene" uid="uid://bbflxig4up0wr" path="res://Examples/Playground/Prefabs/Playground_GridItem.tscn" id="2_7ef37"]
 [ext_resource type="PackedScene" uid="uid://djj3jan54wgsy" path="res://Examples/Playground/Prefabs/Playground_DataSetController.tscn" id="3_2ams4"]
 
@@ -344,52 +344,17 @@ size_flags_vertical = 3
 size_flags_stretch_ratio = 3.0
 theme_override_constants/separation = 0
 
-[node name="DataSetControl" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear") instance=ExtResource("3_2ams4")]
+[node name="DataSetControl" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" instance=ExtResource("3_2ams4")]
 layout_mode = 2
-_num = NodePath("MarginContainer/VBoxContainer/DataSet1")
-_add1 = NodePath("MarginContainer/VBoxContainer/Add1")
-_add10 = NodePath("MarginContainer/VBoxContainer/Add10")
-_remove1 = NodePath("MarginContainer/VBoxContainer/Remove1")
-_remove10 = NodePath("MarginContainer/VBoxContainer/Remove10")
-_scramble = NodePath("MarginContainer/VBoxContainer/Scramble")
-_clear = NodePath("MarginContainer/VBoxContainer/Clear")
 
-[node name="DataSetControl2" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear") instance=ExtResource("3_2ams4")]
+[node name="DataSetControl2" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" instance=ExtResource("3_2ams4")]
 layout_mode = 2
-_num = NodePath("MarginContainer/VBoxContainer/DataSet1")
-_add1 = NodePath("MarginContainer/VBoxContainer/Add1")
-_add10 = NodePath("MarginContainer/VBoxContainer/Add10")
-_remove1 = NodePath("MarginContainer/VBoxContainer/Remove1")
-_remove10 = NodePath("MarginContainer/VBoxContainer/Remove10")
-_scramble = NodePath("MarginContainer/VBoxContainer/Scramble")
-_clear = NodePath("MarginContainer/VBoxContainer/Clear")
 
-[node name="DataSetControl3" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear") instance=ExtResource("3_2ams4")]
+[node name="DataSetControl3" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" instance=ExtResource("3_2ams4")]
 layout_mode = 2
-_num = NodePath("MarginContainer/VBoxContainer/DataSet1")
-_add1 = NodePath("MarginContainer/VBoxContainer/Add1")
-_add10 = NodePath("MarginContainer/VBoxContainer/Add10")
-_remove1 = NodePath("MarginContainer/VBoxContainer/Remove1")
-_remove10 = NodePath("MarginContainer/VBoxContainer/Remove10")
-_scramble = NodePath("MarginContainer/VBoxContainer/Scramble")
-_clear = NodePath("MarginContainer/VBoxContainer/Clear")
 
-[node name="DataSetControl4" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear") instance=ExtResource("3_2ams4")]
+[node name="DataSetControl4" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" instance=ExtResource("3_2ams4")]
 layout_mode = 2
-_num = NodePath("MarginContainer/VBoxContainer/DataSet1")
-_add1 = NodePath("MarginContainer/VBoxContainer/Add1")
-_add10 = NodePath("MarginContainer/VBoxContainer/Add10")
-_remove1 = NodePath("MarginContainer/VBoxContainer/Remove1")
-_remove10 = NodePath("MarginContainer/VBoxContainer/Remove10")
-_scramble = NodePath("MarginContainer/VBoxContainer/Scramble")
-_clear = NodePath("MarginContainer/VBoxContainer/Clear")
 
-[node name="DataSetControl5" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" node_paths=PackedStringArray("_num", "_add1", "_add10", "_remove1", "_remove10", "_scramble", "_clear") instance=ExtResource("3_2ams4")]
+[node name="DataSetControl5" parent="MarginContainer/HBoxContainer/ControlPanel/BackingListControl" instance=ExtResource("3_2ams4")]
 layout_mode = 2
-_num = NodePath("MarginContainer/VBoxContainer/DataSet1")
-_add1 = NodePath("MarginContainer/VBoxContainer/Add1")
-_add10 = NodePath("MarginContainer/VBoxContainer/Add10")
-_remove1 = NodePath("MarginContainer/VBoxContainer/Remove1")
-_remove10 = NodePath("MarginContainer/VBoxContainer/Remove10")
-_scramble = NodePath("MarginContainer/VBoxContainer/Scramble")
-_clear = NodePath("MarginContainer/VBoxContainer/Clear")

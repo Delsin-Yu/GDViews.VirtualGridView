@@ -16,10 +16,10 @@ public readonly struct SearchDirection
     /// <param name="backing">An array of directions the focus finder is meant to query through.</param>
     /// <remarks>Developers are highly recommended to only use the predefined contents from the <see cref="SearchDirections"/> class, that is:
     /// <list type="bullet">
-    /// <item><see cref="SearchDirections.SearchUp"/></item>
-    /// <item><see cref="SearchDirections.SearchDown"/></item>
-    /// <item><see cref="SearchDirections.SearchLeft"/></item>
-    /// <item><see cref="SearchDirections.SearchRight"/></item>
+    /// <item> <see cref="SearchDirections.SearchUp"/> </item>
+    /// <item> <see cref="SearchDirections.SearchDown"/> </item>
+    /// <item> <see cref="SearchDirections.SearchLeft"/> </item>
+    /// <item> <see cref="SearchDirections.SearchRight"/> </item>
     /// </list></remarks>
     public SearchDirection(Vector2I[] backing)
     {

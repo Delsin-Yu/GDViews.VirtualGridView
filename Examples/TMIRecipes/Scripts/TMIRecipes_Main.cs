@@ -55,7 +55,7 @@ public partial class TMIRecipes_Main : Control
                     ElementTweeners.CreatePan(0.1f, TweenSetups.EaseOut.Quad),
                     ElementFaders.None
                 ).WithVerticalDataLayout<DataModel>()
-                .AppendColumnDataSet(DynamicGridViewers.CreateList(_dataSet))
+                .AppendDataSet(DynamicGridViewers.CreateList(_dataSet))
                 .WithArgument<TMIRecipes_GridItem, TMIRecipes_Main>(
                     _itemPrefab,
                     _itemContainer,

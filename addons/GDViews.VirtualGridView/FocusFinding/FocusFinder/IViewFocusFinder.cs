@@ -15,10 +15,10 @@ public interface IViewFocusFinder<TArgument>
     /// <param name="searchDirection">The search direction from the start position.</param>
     /// <param name="viewStartPositionHandler">The handler responsible for resolving the start position.</param>
     /// <param name="argument">The argument passes to the <paramref name="viewStartPositionHandler"/></param>
-    /// <param name="viewRowIndex">The calculated target row index relative to the viewport,
-    /// unused when the finder fails to obtain the coordinate.</param>
-    /// <param name="viewColumnIndex">The calculated target column index relative to the viewport,
-    /// unused when the finder fails to obtain the coordinate.</param>
+    /// <param name="viewXIndex">The calculated target x index relative to the viewport,
+    ///     unused when the finder fails to obtain the coordinate.</param>
+    /// <param name="viewYIndex">The calculated target y index relative to the viewport,
+    ///     unused when the finder fails to obtain the coordinate.</param>
     /// <returns><see langword="true" /> if the finder successfully obtain the coordinate;
     /// otherwise, <see langword="false" />.</returns>
     public bool TryResolveFocus(
@@ -26,7 +26,7 @@ public interface IViewFocusFinder<TArgument>
         ref readonly ReadOnlySpan<Vector2I> searchDirection,
         IViewStartHandler<TArgument> viewStartPositionHandler,
         ref readonly TArgument argument,
-        out int viewRowIndex,
-        out int viewColumnIndex
+        out int viewXIndex,
+        out int viewYIndex
     );
 }

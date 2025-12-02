@@ -251,11 +251,11 @@ public partial class Playground_Main : Node
             .Create(7, 7)
             .WithHandlers(CurrentPositioner, CurrentTweener, CurrentFader)
             .WithVerticalDataLayout<DataModel>(reverseLocalLayout: false)
-                .AppendColumnDataSet(dataSet1GridView, 2)
-                .AppendColumnDataSet(dataSet2GridView, 2)
-                .AppendColumnDataSet(dataSet3GridView, 2)
-                .AppendColumnDataSet(dataSet4GridView, 2)
-                .AppendColumnDataSet(dataSet5GridView, 2)
+                .AppendDataSet(dataSet1GridView, 2)
+                .AppendDataSet(dataSet2GridView, 2)
+                .AppendDataSet(dataSet3GridView, 2)
+                .AppendDataSet(dataSet4GridView, 2)
+                .AppendDataSet(dataSet5GridView, 2)
             .WithArgument<Playground_GridItem>(
                 _packedScene,
                 _container,

@@ -16,7 +16,7 @@ public record struct DataModel(int ID, DateTime CurrentTime);
 /// <summary>
 /// The type that handles logics related to per-virtualized grid element interactions, attach this script to a <see cref="Button"/> to make it a grid item.
 /// </summary>
-public partial class SimpleLogView_GridItem : VirtualGridViewItem<DataModel, SimpleLogView_Main>
+public partial class SimpleLogView_GridItem : VirtualGridViewItemArg<DataModel, SimpleLogView_Main>
 {
     // Assigned from the inspector.
     [Export] private Label _id;

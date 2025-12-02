@@ -11,7 +11,7 @@ public static class InfiniteLayoutGrids
     /// <summary>
     /// Create a simple infinite layout grid that has functions equivalent to a <see cref="GridContainer"/>.
     /// </summary>
-    /// <returns>The instance of the created dynamic grid viewer that
+    /// <returns>The instance of the created infinite layout grid that
     /// can be passed to the builders of <see cref="IVirtualGridView{TDataType}"/>.</returns>
     public static IInfiniteLayoutGrid CreateSimple(Vector2 itemSize, Vector2? itemSeparation = null) => new SimpleImpl(itemSize, itemSeparation ?? Vector2.Zero);
 

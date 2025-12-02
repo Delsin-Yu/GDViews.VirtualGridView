@@ -4,7 +4,7 @@ using GodotViews.VirtualGrid;
 
 namespace GDViews.VirtualGrid.Example.TMI.Recipes;
 
-public partial class TMIRecipes_GridItem : VirtualGridViewItem<DataModel, TMIRecipes_Main>
+public partial class TMIRecipes_GridItem : VirtualGridViewItemArg<DataModel, TMIRecipes_Main>
 {
     [Export] private Label _name;
     [Export] private Label _price;

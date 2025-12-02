@@ -8,8 +8,8 @@ public static partial class StartHandlers
     {
         public Vector2I ResolveStartPosition(ref readonly ReadOnlyViewArray currentView, Vector2I position) =>
             new(
-                position.X < 0 ? currentView.ViewRows + position.X : position.X,
-                position.Y < 0 ? currentView.ViewColumns + position.Y : position.Y
+                position.X < 0 ? currentView.ViewXCount + position.X : position.X,
+                position.Y < 0 ? currentView.ViewYCount + position.Y : position.Y
             );
     }
 }

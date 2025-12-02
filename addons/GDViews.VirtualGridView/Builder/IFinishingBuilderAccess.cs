@@ -15,7 +15,7 @@ public interface IFinishingBuilderAccess<TDataType>
     /// Pass in the necessary arguments to the building <see cref="IVirtualGridView{TDataType}"/>
     /// </summary>
     /// <param name="itemPrefab">The <see cref="PackedScene"/> used for the virtualized grid element
-    /// that have a script inherits <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/> attached.</param>
+    /// that have a script inherits <see cref="VirtualGridViewItemArg{TDataType,TExtraArgument}"/> attached.</param>
     /// <param name="itemContainer">The <see cref="Control"/> used for the container of all virtualized grid elements.</param>
     /// <param name="layoutGrid">The <see cref="InfiniteLayoutGrids"/> used to handle the layout positioning of all virtualized grid elements.</param>
     /// <param name="extraArgument">Sets the extra argument that will passed to the script attached to the virtualized grid elements.</param>
@@ -27,13 +27,13 @@ public interface IFinishingBuilderAccess<TDataType>
         Control itemContainer,
         IInfiniteLayoutGrid layoutGrid,
         TExtraArgument extraArgument
-    ) where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>;
+    ) where TButtonType : VirtualGridViewItemArg<TDataType, TExtraArgument>;
 
     /// <summary>
     /// Pass in the necessary arguments to the building <see cref="IVirtualGridView{TDataType}"/>
     /// </summary>
     /// <param name="itemPrefab">The <see cref="PackedScene"/> used for the virtualized grid element
-    /// that have a script inherits <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/> attached.</param>
+    /// that have a script inherits <see cref="VirtualGridViewItemArg{TDataType,TExtraArgument}"/> attached.</param>
     /// <param name="itemContainer">The <see cref="Control"/> used for the container of all virtualized grid elements.</param>
     /// <param name="layoutGrid">The <see cref="InfiniteLayoutGrids"/> used to handle the layout positioning of all virtualized grid elements.</param>
     /// <typeparam name="TButtonType">The type of the script attached to the <paramref name="itemPrefab"/>.</typeparam>
@@ -42,7 +42,7 @@ public interface IFinishingBuilderAccess<TDataType>
         PackedScene itemPrefab,
         Control itemContainer,
         IInfiniteLayoutGrid layoutGrid
-    ) where TButtonType : VirtualGridViewItem<TDataType, NoExtraArgument> =>
+    ) where TButtonType : VirtualGridViewItemArg<TDataType, NoExtraArgument> =>
         WithArgument<TButtonType, NoExtraArgument>(
             itemPrefab,
             itemContainer,

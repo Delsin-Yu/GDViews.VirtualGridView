@@ -15,10 +15,10 @@ public interface IDataFocusFinder<TArgument>
     /// <param name="searchDirection">The search direction from the start position.</param>
     /// <param name="dataStartPositionHandler">The handler responsible for resolving the start position.</param>
     /// <param name="argument">The argument passes to the <paramref name="dataStartPositionHandler"/></param>
-    /// <param name="dataSetRowIndex">The calculated datasets row index,
-    /// unused when the finder fails to obtain the coordinate.</param>
-    /// <param name="dataSetColumnIndex">The calculated datasets column index,
-    /// unused when the finder fails to obtain the coordinate.</param>
+    /// <param name="dataSetXIndex">The calculated datasets x index,
+    ///     unused when the finder fails to obtain the coordinate.</param>
+    /// <param name="dataSetYIndex">The calculated datasets y index,
+    ///     unused when the finder fails to obtain the coordinate.</param>
     /// <returns><see langword="true" /> if the finder successfully obtain the coordinate;
     /// otherwise, <see langword="false" />.</returns>
     bool TryResolveFocus<TDataType>(
@@ -26,9 +26,8 @@ public interface IDataFocusFinder<TArgument>
         ref readonly ReadOnlySpan<Vector2I> searchDirection,
         IDataStartHandler<TArgument> dataStartPositionHandler,
         ref readonly TArgument argument,
-        out int dataSetRowIndex,
-        out int dataSetColumnIndex
-    );
+        out int dataSetXIndex,
+        out int dataSetYIndex);
 }
 
 /// <summary>
@@ -40,19 +39,18 @@ public interface IEqualityDataFocusFinder
     /// <summary>Try to calculate the target focus coordinate based on the specified arguments.</summary>
     /// <param name="matchingArgument">The argument that uses for performing the equality matching.</param>
     /// <param name="currentView">Provides indirect access to the content of the datasets.</param>
-    /// <param name="dataSetRowIndex">The calculated datasets row index,
-    /// unused when the finder fails to obtain the coordinate.</param>
-    /// <param name="dataSetColumnIndex">The calculated datasets column index,
-    /// unused when the finder fails to obtain the coordinate.</param>
+    /// <param name="dataSetXIndex">The calculated datasets x index,
+    ///     unused when the finder fails to obtain the coordinate.</param>
+    /// <param name="dataSetYIndex">The calculated datasets y index,
+    ///     unused when the finder fails to obtain the coordinate.</param>
     /// <typeparam name="TDataType">The type for the data this handler focuses on.</typeparam>
     /// <returns><see langword="true" /> if the finder successfully obtain the coordinate;
     /// otherwise, <see langword="false" />.</returns>
     public bool TryResolveFocus<TDataType>(
         ref readonly TDataType matchingArgument,
         ref readonly ReadOnlyDataArray<TDataType> currentView,
-        out int dataSetRowIndex,
-        out int dataSetColumnIndex
-    );
+        out int dataSetXIndex,
+        out int dataSetYIndex);
 }
 
 /// <summary>
@@ -67,19 +65,18 @@ public interface IPredicateDataFocusFinder
     /// </summary>
     /// <param name="predicate">The predicate passes that uses for performing the matching.</param>
     /// <param name="currentView">Provides indirect access to the content of the datasets.</param>
-    /// <param name="dataSetRowIndex">The calculated datasets row index,
-    /// unused when the finder fails to obtain the coordinate.</param>
-    /// <param name="dataSetColumnIndex">The calculated datasets column index,
-    /// unused when the finder fails to obtain the coordinate.</param>
+    /// <param name="dataSetXIndex">The calculated datasets x index,
+    ///     unused when the finder fails to obtain the coordinate.</param>
+    /// <param name="dataSetYIndex">The calculated datasets y index,
+    ///     unused when the finder fails to obtain the coordinate.</param>
     /// <typeparam name="TDataType">The type for the data this handler focuses on.</typeparam>
     /// <returns><see langword="true" /> if the finder successfully obtain the coordinate;
     /// otherwise, <see langword="false" />.</returns>
     public bool TryResolveFocus<TDataType>(
         ref readonly Predicate<TDataType> predicate,
         ref readonly ReadOnlyDataArray<TDataType> currentView,
-        out int dataSetRowIndex,
-        out int dataSetColumnIndex
-    );
+        out int dataSetXIndex,
+        out int dataSetYIndex);
 
     /// <summary>
     /// <summary>Try to calculate the target focus coordinate based on the specified arguments.</summary>
@@ -87,10 +84,10 @@ public interface IPredicateDataFocusFinder
     /// <param name="predicate">The predicate passes that uses for performing the matching.</param>
     /// <param name="currentView">Provides indirect access to the content of the datasets.</param>
     /// <param name="extraArgument">The predicate passes to the <paramref name="predicate"/> to avoid closure allocation.</param>
-    /// <param name="dataSetRowIndex">The calculated datasets row index,
-    /// unused when the finder fails to obtain the coordinate.</param>
-    /// <param name="dataSetColumnIndex">The calculated datasets column index,
-    /// unused when the finder fails to obtain the coordinate.</param>
+    /// <param name="dataSetXIndex">The calculated datasets x index,
+    ///     unused when the finder fails to obtain the coordinate.</param>
+    /// <param name="dataSetYIndex">The calculated datasets y index,
+    ///     unused when the finder fails to obtain the coordinate.</param>
     /// <typeparam name="TDataType">The type for the data this handler focuses on.</typeparam>
     /// <typeparam name="TExtraArgument">The type of the argument required by the focus finder.</typeparam>
     /// <returns><see langword="true" /> if the finder successfully obtain the coordinate;
@@ -99,7 +96,6 @@ public interface IPredicateDataFocusFinder
         ref readonly Func<TDataType, TExtraArgument, bool> predicate,
         ref readonly ReadOnlyDataArray<TDataType> currentView,
         in TExtraArgument extraArgument,
-        out int dataSetRowIndex,
-        out int dataSetColumnIndex
-    );
+        out int dataSetXIndex,
+        out int dataSetYIndex);
 }

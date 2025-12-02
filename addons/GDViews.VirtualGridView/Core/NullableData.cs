@@ -4,13 +4,13 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace GodotViews.VirtualGrid;
 
-internal static class NullableData
+static class NullableData
 {
     public static NullableData<T> Null<T>() => new(false, default);
     public static NullableData<T> Create<T>(T data) => new(true, data);
 }
 
-internal readonly struct NullableData<T>(bool hasValue, T? value)
+readonly struct NullableData<T>(bool hasValue, T? value)
 {
     internal static void Clear(ref readonly Span<NullableData<T>> array)
     {

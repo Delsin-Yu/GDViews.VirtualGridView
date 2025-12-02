@@ -10,14 +10,13 @@ public static partial class FocusFinders
         public bool TryResolveFocus<TDataType>(
             ref readonly TDataType matchingArgument,
             ref readonly ReadOnlyDataArray<TDataType> currentView,
-            out int dataSetRowIndex,
-            out int dataSetColumnIndex
-        ) =>
+            out int dataSetXIndex,
+            out int dataSetYIndex) =>
             currentView.TryGetData(
                 CachedComparer<TDataType>.EqualsHandler,
                 matchingArgument,
-                out dataSetRowIndex,
-                out dataSetColumnIndex
+                out dataSetXIndex,
+                out dataSetYIndex
             );
 
         private static class CachedComparer<TDataType>

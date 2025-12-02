@@ -59,11 +59,11 @@ public partial class TMIStorage_Main : Node
                     ElementFaders.None
                 )
                 .WithVerticalDataLayout<DataModel>()
-                    .AppendColumnDataSet(gridViewer1)
-                    .AppendColumnDataSet(gridViewer2)
-                    .AppendColumnDataSet(gridViewer3)
-                    .AppendColumnDataSet(gridViewer4)
-                    .AppendColumnDataSet(gridViewer4)
+                    .AppendDataSet(gridViewer1)
+                    .AppendDataSet(gridViewer2)
+                    .AppendDataSet(gridViewer3)
+                    .AppendDataSet(gridViewer4)
+                    .AppendDataSet(gridViewer4)
                 .WithArgument<TMIStorage_GridItem, TMIStorage_Main>(
                     _itemPrefab,
                     _itemContainer,

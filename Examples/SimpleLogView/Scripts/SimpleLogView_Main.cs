@@ -33,7 +33,7 @@ public partial class SimpleLogView_Main : Node
             // Call the Create function under this static class to initiate a build.
             VirtualGridView
                 // Here we are specifying the viewport dimensions
-                .Create(viewportColumns: 1, viewportRows: _displayedItems)
+                .Create(viewportXCount: 1, viewportYCount: _displayedItems)
                 // Call the WithHandlers function to specifying the visual logic.
                 .WithHandlers(
                 
@@ -88,7 +88,7 @@ public partial class SimpleLogView_Main : Node
                     // the developer may also choose to make one dataset
                     // to occupy multiple columns by increasing the repeat
                     // argument or add the same IDynamicGridViewer multiple times
-                    .AppendColumnDataSet(
+                    .AppendDataSet(
                     
                             // The dynamic grid viewer emulates a 2D list access
                             // from the backing list we passes in.

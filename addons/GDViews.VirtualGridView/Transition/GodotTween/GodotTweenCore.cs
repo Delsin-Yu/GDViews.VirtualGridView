@@ -4,7 +4,7 @@ using Godot;
 
 namespace GodotViews.VirtualGrid.Transition.GodotTween;
 
-internal class GodotTweenCore<TTweenType, TTweenArgument, TCachedArgument>(ITweenCoreUser<TTweenType, TTweenArgument, TCachedArgument> tweenCoreUser)
+class GodotTweenCore<TTweenType, TTweenArgument, TCachedArgument>(ITweenCoreUser<TTweenType, TTweenArgument, TCachedArgument> tweenCoreUser)
 {
     private readonly Dictionary<Control, Tween> _activeTween = new();
     private readonly Dictionary<Control, TCachedArgument> _cachedArguments = [];
@@ -32,8 +32,7 @@ internal class GodotTweenCore<TTweenType, TTweenArgument, TCachedArgument>(ITwee
 
         runningTween
             .TweenCallback(
-                Callable.From(
-                    () =>
+                Callable.From(() =>
                     {
                         var controlName = control.Name;
                         if (onFinish != null) DelegateRunner.RunProtected(onFinish, control, "On Finish #1", controlName, methodName);
@@ -49,6 +48,7 @@ internal class GodotTweenCore<TTweenType, TTweenArgument, TCachedArgument>(ITwee
     {
         NullableData<TCachedArgument> cachedArgument;
         bool ret;
+
         if (!_activeTween.Remove(control, out var runningTween))
         {
             cachedArgument = NullableData.Null<TCachedArgument>();
@@ -72,7 +72,7 @@ internal class GodotTweenCore<TTweenType, TTweenArgument, TCachedArgument>(ITwee
     }
 }
 
-internal interface ITweenCoreUser<in TTweenType, TTweenArgument, TCachedArgument>
+interface ITweenCoreUser<in TTweenType, TTweenArgument, TCachedArgument>
 {
     bool IsTweenSupported(TTweenType type);
     void FastForwardState(Control control, TCachedArgument previousTarget);

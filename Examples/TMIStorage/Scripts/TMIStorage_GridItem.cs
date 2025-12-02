@@ -3,7 +3,7 @@ using GodotViews.VirtualGrid;
 
 namespace GDViews.VirtualGrid.Example.TMI.Storage;
 
-public partial class TMIStorage_GridItem : VirtualGridViewItem<DataModel, TMIStorage_Main>
+public partial class TMIStorage_GridItem : VirtualGridViewItemArg<DataModel, TMIStorage_Main>
 {
     [Export] private Label _count;
 

@@ -6,42 +6,21 @@ namespace GodotViews.VirtualGrid.FocusFinding;
 
 public static partial class FocusFinders
 {
-    private readonly struct MinimalVector2I
-    {
-        public readonly int X;
-        public readonly int Y;
-
-        public MinimalVector2I(Vector2I vector2I) : this(vector2I.X, vector2I.Y) { }
-
-        public MinimalVector2I(int x, int y)
-        {
-            X = x;
-            Y = y;
-        }
-
-        public static MinimalVector2I operator +(MinimalVector2I a, Vector2I b) => new(a.X + b.X, a.Y + b.Y);
-
-        public override int GetHashCode() => HashCode.Combine(X, Y);
-
-        public override string ToString() => $"<{X},{Y}>";
-    }
-
     internal static class BFSSearch
     {
-        private static readonly Queue<MinimalVector2I> _pending = new(256);
-        private static readonly HashSet<MinimalVector2I> _visited = new(256);
+        private static readonly Queue<Vector2I> _pending = new(256);
+        private static readonly HashSet<Vector2I> _visited = new(256);
 
         private static bool IsValid(
-            ref readonly ReadOnlyViewArray currentView,
-            ref readonly MinimalVector2I candidate,
-            ref int rowIndex,
-            ref int columnIndex
-        )
+            ReadOnlyViewArray currentView,
+            Vector2I candidate,
+            ref int xIndex,
+            ref int yIndex)
         {
             if (currentView[candidate.X, candidate.Y])
             {
-                rowIndex = candidate.X;
-                columnIndex = candidate.Y;
+                xIndex = candidate.X;
+                yIndex = candidate.Y;
                 return true;
             }
 
@@ -49,16 +28,15 @@ public static partial class FocusFinders
         }
 
         private static bool IsValid<TDataType>(
-            ref readonly ReadOnlyDataArray<TDataType> currentView,
-            ref readonly MinimalVector2I candidate,
-            ref int rowIndex,
-            ref int columnIndex
-        )
+            ReadOnlyDataArray<TDataType> currentView,
+            Vector2I candidate,
+            ref int xIndex,
+            ref int yIndex)
         {
             if (currentView.TryGetData(candidate.X, candidate.Y, out _))
             {
-                rowIndex = candidate.X;
-                columnIndex = candidate.Y;
+                xIndex = candidate.X;
+                yIndex = candidate.Y;
                 return true;
             }
 
@@ -66,35 +44,32 @@ public static partial class FocusFinders
         }
 
         public static bool BFSCore(
-            ref readonly Vector2I start,
-            ref readonly ReadOnlyViewArray currentView,
-            ref readonly ReadOnlySpan<Vector2I> neighborOffsetCollection,
-            out int rowIndex,
-            out int columnIndex
-        )
+            Vector2I start,
+            ReadOnlyViewArray currentView,
+            ReadOnlySpan<Vector2I> neighborOffsetCollection,
+            out int xIndex,
+            out int yIndex)
         {
-            var result = BFSCoreImpl(in start, in currentView, in neighborOffsetCollection, out rowIndex, out columnIndex);
+            var result = BFSCoreImpl(start, currentView, neighborOffsetCollection, out xIndex, out yIndex);
             _pending.Clear();
             _visited.Clear();
             return result;
         }
 
         private static bool BFSCoreImpl(
-            ref readonly Vector2I start,
-            ref readonly ReadOnlyViewArray currentView,
-            ref readonly ReadOnlySpan<Vector2I> neighborOffsetCollection,
-            out int rowIndex,
-            out int columnIndex
+            Vector2I start,
+            ReadOnlyViewArray currentView,
+            ReadOnlySpan<Vector2I> neighborOffsetCollection,
+            out int xIndex,
+            out int yIndex
         )
         {
-            rowIndex = -1;
-            columnIndex = -1;
+            xIndex = -1;
+            yIndex = -1;
 
-            var startVector = new MinimalVector2I(start);
+            if (IsValid(currentView, start, ref xIndex, ref yIndex)) return true;
 
-            if (IsValid(in currentView, in startVector, ref rowIndex, ref columnIndex)) return true;
-
-            _pending.Enqueue(startVector);
+            _pending.Enqueue(start);
 
             while (_pending.TryDequeue(out var candidate))
             {
@@ -105,13 +80,10 @@ public static partial class FocusFinders
                     var neighborPosition = candidate + neighborOffset;
                     if (_visited.Contains(neighborPosition)) continue;
 
-                    if (neighborPosition.X < 0 ||
-                        neighborPosition.X >= currentView.ViewRows ||
-                        neighborPosition.Y < 0 ||
-                        neighborPosition.Y >= currentView.ViewColumns)
+                    if (neighborPosition.X < 0 || neighborPosition.X >= currentView.ViewYCount || neighborPosition.Y < 0 || neighborPosition.Y >= currentView.ViewXCount)
                         continue;
 
-                    if (IsValid(in currentView, in neighborPosition, ref rowIndex, ref columnIndex)) return true;
+                    if (IsValid(currentView, neighborPosition, ref xIndex, ref yIndex)) return true;
                     _pending.Enqueue(neighborPosition);
                 }
             }
@@ -120,35 +92,31 @@ public static partial class FocusFinders
         }
 
         public static bool BFSCore<TDataType>(
-            ref readonly Vector2I start,
-            ref readonly ReadOnlyDataArray<TDataType> currentView,
-            ref readonly ReadOnlySpan<Vector2I> neighborOffsetCollection,
-            out int rowIndex,
-            out int columnIndex
-        )
+            Vector2I start,
+            ReadOnlyDataArray<TDataType> currentView,
+            ReadOnlySpan<Vector2I> neighborOffsetCollection,
+            out int xIndex,
+            out int yIndex)
         {
-            var result = BFSCoreImpl(in start, in currentView, in neighborOffsetCollection, out rowIndex, out columnIndex);
+            var result = BFSCoreImpl(start, currentView, neighborOffsetCollection, out xIndex, out yIndex);
             _pending.Clear();
             _visited.Clear();
             return result;
         }
 
         private static bool BFSCoreImpl<TDataType>(
-            ref readonly Vector2I start,
-            ref readonly ReadOnlyDataArray<TDataType> currentView,
-            ref readonly ReadOnlySpan<Vector2I> neighborOffsetCollection,
-            out int rowIndex,
-            out int columnIndex
-        )
+            Vector2I start,
+            ReadOnlyDataArray<TDataType> currentView,
+            ReadOnlySpan<Vector2I> neighborOffsetCollection,
+            out int xIndex,
+            out int yIndex)
         {
-            rowIndex = -1;
-            columnIndex = -1;
+            xIndex = -1;
+            yIndex = -1;
 
-            var startVector = new MinimalVector2I(start);
+            if (IsValid(currentView, start, ref xIndex, ref yIndex)) return true;
 
-            if (IsValid(in currentView, in startVector, ref rowIndex, ref columnIndex)) return true;
-
-            _pending.Enqueue(startVector);
+            _pending.Enqueue(start);
 
             while (_pending.TryDequeue(out var candidate))
             {
@@ -159,13 +127,10 @@ public static partial class FocusFinders
                     var neighborPosition = candidate + neighborOffset;
                     if (_visited.Contains(neighborPosition)) continue;
 
-                    if (neighborPosition.X < 0 ||
-                        neighborPosition.X >= currentView.DataSetRows ||
-                        neighborPosition.Y < 0 ||
-                        neighborPosition.Y >= currentView.DataSetColumns)
+                    if (neighborPosition.X < 0 || neighborPosition.X >= currentView.DataSetXCount || neighborPosition.Y < 0 || neighborPosition.Y >= currentView.DataSetYCount)
                         continue;
 
-                    if (IsValid(in currentView, in neighborPosition, ref rowIndex, ref columnIndex)) return true;
+                    if (IsValid(currentView, neighborPosition, ref xIndex, ref yIndex)) return true;
                     _pending.Enqueue(neighborPosition);
                 }
             }

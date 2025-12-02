@@ -13,54 +13,54 @@ namespace GodotViews.VirtualGrid
     /// <remarks>If the <typeparamref name="TExtraArgument"/> is unnecessary for the design,
     /// the developer may inherit the alternative type <see cref="GodotViews.VirtualGrid.Builder.IFinishingBuilderAccess{TDataType}.WithArgument{TButtonType}"/>
     /// and use the builder argument <see cref="GodotViews.VirtualGrid.Builder.IFinishingBuilderAccess{TDataType}"/>.</remarks>
-    public abstract partial class VirtualGridViewItem<TDataType, TExtraArgument> : Button
+    public partial class VirtualGridViewItemArg<TDataType, TExtraArgument> : Button
     {
-        private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnAppearHandler;
+        private readonly Action<TDataType, Vector2I, TExtraArgument> _onAppearHandler;
 
-        private readonly Action _OnCreateHandler;
-        private readonly Action<TExtraArgument?> _OnDisappearHandler;
+        private readonly Action _onCreateHandler;
+        private readonly Action<TExtraArgument?> _onDisappearHandler;
 
-        private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnDrawHandler;
+        private readonly Action<TDataType, Vector2I, TExtraArgument> _onDrawHandler;
 
-        private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnFocusEnteredHandler;
-        private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnFocusExitedHandler;
-        private readonly Action<InputEvent> _OnGuiInputHandler;
+        private readonly Action<TDataType, Vector2I, TExtraArgument> _onFocusEnteredHandler;
+        private readonly Action<TDataType, Vector2I, TExtraArgument> _onFocusExitedHandler;
+        private readonly Action<InputEvent> _onGuiInputHandler;
 
-        private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnMoveHandler;
-        private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnMoveInHandler;
-        private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnMoveOutHandler;
-        private readonly Action<int> _OnNotificationHandler;
-        private readonly Action<TDataType, Vector2I, TExtraArgument?> _OnPressedHandler;
+        private readonly Action<TDataType, Vector2I, TExtraArgument> _onMoveHandler;
+        private readonly Action<TDataType, Vector2I, TExtraArgument> _onMoveInHandler;
+        private readonly Action<TDataType, Vector2I, TExtraArgument> _onMoveOutHandler;
+        private readonly Action<int> _onNotificationHandler;
+        private readonly Action<TDataType, Vector2I, TExtraArgument> _onPressedHandler;
 
         private string? _cachedName;
 
         internal CellInfo? Info;
 
         /// <summary>
-        /// Construct an instance of the <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/>
+        /// Construct an instance of the <see cref="VirtualGridViewItemArg{TDataType,TExtraArgument}"/>
         /// </summary>
-        protected VirtualGridViewItem()
+        protected VirtualGridViewItemArg()
         {
-            _OnGuiInputHandler = _OnGuiInput;
-            _OnNotificationHandler = _OnNotification;
+            _onGuiInputHandler = _OnGuiInput;
+            _onNotificationHandler = _OnNotification;
 
-            _OnCreateHandler = _OnGridItemCreate;
+            _onCreateHandler = _OnGridItemCreate;
 
-            _OnDrawHandler = _OnGridItemDraw;
-            _OnMoveHandler = _OnGridItemMove;
-            _OnMoveInHandler = _OnGridItemMoveIn;
-            _OnMoveOutHandler = _OnGridItemMoveOut;
-            _OnAppearHandler = _OnGridItemAppear;
-            _OnDisappearHandler = _OnGridItemDisapper;
-            _OnFocusEnteredHandler = _OnGridItemFocusEntered;
-            _OnFocusExitedHandler = _OnGridItemFocusExited;
-            _OnPressedHandler = _OnGridItemPressed;
+            _onDrawHandler = _OnGridItemDraw;
+            _onMoveHandler = _OnGridItemMove;
+            _onMoveInHandler = _OnGridItemMoveIn;
+            _onMoveOutHandler = _OnGridItemMoveOut;
+            _onAppearHandler = _OnGridItemAppear;
+            _onDisappearHandler = _OnGridItemDisapper;
+            _onFocusEnteredHandler = _OnGridItemFocusEntered;
+            _onFocusExitedHandler = _OnGridItemFocusExited;
+            _onPressedHandler = _OnGridItemPressed;
         }
 
         private string LocalName => _cachedName ??= Name;
 
         /// <summary>
-        /// This method is sealed overriden by the <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/>
+        /// This method is sealed overriden by the <see cref="VirtualGridViewItemArg{TDataType,TExtraArgument}"/>
         /// for providing viewport edge detection mechanism, the developer may implement the
         /// <see cref="_OnGuiInput"/> for listening other input events.   
         /// </summary>
@@ -74,33 +74,33 @@ namespace GodotViews.VirtualGrid
 
                 if (Check(Utils.UIDown, EdgeType.Down, in info, inputEvent))
                 {
-                    info.Parent.MoveAndGrabFocus(MoveDirection.Down, info.RowIndex, info.ColumnIndex);
+                    info.Parent.MoveAndGrabFocus(MoveDirection.Down, info.XIndex, info.YIndex);
                     AcceptEvent();
                     return;
                 }
 
                 if (Check(Utils.UIUp, EdgeType.Up, in info, inputEvent))
                 {
-                    info.Parent.MoveAndGrabFocus(MoveDirection.Up, info.RowIndex, info.ColumnIndex);
+                    info.Parent.MoveAndGrabFocus(MoveDirection.Up, info.XIndex, info.YIndex);
                     AcceptEvent();
                     return;
                 }
 
                 if (Check(Utils.UILeft, EdgeType.Left, in info, inputEvent))
                 {
-                    info.Parent.MoveAndGrabFocus(MoveDirection.Left, info.RowIndex, info.ColumnIndex);
+                    info.Parent.MoveAndGrabFocus(MoveDirection.Left, info.XIndex, info.YIndex);
                     AcceptEvent();
                     return;
                 }
 
                 if (Check(Utils.UIRight, EdgeType.Right, in info, inputEvent))
                 {
-                    info.Parent.MoveAndGrabFocus(MoveDirection.Right, info.RowIndex, info.ColumnIndex);
+                    info.Parent.MoveAndGrabFocus(MoveDirection.Right, info.XIndex, info.YIndex);
                     AcceptEvent();
                     return;
                 }
 
-                DelegateRunner.RunProtected(_OnGuiInputHandler, inputEvent, "Gui Input", LocalName);
+                DelegateRunner.RunProtected(_onGuiInputHandler, inputEvent, "Gui Input", LocalName);
             }
         }
 
@@ -110,9 +110,7 @@ namespace GodotViews.VirtualGrid
             ref readonly CellInfo info,
             InputEvent inputEvent
         ) =>
-            info.ViewEdgeType.HasFlag(edgeType) &&
-            !info.DataSetEdgeType.HasFlag(edgeType) &&
-            inputEvent.IsAction(actionName, true);
+            info.ViewEdgeType.HasFlag(edgeType) && !info.DataSetEdgeType.HasFlag(edgeType) && inputEvent.IsAction(actionName, true);
 
         /// <summary>
         /// Try to get the info associated with this instance of virtualized grid element.
@@ -132,93 +130,90 @@ namespace GodotViews.VirtualGrid
             return true;
         }
 
-        private void CallDelegate(Action<TExtraArgument?> call, in CellInfo info, string methodName)
-        {
+        private void CallDelegate(Action<TExtraArgument> call, in CellInfo info, string methodName) =>
             DelegateRunner.RunProtected(
                 call,
-                info.Parent.ExtraArgument,
+                info.Parent.ExtraArgument!,
                 methodName,
                 LocalName
             );
-        }
 
-        private void CallDelegate(Action<TDataType, Vector2I, TExtraArgument?> call, in CellInfo info, string methodName)
-        {
+        private void CallDelegate(Action<TDataType, Vector2I, TExtraArgument> call, in CellInfo info, string methodName) =>
             DelegateRunner.RunProtected(
                 call,
                 info.Data!,
-                Utils.CreatePosition(info.RowIndex, info.ColumnIndex),
-                info.Parent.ExtraArgument,
+                new(info.XIndex, info.YIndex),
+                info.Parent.ExtraArgument!,
                 methodName,
                 LocalName
             );
-        }
 
         /// <summary>
-        /// This method is sealed overriden by the <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/>
+        /// This method is sealed overriden by the <see cref="VirtualGridViewItemArg{TDataType,TExtraArgument}"/>
         /// for providing pressed mechanism, the developer may implement the
         /// <see cref="_OnGridItemPressed"/> for listening to pressed event.   
         /// </summary>
         public sealed override void _Pressed()
         {
             if (!TryGetInfo(out var info)) return;
-            CallDelegate(_OnPressedHandler, info, "On Press");
+            CallDelegate(_onPressedHandler, info, "On Press");
         }
 
 
         /// <summary>
-        /// This method is sealed overriden by the <see cref="VirtualGridViewItem{TDataType,TExtraArgument}"/>
+        /// This method is sealed overriden by the <see cref="VirtualGridViewItemArg{TDataType,TExtraArgument}"/>
         /// for providing focus management mechanism, the developer may implement the
         /// <see cref="_OnNotification"/> for listening other notifications.   
         /// </summary>
         public sealed override void _Notification(int what)
         {
             if (!TryGetInfo(out var info)) return;
+
             switch ((long)what)
             {
                 case NotificationFocusEnter:
                     Utils.CurrentActiveGridView = info.Parent;
                     info.Parent.FocusTo(info);
-                    CallDelegate(_OnFocusEnteredHandler, info, "On Focus Enter");
+                    CallDelegate(_onFocusEnteredHandler, info, "On Focus Enter");
                     break;
                 case NotificationFocusExit:
                     Utils.CurrentActiveGridView = null;
-                    CallDelegate(_OnFocusExitedHandler, info, "On Focus Exit");
+                    CallDelegate(_onFocusExitedHandler, info, "On Focus Exit");
                     break;
                 default:
-                    DelegateRunner.RunProtected(_OnNotificationHandler, what, "Notification", LocalName);
+                    DelegateRunner.RunProtected(_onNotificationHandler, what, "Notification", LocalName);
                     break;
             }
         }
 
-        internal void CallCreate() => DelegateRunner.RunProtected(_OnCreateHandler, "On Create", LocalName);
+        internal void CallCreate() => DelegateRunner.RunProtected(_onCreateHandler, "On Create", LocalName);
 
         internal void DrawGridItem(in CellInfo info)
         {
             Info = info;
-            CallDelegate(_OnDrawHandler, info, "On Draw");
+            CallDelegate(_onDrawHandler, info, "On Draw");
         }
 
-        internal void CallAppear() => CallDelegate(_OnAppearHandler, Info!.Value, "On Appear");
+        internal void CallAppear() => CallDelegate(_onAppearHandler, Info!.Value, "On Appear");
 
         internal void CallDisappear()
         {
-            CallDelegate(_OnDisappearHandler, Info!.Value, "On Disappear");
+            CallDelegate(_onDisappearHandler, Info!.Value, "On Disappear");
             Info = null;
         }
 
         internal void CallMove(in CellInfo info)
         {
             Info = info;
-            CallDelegate(_OnMoveHandler, Info!.Value, "On Move");
+            CallDelegate(_onMoveHandler, Info!.Value, "On Move");
         }
 
-        internal void CallMoveIn() => CallDelegate(_OnMoveInHandler, Info!.Value, "On Move In");
+        internal void CallMoveIn() => CallDelegate(_onMoveInHandler, Info!.Value, "On Move In");
 
         internal void CallMoveOut()
         {
             var currentInfo = Info!.Value;
-            CallDelegate(_OnMoveOutHandler, currentInfo, "On Move Out");
+            CallDelegate(_onMoveOutHandler, currentInfo, "On Move Out");
         }
 
         /// <inheritdoc cref="Control._GuiInput"/>
@@ -239,7 +234,7 @@ namespace GodotViews.VirtualGrid
         /// <param name="data">The data of the current virtualized grid element instance.</param>
         /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
         /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
-        protected virtual void _OnGridItemDraw(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+        protected virtual void _OnGridItemDraw(TDataType data, Vector2I viewPosition, TExtraArgument extraArgument) { }
 
         /// <summary>
         /// Invoked when the view controller is moving this virtualized grid element inside the viewport.
@@ -247,7 +242,7 @@ namespace GodotViews.VirtualGrid
         /// <param name="data">The data of the current virtualized grid element instance.</param>
         /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
         /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
-        protected virtual void _OnGridItemMove(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+        protected virtual void _OnGridItemMove(TDataType data, Vector2I viewPosition, TExtraArgument extraArgument) { }
 
         /// <summary>
         /// Invoked when the view controller is moving this newly spawned or
@@ -256,7 +251,7 @@ namespace GodotViews.VirtualGrid
         /// <param name="data">The data of the current virtualized grid element instance.</param>
         /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
         /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
-        protected virtual void _OnGridItemMoveIn(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+        protected virtual void _OnGridItemMoveIn(TDataType data, Vector2I viewPosition, TExtraArgument extraArgument) { }
 
         /// <summary>
         /// Invoked when the view controller is moving this
@@ -265,7 +260,7 @@ namespace GodotViews.VirtualGrid
         /// <param name="data">The data of the current virtualized grid element instance.</param>
         /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
         /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
-        protected virtual void _OnGridItemMoveOut(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+        protected virtual void _OnGridItemMoveOut(TDataType data, Vector2I viewPosition, TExtraArgument extraArgument) { }
 
         /// <summary>
         /// Invoked when the view controller is showing this virtualized grid element instance.
@@ -273,7 +268,7 @@ namespace GodotViews.VirtualGrid
         /// <param name="data">The data of the current virtualized grid element instance.</param>
         /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
         /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
-        protected virtual void _OnGridItemAppear(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+        protected virtual void _OnGridItemAppear(TDataType data, Vector2I viewPosition, TExtraArgument extraArgument) { }
 
         /// <summary>
         /// Invoked when the view controller is hiding this virtualized grid element instance.
@@ -287,7 +282,7 @@ namespace GodotViews.VirtualGrid
         /// <param name="data">The data of the current virtualized grid element instance.</param>
         /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
         /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
-        protected virtual void _OnGridItemFocusEntered(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+        protected virtual void _OnGridItemFocusEntered(TDataType data, Vector2I viewPosition, TExtraArgument extraArgument) { }
 
         /// <summary>
         /// Invoked when this virtualized grid element instance loses focus.
@@ -295,7 +290,7 @@ namespace GodotViews.VirtualGrid
         /// <param name="data">The data of the current virtualized grid element instance.</param>
         /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
         /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
-        protected virtual void _OnGridItemFocusExited(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+        protected virtual void _OnGridItemFocusExited(TDataType data, Vector2I viewPosition, TExtraArgument extraArgument) { }
 
         /// <summary>
         /// Invoked when this virtualized grid element instance is pressed.
@@ -303,7 +298,7 @@ namespace GodotViews.VirtualGrid
         /// <param name="data">The data of the current virtualized grid element instance.</param>
         /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
         /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
-        protected virtual void _OnGridItemPressed(TDataType data, Vector2I viewPosition, TExtraArgument? extraArgument) { }
+        protected virtual void _OnGridItemPressed(TDataType data, Vector2I viewPosition, TExtraArgument extraArgument) { }
 
         /// <summary>
         /// Stores the associated info assigned to the current virtualized grid element.
@@ -312,8 +307,8 @@ namespace GodotViews.VirtualGrid
         {
             internal CellInfo(
                 IVirtualGridViewParent<TDataType, TExtraArgument> parent,
-                int rowIndex,
-                int columnIndex,
+                int xIndex,
+                int yIndex,
                 EdgeType definedViewEdgeType,
                 EdgeType viewEdgeType,
                 EdgeType dataSetEdgeType,
@@ -321,8 +316,8 @@ namespace GodotViews.VirtualGrid
             )
             {
                 Parent = parent;
-                RowIndex = rowIndex;
-                ColumnIndex = columnIndex;
+                XIndex = xIndex;
+                YIndex = yIndex;
                 DefinedViewEdgeType = definedViewEdgeType;
                 ViewEdgeType = viewEdgeType;
                 DataSetEdgeType = dataSetEdgeType;
@@ -337,14 +332,14 @@ namespace GodotViews.VirtualGrid
             public TExtraArgument? ExtraArgument => Parent.ExtraArgument;
 
             /// <summary>
-            /// The viewport row index this virtualized grid element belongs to.
+            /// The viewport x index this virtualized grid element belongs to.
             /// </summary>
-            public readonly int RowIndex;
+            public readonly int XIndex;
 
             /// <summary>
-            /// The viewport column index this virtualized grid element belongs to.
+            /// The viewport y index this virtualized grid element belongs to.
             /// </summary>
-            public readonly int ColumnIndex;
+            public readonly int YIndex;
 
             /// <summary>
             /// The edge of the defined viewport this virtualized grid element belongs to.
@@ -371,11 +366,7 @@ namespace GodotViews.VirtualGrid
             /// </summary>
             /// <returns>The string representation for this <see cref="CellInfo"/>.</returns>
             public override string ToString() =>
-                $"({RowIndex},{ColumnIndex}), " +
-                $"DefinedViewEdge: {DefinedViewEdgeType}, " +
-                $"ViewEdge: {ViewEdgeType}, " +
-                $"DataEdge: {DataSetEdgeType}, " +
-                $"Data: {Data}";
+                $"({XIndex},{YIndex}), " + $"DefinedViewEdge: {DefinedViewEdgeType}, " + $"ViewEdge: {ViewEdgeType}, " + $"DataEdge: {DataSetEdgeType}, " + $"Data: {Data}";
         }
     }
 }
@@ -411,6 +402,6 @@ namespace GodotViews.VirtualGrid
         /// <summary>
         /// The element does not belongs to any edge.
         /// </summary>
-        None = 0
+        None = 0,
     }
 }

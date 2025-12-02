@@ -22,7 +22,7 @@ public abstract class GodotTweenCoreBasedElementTweener<TCachedArgument> : IGodo
         MoveIn,
 
         /// <summary> Instruct this <see cref="IGodotTweenTweener"/> to move the specified control out from viewport.</summary>
-        MoveOut
+        MoveOut,
     }
 
     private readonly GodotTweenCore<TweenType, Vector2, TCachedArgument> _tweenCore;

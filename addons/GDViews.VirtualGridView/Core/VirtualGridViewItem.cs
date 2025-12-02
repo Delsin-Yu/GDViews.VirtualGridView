@@ -7,7 +7,7 @@ namespace GodotViews.VirtualGrid;
 /// which makes it a valid prefab for use with <see cref="IVirtualGridView{TDataType}"/>.
 /// </summary>
 /// <typeparam name="TDataType">The type for the data the <see cref="IVirtualGridView{TDataType}"/> focuses on.</typeparam>
-public abstract partial class VirtualGridViewItem<TDataType> : VirtualGridViewItem<TDataType, NoExtraArgument>
+public partial class VirtualGridViewItem<TDataType> : VirtualGridViewItemArg<TDataType, NoExtraArgument>
 {
     /// <inheritdoc />
     protected sealed override void _OnGridItemDraw(TDataType data, Vector2I viewPosition, NoExtraArgument extraArgument) => _OnGridItemDraw(data, viewPosition);

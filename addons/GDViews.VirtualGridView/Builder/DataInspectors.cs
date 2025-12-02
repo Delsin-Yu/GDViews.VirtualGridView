@@ -3,28 +3,29 @@ using System.Linq;
 
 namespace GodotViews.VirtualGrid.Builder;
 
-internal partial class DataLayoutBuilder<TDataType>
+partial class DataLayoutBuilder<TDataType>
 {
-    private class HorizontalDataInspector<T>(AnnotatedDataSet<T>[] dataMap, int viewColumns, int viewRows) : IDataInspector<T>
+    private class HorizontalDataInspector<T>(AnnotatedDataSet<T>[] dataMap, int viewXCount, int viewYCount) : IDataInspector<T>
     {
-        private readonly bool[] _rowCalculationBuffer = new bool[dataMap.Length];
-        private readonly NullableData<T>[] _view = new NullableData<T>[viewColumns];
+        private readonly bool[] _yCalculationBuffer = new bool[dataMap.Length];
+        private readonly NullableData<T>[] _view = new NullableData<T>[viewXCount];
 
-        public void GetDataSetCurrentMetrics(out int rows, out int columns)
+        public void GetDataSetCurrentMetrics(out int xCount, out int yCount)
         {
-            columns = dataMap.Max(x => x.DataSet.GetDynamicMetric());
+            xCount = dataMap.Max(x => x.DataSet.GetDynamicMetric());
 
             var dataMapSpan = dataMap.AsSpan();
-            var bufferSpan = _rowCalculationBuffer.AsSpan();
+            var bufferSpan = _yCalculationBuffer.AsSpan();
+
             for (var index = 0; index < dataMapSpan.Length; index++)
             {
-                var mapRow = dataMapSpan[index];
-                bufferSpan[index] = mapRow.DataSet.TryGetGridElement(mapRow.LocalIndex, 0, out _);
+                var mapY = dataMapSpan[index];
+                bufferSpan[index] = mapY.DataSet.TryGetGridElement(mapY.LocalIndex, 0, out _);
             }
 
-            rows = bufferSpan.LastIndexOf(true);
-            if (rows != -1) rows++;
-            else rows = 0;
+            yCount = bufferSpan.LastIndexOf(true);
+            if (yCount != -1) yCount++;
+            else yCount = 0;
             bufferSpan.Clear();
         }
 
@@ -37,23 +38,23 @@ internal partial class DataLayoutBuilder<TDataType>
          * [5] DataSet1 <====> [3]
          */
 
-        public ReadOnlySpan<NullableData<T>> InspectViewColumn(int rowIndex, int columnOffset, int rowOffset)
+        public ReadOnlySpan<NullableData<T>> InspectViewX(int yIndex, int xOffset, int yOffset)
         {
             var viewSpan = _view.AsSpan();
             NullableData<T>.Clear(ref viewSpan);
 
-            var actualRow = rowOffset + rowIndex;
+            var actualY = yOffset + yIndex;
 
-            if (actualRow < 0 || dataMap.Length <= actualRow)
+            if (actualY < 0 || dataMap.Length <= actualY)
                 return viewSpan;
 
-            var dstColumnIndex = columnOffset + viewColumns;
+            var dstXIndex = xOffset + viewXCount;
 
-            var (dataSet, localIndex) = dataMap[actualRow];
+            var (dataSet, localIndex) = dataMap[actualY];
 
-            for (var i = columnOffset; i < dstColumnIndex; i++)
+            for (var i = xOffset; i < dstXIndex; i++)
             {
-                ref var current = ref viewSpan[i - columnOffset];
+                ref var current = ref viewSpan[i - xOffset];
 
                 if (i >= 0 && dataSet.TryGetGridElement(localIndex, i, out var element))
                     current = NullableData.Create(element);
@@ -64,19 +65,19 @@ internal partial class DataLayoutBuilder<TDataType>
             return viewSpan;
         }
 
-        public NullableData<T> InspectViewCell(int rowIndex, int columnOffset, int rowOffset, int columnIndex)
+        public NullableData<T> InspectViewCell(int yIndex, int xOffset, int yOffset, int xIndex)
         {
             var viewSpan = _view.AsSpan();
             NullableData<T>.Clear(ref viewSpan);
 
-            var actualRow = rowOffset + rowIndex * viewRows;
+            var actualY = yOffset + yIndex * viewYCount;
 
-            if (actualRow < 0 || dataMap.Length <= actualRow)
+            if (actualY < 0 || dataMap.Length <= actualY)
                 return NullableData.Null<T>();
 
-            var (dataSet, localIndex) = dataMap[actualRow];
+            var (dataSet, localIndex) = dataMap[actualY];
 
-            var i = columnOffset * viewColumns + columnIndex;
+            var i = xOffset * viewXCount + xIndex;
 
             if (i >= 0 && dataSet.TryGetGridElement(localIndex, i, out var element))
                 return NullableData.Create(element);
@@ -85,25 +86,26 @@ internal partial class DataLayoutBuilder<TDataType>
         }
     }
 
-    private class VerticalDataInspector<T>(AnnotatedDataSet<T>[] dataMap, int viewColumns, int viewRows) : IDataInspector<T>
+    private class VerticalDataInspector<T>(AnnotatedDataSet<T>[] dataMap, int viewXCount, int viewYCount) : IDataInspector<T>
     {
-        private readonly bool[] _columnCalculationBuffer = new bool[dataMap.Length];
-        private readonly NullableData<T>[] _view = new NullableData<T>[viewColumns];
+        private readonly bool[] _xCalculationBuffer = new bool[dataMap.Length];
+        private readonly NullableData<T>[] _view = new NullableData<T>[viewXCount];
 
-        public void GetDataSetCurrentMetrics(out int rows, out int columns)
+        public void GetDataSetCurrentMetrics(out int xCount, out int yCount)
         {
-            rows = dataMap.Max(x => x.DataSet.GetDynamicMetric());
+            yCount = dataMap.Max(x => x.DataSet.GetDynamicMetric());
             var dataMapSpan = dataMap.AsSpan();
-            var bufferSpan = _columnCalculationBuffer.AsSpan();
+            var bufferSpan = _xCalculationBuffer.AsSpan();
+
             for (var index = 0; index < dataMapSpan.Length; index++)
             {
-                var mapColumn = dataMapSpan[index];
-                bufferSpan[index] = mapColumn.DataSet.TryGetGridElement(mapColumn.LocalIndex, 0, out _);
+                var mapX = dataMapSpan[index];
+                bufferSpan[index] = mapX.DataSet.TryGetGridElement(mapX.LocalIndex, 0, out _);
             }
 
-            columns = bufferSpan.LastIndexOf(true);
-            if (columns != -1) columns++;
-            else columns = 0;
+            xCount = bufferSpan.LastIndexOf(true);
+            if (xCount != -1) xCount++;
+            else xCount = 0;
             bufferSpan.Clear();
         }
 
@@ -116,21 +118,21 @@ internal partial class DataLayoutBuilder<TDataType>
          * [0] [1] [0] [2] [1] [3]
          */
 
-        public ReadOnlySpan<NullableData<T>> InspectViewColumn(int rowIndex, int columnOffset, int rowOffset)
+        public ReadOnlySpan<NullableData<T>> InspectViewX(int yIndex, int xOffset, int yOffset)
         {
             var viewSpan = _view.AsSpan();
             NullableData<T>.Clear(ref viewSpan);
 
-            if (dataMap.Length <= columnOffset)
+            if (dataMap.Length <= xOffset)
                 return viewSpan;
 
-            var actualRow = rowOffset + rowIndex;
+            var actualY = yOffset + yIndex;
 
-            var dstColumnIndex = columnOffset + viewColumns;
+            var dstXIndex = xOffset + viewXCount;
 
-            for (var i = columnOffset; i < dstColumnIndex; i++)
+            for (var i = xOffset; i < dstXIndex; i++)
             {
-                ref var current = ref viewSpan[i - columnOffset];
+                ref var current = ref viewSpan[i - xOffset];
 
                 if (i < 0 || dataMap.Length <= i)
                 {
@@ -140,7 +142,7 @@ internal partial class DataLayoutBuilder<TDataType>
 
                 var (dataSet, localIndex) = dataMap[i];
 
-                if (actualRow >= 0 && dataSet.TryGetGridElement(localIndex, actualRow, out var element))
+                if (actualY >= 0 && dataSet.TryGetGridElement(localIndex, actualY, out var element))
                     current = NullableData.Create(element);
                 else
                     current = NullableData.Null<T>();
@@ -149,23 +151,23 @@ internal partial class DataLayoutBuilder<TDataType>
             return viewSpan;
         }
 
-        public NullableData<T> InspectViewCell(int rowIndex, int columnOffset, int rowOffset, int columnIndex)
+        public NullableData<T> InspectViewCell(int yIndex, int xOffset, int yOffset, int xIndex)
         {
             var viewSpan = _view.AsSpan();
             NullableData<T>.Clear(ref viewSpan);
 
-            if (dataMap.Length <= columnOffset)
+            if (dataMap.Length <= xOffset)
                 return NullableData.Null<T>();
 
-            var actualRow = rowOffset + rowIndex * viewRows;
+            var actualY = yOffset + yIndex * viewYCount;
 
-            var i = columnOffset * viewColumns + columnIndex;
+            var i = xOffset * viewXCount + xIndex;
 
             if (i >= dataMap.Length || i < 0 || dataMap.Length <= i) return NullableData.Null<T>();
 
             var (dataSet, localIndex) = dataMap[i];
 
-            if (actualRow >= 0 && dataSet.TryGetGridElement(localIndex, actualRow, out var element))
+            if (actualY >= 0 && dataSet.TryGetGridElement(localIndex, actualY, out var element))
                 return NullableData.Create(element);
 
             return NullableData.Null<T>();

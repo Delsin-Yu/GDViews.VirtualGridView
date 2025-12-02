@@ -7,17 +7,18 @@ using GodotViews.VirtualGrid.Viewer;
 
 namespace GodotViews.VirtualGrid.Builder;
 
-internal partial class DataLayoutBuilder<TDataType>(
+partial class DataLayoutBuilder<TDataType>(
     DataLayoutSelectionBuilder dataLayoutSelectionBuilder,
     IEqualityComparer<TDataType>? equalityComparer,
     bool reverseLocalLayout,
-    bool isHorizontalDataLayout) : IHorizontalDataLayoutBuilder<TDataType>, IVerticalDataLayoutBuilder<TDataType>
+    bool isHorizontalDataLayout
+) : IHorizontalDataLayoutBuilder<TDataType>, IVerticalDataLayoutBuilder<TDataType>
 {
     private readonly List<IDynamicGridViewer<TDataType>> _dataSetDefinitions = [];
     public DataLayoutSelectionBuilder DataLayoutSelectionBuilder { get; } = dataLayoutSelectionBuilder;
     public IEqualityComparer<TDataType> EqualityComparer { get; } = equalityComparer ?? EqualityComparer<TDataType>.Default;
 
-    public IHorizontalDataLayoutBuilder<TDataType> AppendRowDataSet(IDynamicGridViewer<TDataType> dataSetDefinition, int repeatCount = 1)
+    IHorizontalDataLayoutBuilder<TDataType> IHorizontalDataLayoutBuilder<TDataType>.AppendDataSet(IDynamicGridViewer<TDataType> dataSetDefinition, int repeatCount = 1)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(repeatCount);
         for (var i = 0; i < repeatCount; i++)
@@ -30,7 +31,7 @@ internal partial class DataLayoutBuilder<TDataType>(
         Control itemContainer,
         IInfiniteLayoutGrid layoutGrid,
         TExtraArgument extraArgument
-    ) where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
+    ) where TButtonType : VirtualGridViewItemArg<TDataType, TExtraArgument>
     {
         var dataSetDefinitions = CollectionsMarshal.AsSpan(_dataSetDefinitions);
 
@@ -56,12 +57,10 @@ internal partial class DataLayoutBuilder<TDataType>(
                 annotatedDataSet.LocalIndex = count - annotatedDataSet.LocalIndex;
             }
 
-        var viewColumns = DataLayoutSelectionBuilder.ViewHandlerBuilder.ViewportColumns;
-        var viewRows = DataLayoutSelectionBuilder.ViewHandlerBuilder.ViewportRows;
+        var viewXCount = DataLayoutSelectionBuilder.ViewHandlerBuilder.ViewportXCount;
+        var viewYCount = DataLayoutSelectionBuilder.ViewHandlerBuilder.ViewportYCount;
 
-        IDataInspector<TDataType> dataInspector = isHorizontalDataLayout ?
-            new HorizontalDataInspector<TDataType>(dataMap, viewColumns, viewRows) :
-            new VerticalDataInspector<TDataType>(dataMap, viewColumns, viewRows);
+        IDataInspector<TDataType> dataInspector = isHorizontalDataLayout ? new HorizontalDataInspector<TDataType>(dataMap, viewXCount, viewYCount) : new VerticalDataInspector<TDataType>(dataMap, viewXCount, viewYCount);
 
         return new FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
             this,
@@ -73,7 +72,7 @@ internal partial class DataLayoutBuilder<TDataType>(
         );
     }
 
-    public IVerticalDataLayoutBuilder<TDataType> AppendColumnDataSet(IDynamicGridViewer<TDataType> dataSetDefinition, int repeatCount = 1)
+    IVerticalDataLayoutBuilder<TDataType> IVerticalDataLayoutBuilder<TDataType>.AppendDataSet(IDynamicGridViewer<TDataType> dataSetDefinition, int repeatCount = 1)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(repeatCount);
         for (var i = 0; i < repeatCount; i++)

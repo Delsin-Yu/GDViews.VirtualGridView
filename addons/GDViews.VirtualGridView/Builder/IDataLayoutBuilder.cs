@@ -18,21 +18,21 @@ public interface IDataLayoutBuilder
     /// <typeparam name="TDataType">The type for the data the building <see cref="IVirtualGridView{TDataType}"/> focuses on.</typeparam>
     /// <returns>A builder that continues the building process of the <see cref="IVirtualGridView{TDataType}"/> instance.</returns>
     /// <remarks><code>
-    /// Preview of the horizontal data layout, each data set is allowed to occupy more than one row:
-    ///   [Row 0] [DataSet0: 00, 02, 04, 06, 08]
-    ///   [Row 1] [DataSet0: 01, 03, 05, 07, 09]
-    ///   [Row 2] [DataSet1: 00, 02, 04, 06, 08]
-    ///   [Row 3] [DataSet1: 01, 03, 05, 07, 09]
-    ///   [Row 4] [DataSet2: 00, 01, 02, 03, 04, 05]
-    ///   [Row 5] [DataSet3: 00, 01, 02, 03, 04, 05]
+    /// Preview of the horizontal data layout, each data set is allowed to occupy more than one y:
+    ///   [Y 0] [DataSet0: 00, 02, 04, 06, 08]
+    ///   [Y 1] [DataSet0: 01, 03, 05, 07, 09]
+    ///   [Y 2] [DataSet1: 00, 02, 04, 06, 08]
+    ///   [Y 3] [DataSet1: 01, 03, 05, 07, 09]
+    ///   [Y 4] [DataSet2: 00, 01, 02, 03, 04, 05]
+    ///   [Y 5] [DataSet3: 00, 01, 02, 03, 04, 05]
     ///  
     /// When the reverseLocalLayout is set to true:
-    ///   [Row 0] [DataSet0: 01, 03, 05, 07, 09]
-    ///   [Row 1] [DataSet0: 00, 02, 04, 06, 08]
-    ///   [Row 2] [DataSet1: 01, 03, 05, 07, 09]
-    ///   [Row 3] [DataSet1: 00, 02, 04, 06, 08]
-    ///   [Row 4] [DataSet2: 00, 01, 02, 03, 04, 05]
-    ///   [Row 5] [DataSet3: 00, 01, 02, 03, 04, 05]
+    ///   [Y 0] [DataSet0: 01, 03, 05, 07, 09]
+    ///   [Y 1] [DataSet0: 00, 02, 04, 06, 08]
+    ///   [Y 2] [DataSet1: 01, 03, 05, 07, 09]
+    ///   [Y 3] [DataSet1: 00, 02, 04, 06, 08]
+    ///   [Y 4] [DataSet2: 00, 01, 02, 03, 04, 05]
+    ///   [Y 5] [DataSet3: 00, 01, 02, 03, 04, 05]
     /// </code></remarks>
     IHorizontalDataLayoutBuilder<TDataType> WithHorizontalDataLayout<TDataType>(IEqualityComparer<TDataType>? equalityComparer = null, bool reverseLocalLayout = false);
 
@@ -47,8 +47,8 @@ public interface IDataLayoutBuilder
     /// <typeparam name="TDataType">The type for the data the building <see cref="IVirtualGridView{TDataType}"/> focuses on.</typeparam>
     /// <returns>A builder that continues the building process of the <see cref="IVirtualGridView{TDataType}"/> instance.</returns>
     /// <remarks><code>
-    /// Preview of the vertical data layout, each data set is allowed to occupy more than one column:
-    ///  [Column 0] [Column 1] [Column 2] [Column 3] [Column 4] [Column 5]
+    /// Preview of the vertical data layout, each data set is allowed to occupy more than one x:
+    ///  [X 0] [X 1] [X 2] [X 3] [X 4] [X 5]
     ///  [DataSet0] [DataSet0] [DataSet1] [DataSet1] [DataSet2] [DataSet3]
     /// |    00    |    01    |    00    |    01    |    00    |    00    |
     /// |    02    |    03    |    02    |    03    |    01    |    01    |
@@ -57,7 +57,7 @@ public interface IDataLayoutBuilder
     /// |    08    |    09    |    08    |    09    |    04    |    04    |
     ///  
     /// When the reverseLocalLayout is set to true:
-    ///  [Column 0] [Column 1] [Column 2] [Column 3] [Column 4] [Column 5]
+    ///  [X 0] [X 1] [X 2] [X 3] [X 4] [X 5]
     ///  [DataSet0] [DataSet0] [DataSet1] [DataSet1] [DataSet2] [DataSet3]
     /// |    01    |    00    |    01    |    00    |    00    |    00    |
     /// |    03    |    02    |    03    |    02    |    01    |    01    |

@@ -9,7 +9,7 @@ namespace GodotViews.VirtualGrid.Builder;
 /// <typeparam name="TDataType">The type for the data the building <see cref="IVirtualGridView{TDataType}"/> focuses on.</typeparam>
 /// <typeparam name="TButtonType">The type of the script attached to the virtualized grid element.</typeparam>
 /// <typeparam name="TExtraArgument">The extra argument passed to the script attached to the virtualized grid elements.</typeparam>
-public interface IFinishingArgumentBuilder<TDataType, TButtonType, in TExtraArgument> where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
+public interface IFinishingArgumentBuilder<TDataType, TButtonType, in TExtraArgument> where TButtonType : VirtualGridViewItemArg<TDataType, TExtraArgument>
 {
     /// <summary>
     /// Finish the final building configuration, and instantiate the <see cref="IVirtualGridView{TDataType}"/> instance. 

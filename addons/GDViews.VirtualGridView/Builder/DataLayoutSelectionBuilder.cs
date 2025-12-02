@@ -4,7 +4,7 @@ using GodotViews.VirtualGrid.Transition;
 
 namespace GodotViews.VirtualGrid.Builder;
 
-internal class DataLayoutSelectionBuilder(ViewHandlerBuilder viewHandlerBuilder, IElementPositioner elementPositioner, IElementTweener elementTweener, IElementFader elementFader) : IDataLayoutBuilder
+class DataLayoutSelectionBuilder(ViewHandlerBuilder viewHandlerBuilder, IElementPositioner elementPositioner, IElementTweener elementTweener, IElementFader elementFader) : IDataLayoutBuilder
 {
     public ViewHandlerBuilder ViewHandlerBuilder { get; } = viewHandlerBuilder;
     public IElementPositioner ElementPositioner { get; } = elementPositioner;

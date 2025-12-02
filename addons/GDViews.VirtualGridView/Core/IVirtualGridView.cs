@@ -12,6 +12,9 @@ namespace GodotViews.VirtualGrid;
 /// <typeparam name="TDataType">The type for the data this controller focuses on.</typeparam>
 public interface IVirtualGridView<TDataType> : IDisposable
 {
+    /// <summary> When sets to true, the user can drag the grid view to scroll through the content. </summary>
+    bool EnableDragging { get; set; }
+
     /// <summary>
     /// Accessor for the currently active ElementPositioner,
     /// assigning null to it will automatically fallbacks to <see cref="ElementPositioners.Side"/>.
@@ -67,14 +70,14 @@ public interface IVirtualGridView<TDataType> : IDisposable
     bool AutoHideVScrollBar { get; set; }
 
     /// <summary>
-    /// The number of columns for the concurrently displayed virtualized grid items.
+    /// The number of xs for the concurrently displayed virtualized grid items.
     /// </summary>
-    int ViewColumns { get; }
+    int ViewXCount { get; }
 
     /// <summary>
-    /// The number of rows for the concurrently displayed virtualized grid items.
+    /// The number of ys for the concurrently displayed virtualized grid items.
     /// </summary>
-    int ViewRows { get; }
+    int ViewYCount { get; }
 
 
     /// <summary>
@@ -253,9 +256,9 @@ public interface IVirtualGridView<TDataType> : IDisposable
     );
 }
 
-internal interface IVirtualGridViewParent<TDataType, TExtraArgument>
+interface IVirtualGridViewParent<TDataType, TExtraArgument>
 {
     TExtraArgument? ExtraArgument { get; }
-    void FocusTo(VirtualGridViewItem<TDataType, TExtraArgument>.CellInfo info);
-    void MoveAndGrabFocus(MoveDirection moveDirection, int rowIndex, int columnIndex);
+    void FocusTo(VirtualGridViewItemArg<TDataType, TExtraArgument>.CellInfo info);
+    void MoveAndGrabFocus(MoveDirection moveDirection, int xIndex, int yIndex);
 }

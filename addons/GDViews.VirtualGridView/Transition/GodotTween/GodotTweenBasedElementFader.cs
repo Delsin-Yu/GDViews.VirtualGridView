@@ -21,7 +21,7 @@ public abstract class GodotTweenCoreBasedElementFader<TCachedArgument> : IGodotT
         Disappear,
 
         /// <summary> Instruct this <see cref="IGodotTweenFader"/> to show the specified control </summary>
-        Appear
+        Appear,
     }
 
     private readonly GodotTweenCore<FadeType, Vector2, TCachedArgument> _tweenCore;

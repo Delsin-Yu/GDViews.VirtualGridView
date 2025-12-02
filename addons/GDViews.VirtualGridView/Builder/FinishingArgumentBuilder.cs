@@ -4,14 +4,15 @@ using GodotViews.VirtualGrid.Transition;
 
 namespace GodotViews.VirtualGrid.Builder;
 
-internal class FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
+class FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
     DataLayoutBuilder<TDataType> dataLayoutBuilder,
     IDataInspector<TDataType> dataInspector,
     PackedScene itemPrefab,
     Control itemContainer,
     IInfiniteLayoutGrid layoutGrid,
-    TExtraArgument extraArgument) : IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>
-    where TButtonType : VirtualGridViewItem<TDataType, TExtraArgument>
+    TExtraArgument extraArgument
+) : IFinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>
+    where TButtonType : VirtualGridViewItemArg<TDataType, TExtraArgument>
 {
     private readonly TExtraArgument? _extraArgument = extraArgument;
     private bool _autoHideHorizontalScrollBar;
@@ -58,8 +59,8 @@ internal class FinishingArgumentBuilder<TDataType, TButtonType, TExtraArgument>(
         var viewAlignmentBuilder = dataLayoutSelectionBuilder.ViewHandlerBuilder;
 
         return new VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument>(
-            viewAlignmentBuilder.ViewportRows,
-            viewAlignmentBuilder.ViewportColumns,
+            viewAlignmentBuilder.ViewportXCount,
+            viewAlignmentBuilder.ViewportYCount,
             dataLayoutSelectionBuilder.ElementPositioner,
             dataLayoutSelectionBuilder.ElementTweener,
             dataLayoutSelectionBuilder.ElementFader,

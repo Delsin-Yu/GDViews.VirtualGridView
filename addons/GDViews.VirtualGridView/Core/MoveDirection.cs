@@ -15,5 +15,5 @@ public enum MoveDirection
     Left,
 
     /// <summary> Moving Right. </summary>
-    Right
+    Right,
 }

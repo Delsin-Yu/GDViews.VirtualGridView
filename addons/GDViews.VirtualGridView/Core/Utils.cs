@@ -5,7 +5,7 @@ using GodotViews.VirtualGrid.Builder;
 
 namespace GodotViews.VirtualGrid;
 
-internal static class Utils
+static class Utils
 {
     internal static readonly StringName UIUp = "ui_up";
     internal static readonly StringName UIDown = "ui_down";
@@ -46,31 +46,32 @@ internal static class Utils
         return true;
     }
 
-    internal static Vector2I CreatePosition(int rowIndex, int columnIndex) => new(columnIndex, rowIndex);
-
     internal static bool SearchForData<TDataType, TMatchArgument>(
         IDataInspector<TDataType> dataInspector,
-        int viewRows,
-        int viewColumns,
+        int viewXCount,
+        int viewYCount,
         out ViewData viewData,
         Func<TDataType, TMatchArgument, bool> comparer,
         TMatchArgument matchArgument
     )
     {
-        dataInspector.GetDataSetCurrentMetrics(out var rows, out var columns);
-        for (var rowOffset = 0; rowOffset < rows; rowOffset += viewRows)
-        for (var columnOffset = 0; columnOffset < columns; columnOffset += viewColumns)
+        dataInspector.GetDataSetCurrentMetrics(out var xs, out var ys);
+
+        for (var yOffset = 0; yOffset < ys; yOffset += viewYCount)
+        for (var xOffset = 0; xOffset < xs; xOffset += viewXCount)
         {
-            var maxSpan = Mathf.Min(viewColumns, columns - columnOffset);
-            for (var rowIndex = 0; rowIndex + rowOffset < rows; rowIndex++)
+            var maxSpan = Mathf.Min(viewXCount, xs - xOffset);
+
+            for (var yIndex = 0; yIndex + yOffset < ys; yIndex++)
             {
-                var columnSpan = dataInspector.InspectViewColumn(rowIndex, columnOffset, rowOffset);
-                for (var columnIndex = 0; columnIndex < maxSpan; columnIndex++)
+                var xSpan = dataInspector.InspectViewX(yIndex, xOffset, yOffset);
+
+                for (var xIndex = 0; xIndex < maxSpan; xIndex++)
                 {
-                    var cellData = columnSpan[columnIndex];
+                    var cellData = xSpan[xIndex];
                     if (!cellData.TryUnwrap(out var cellDataValue)) continue;
                     if (!DelegateRunner.RunProtected(comparer, cellDataValue, matchArgument, "Predicate", "Data Focus Finding")) continue;
-                    viewData = new(rowIndex, columnOffset, rowOffset, columnIndex);
+                    viewData = new(yIndex, xOffset, yOffset, xIndex);
                     return true;
                 }
             }
@@ -80,10 +81,10 @@ internal static class Utils
         return false;
     }
 
-    internal record struct ViewData(int RowIndex, int ColumnOffset, int RowOffset, int ColumnIndex);
+    internal record struct ViewData(int YIndex, int XOffset, int YOffset, int XIndex);
 }
 
-internal static class DelegateRunner
+static class DelegateRunner
 {
     internal static bool RunProtected<T>(Action<T>? call, in T arg, string actionName, string targetName, [CallerArgumentExpression(nameof(call))] string? methodName = null)
     {
@@ -101,10 +102,7 @@ internal static class DelegateRunner
 
     internal static TR? RunProtected<T1, T2, TR>(Func<T1, T2, TR> call, in T1 arg1, in T2 arg2, string actionName, string targetName, [CallerArgumentExpression(nameof(call))] string? methodName = null)
     {
-        try
-        {
-            return call.Invoke(arg1, arg2);
-        }
+        try { return call.Invoke(arg1, arg2); }
         catch (Exception e)
         {
             ReportException(e, actionName, targetName, methodName);
@@ -112,7 +110,7 @@ internal static class DelegateRunner
         }
     }
 
-    internal static bool RunProtected<T1, T2, T3>(Action<T1, T2?, T3?>? call, in T1 arg1, in T2? arg2, in T3? arg3, string actionName, string targetName, [CallerArgumentExpression(nameof(call))] string? methodName = null)
+    internal static bool RunProtected<T1, T2, T3>(Action<T1, T2, T3>? call, in T1 arg1, in T2 arg2, in T3 arg3, string actionName, string targetName, [CallerArgumentExpression(nameof(call))] string? methodName = null)
     {
         try
         {
@@ -140,8 +138,7 @@ internal static class DelegateRunner
         }
     }
 
-    internal static void ReportException(Exception e, string actionName, string targetName, string? methodName)
-    {
+    internal static void ReportException(Exception e, string actionName, string targetName, string? methodName) =>
         GD.PushError(
             $"""
 
@@ -153,5 +150,4 @@ internal static class DelegateRunner
              {e.StackTrace}
              """
         );
-    }
 }

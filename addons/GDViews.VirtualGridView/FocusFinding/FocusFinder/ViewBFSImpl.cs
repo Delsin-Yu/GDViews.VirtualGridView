@@ -12,17 +12,16 @@ public static partial class FocusFinders
             ref readonly ReadOnlySpan<Vector2I> searchDirection,
             IViewStartHandler<Vector2I> viewStartPositionHandler,
             ref readonly Vector2I argument,
-            out int viewRowIndex,
-            out int viewColumnIndex
-        )
+            out int viewXIndex,
+            out int viewYIndex)
         {
             var start = viewStartPositionHandler.ResolveStartPosition(in currentView, argument);
             return BFSSearch.BFSCore(
-                in start,
-                in currentView,
-                in searchDirection,
-                out viewRowIndex,
-                out viewColumnIndex
+                start,
+                currentView,
+                searchDirection,
+                out viewXIndex,
+                out viewYIndex
             );
         }
     }
