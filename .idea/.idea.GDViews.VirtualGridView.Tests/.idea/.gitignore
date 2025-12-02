@@ -1,0 +1,10 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Rider ignored files
+/contentModel.xml
+/projectSettingsUpdater.xml
+/.idea.GDViews.VirtualGridView.Tests.iml
+/modules.xml
+# Editor-based HTTP Client requests
+/httpRequests/

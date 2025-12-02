@@ -1,16 +1,19 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GDViews.VirtualGridView", "GDViews.VirtualGridView\GDViews.VirtualGridView.csproj", "{B320DC9D-3455-4DEA-A992-F3C0A37EB7F0}"
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GDViews.VirtualGridView", "GDViews.VirtualGridView.csproj", "{1A927B5F-3AB8-4BE0-8F05-A24B61D754FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
+	Debug|Any CPU = Debug|Any CPU
+	ExportDebug|Any CPU = ExportDebug|Any CPU
+	ExportRelease|Any CPU = ExportRelease|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B320DC9D-3455-4DEA-A992-F3C0A37EB7F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B320DC9D-3455-4DEA-A992-F3C0A37EB7F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B320DC9D-3455-4DEA-A992-F3C0A37EB7F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B320DC9D-3455-4DEA-A992-F3C0A37EB7F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A927B5F-3AB8-4BE0-8F05-A24B61D754FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A927B5F-3AB8-4BE0-8F05-A24B61D754FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A927B5F-3AB8-4BE0-8F05-A24B61D754FA}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{1A927B5F-3AB8-4BE0-8F05-A24B61D754FA}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{1A927B5F-3AB8-4BE0-8F05-A24B61D754FA}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{1A927B5F-3AB8-4BE0-8F05-A24B61D754FA}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,7 +1,0 @@
-apiRules:
-- include:
-    uidRegex: GDView.VirtualGridView$
-    type: Namespace
-- exclude:
-    uidRegex: MethodName|PropertyName|SignalName
-    type: Class
