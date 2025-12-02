@@ -1,6 +1,6 @@
 apiRules:
 - include:
-    uidRegex: GDView.VirtualGridView$
+    uidRegex: GodotViews.VirtualGrid$
     type: Namespace
 - exclude:
     uidRegex: MethodName|PropertyName|SignalName
