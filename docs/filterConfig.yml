@@ -1,7 +1,0 @@
-apiRules:
-- include:
-    uidRegex: GodotViews.VirtualGrid$
-    type: Namespace
-- exclude:
-    uidRegex: MethodName|PropertyName|SignalName
-    type: Class
