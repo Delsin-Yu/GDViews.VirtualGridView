@@ -1,33 +1,23 @@
 # GDViews.VirtualGridView
 
-[![GitHub Release](https://img.shields.io/github/v/release/Delsin-Yu/GDViews.VirtualGridView)](https://github.com/Delsin-Yu/GDViews.VirtualGridView/releases/latest) [![NuGet Version](https://img.shields.io/nuget/v/GDViews.VirtualGridView)](https://www.nuget.org/packages/GDViews.VirtualGridView) ![NuGet Downloads](https://img.shields.io/nuget/dt/GDViews.VirtualGridView) [![Stars](https://img.shields.io/github/stars/Delsin-Yu/GDViews.VirtualGridView?color=brightgreen)](https://github.com/Delsin-Yu/GDViews.VirtualGridView/stargazers) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Delsin-Yu/GDViews.VirtualGridView/blob/main/LICENSE)
+[![GitHub Release](https://img.shields.io/github/v/release/Delsin-Yu/GDViews.VirtualGridView)](https://github.com/Delsin-Yu/GDViews.VirtualGridView/releases/latest) [![Stars](https://img.shields.io/github/stars/Delsin-Yu/GDViews.VirtualGridView?color=brightgreen)](https://github.com/Delsin-Yu/GDViews.VirtualGridView/stargazers) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Delsin-Yu/GDViews.VirtualGridView/blob/main/LICENSE)
 
 ## Introduction
 
-Supports in `Godot 4.1+` with .Net module.  
+Supports in `Godot 4.1+` with `mono (.Net)` module.
 ***GDViews.VirtualGridView*** is a `Godot 4` UI Component that provides classes that's useful for creating highly customizable, fully virtualized list/grid views.
 
 You may visit the [**API Documentations Page**](https://delsin-yu.github.io/GDViews.VirtualGridView/) for detailed documentation.
 
 ## Installation
 
-For .Net CLI
+As the Godot doesn't work well with external assemblies, the `GD Panel Framework` is now distributed by `zip/addon` instead of being a Nuget Package.
 
-```txt
-dotnet add package GDViews.VirtualGridView
-```
+1. Ensure your project C# language version is at least `<LangVersion>12</LangVersion>`.
+2. Download the `GDViews.VirtualGridView.zip` from the latest [release](https://github.com/Delsin-Yu/GDViews.VirtualGridView/releases).
+3. Decompress the file and place the `addons` directory into the project root (`res://`).
 
-For Package Manager Console
-
-```txt
-NuGet\Install-Package GDViews.VirtualGridView
-```
-
-For `csproj` PackageReference
-
-```xml
-<PackageReference Include="GDViews.VirtualGridView" Version="*" />
-```
+This addon only contains source file for runtime use; so you do not need to enable it from the `Plugin` window.
 
 ---
 
