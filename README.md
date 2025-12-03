@@ -11,7 +11,7 @@ You may visit the [**API Documentations Page**](https://delsin-yu.github.io/GDVi
 
 ## Installation
 
-As the Godot doesn't work well with external assemblies, the `GD Panel Framework` is now distributed by `zip/addon` instead of being a Nuget Package.
+As the Godot doesn't work well with external assemblies, the `GDViews.VirtualGridView` is now distributed by `zip/addon` instead of being a Nuget Package.
 
 1. Ensure your project C# language version is at least `<LangVersion>12</LangVersion>`.
 2. Download the `GDViews.VirtualGridView.zip` from the latest [release](https://github.com/Delsin-Yu/GDViews.VirtualGridView/releases).
