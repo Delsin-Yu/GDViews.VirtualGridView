@@ -1,5 +1,3 @@
-﻿using Godot;
-
 namespace GodotViews.VirtualGrid.Layout;
 
 /// <summary>

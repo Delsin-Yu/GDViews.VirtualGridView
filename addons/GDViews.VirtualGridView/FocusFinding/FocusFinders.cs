@@ -1,5 +1,3 @@
-﻿using Godot;
-
 namespace GodotViews.VirtualGrid.FocusFinding;
 
 /// <summary>
@@ -26,4 +24,12 @@ public static partial class FocusFinders
     /// Try to find a valid grid element as the focus candidate by the specified predicate.
     /// </summary>
     public static readonly IPredicateDataFocusFinder Predicate = new DataPredicateImpl();
+
+    /// <summary>
+    /// Try to find the last valid grid element as the focus candidate in the datasets.
+    /// </summary>
+    /// <remarks>
+    /// When using this finder, the <c>matchingArgument</c> passed to the <see cref="IVirtualGridView{TDataType}.GrabFocus(IEqualityDataFocusFinder,in TDataType)"/> is not used.
+    /// </remarks>
+    public static readonly IEqualityDataFocusFinder LastData = new DataLastDataImpl();
 }

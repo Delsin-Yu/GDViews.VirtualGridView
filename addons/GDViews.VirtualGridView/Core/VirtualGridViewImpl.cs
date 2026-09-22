@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Godot;
 using GodotViews.VirtualGrid.Builder;
 using GodotViews.VirtualGrid.FocusFinding;
@@ -24,12 +25,14 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
 
     private readonly ScrollBar? _horizontalScrollBar;
+    private readonly bool _interactiveHorizontalScrollBar;
     private readonly Control _itemContainer;
     private readonly PackedScene _itemPrefab;
     private readonly IInfiniteLayoutGrid _layoutGrid;
     private readonly HashSet<TButtonType> _movingOutControls = [];
     private readonly Stack<TButtonType> _pendingRemove = [];
     private readonly ScrollBar? _verticalScrollBar;
+    private readonly bool _interactiveVerticalScrollBar;
     private readonly Vector2I _viewportSize;
 
     private NullableData<TDataType> _currentSelectedData;
@@ -46,6 +49,18 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     private Vector2 _startDragPosition;
 
+    private bool _suppressScrollBarValueChanged;
+    private bool _scrollBarDrivingView;
+    private readonly Control[] _additionalScrollInputTargets;
+    private bool _horizontalScrollBarDriveSuspended;
+    private bool _verticalScrollBarDriveSuspended;
+    private Callable _horizontalScrollBarValueChangedCallable;
+    private Callable _verticalScrollBarValueChangedCallable;
+    private Callable _horizontalScrollBarGuiInputCallable;
+    private Callable _verticalScrollBarGuiInputCallable;
+    private bool _horizontalScrollBarSignalsConnected;
+    private bool _verticalScrollBarSignalsConnected;
+
     internal VirtualGridViewImpl(
         int viewportXCount,
         int viewportYCount,
@@ -54,10 +69,12 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         IElementFader elementFader,
         ScrollBar? horizontalScrollBar,
         bool autoHideHorizontalScrollBar,
+        bool interactiveHorizontalScrollBar,
         IScrollBarTweener horizontalScrollBarTweener,
         IElementFader horizontalScrollBarFader,
         ScrollBar? verticalScrollBar,
         bool autoHideVerticalScrollBar,
+        bool interactiveVerticalScrollBar,
         IScrollBarTweener verticalScrollBarTweener,
         IElementFader verticalScrollBarFader,
         IDataInspector<TDataType> dataInspector,
@@ -65,7 +82,8 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         PackedScene itemPrefab,
         Control itemContainer,
         IInfiniteLayoutGrid layoutGrid,
-        TExtraArgument? extraArgument
+        TExtraArgument extraArgument,
+        Control[] additionalScrollInputTargets
     )
     {
         ViewXCount = viewportXCount;
@@ -85,9 +103,13 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
         _horizontalScrollBar = horizontalScrollBar;
         _verticalScrollBar = verticalScrollBar;
+        _interactiveHorizontalScrollBar = interactiveHorizontalScrollBar;
+        _interactiveVerticalScrollBar = interactiveVerticalScrollBar;
 
-        InitializeScrollBar(_horizontalScrollBar);
-        InitializeScrollBar(_verticalScrollBar);
+        InitializeScrollBar(_horizontalScrollBar, _interactiveHorizontalScrollBar);
+        InitializeScrollBar(_verticalScrollBar, _interactiveVerticalScrollBar);
+        WireInteractiveScrollBar(_horizontalScrollBar, _interactiveHorizontalScrollBar, vertical: false);
+        WireInteractiveScrollBar(_verticalScrollBar, _interactiveVerticalScrollBar, vertical: true);
 
         _dataInspector = dataInspector;
         _equalityComparer = equalityComparer;
@@ -101,6 +123,13 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         _containerViewport = _itemContainer.GetViewport();
         _itemContainer.GuiInput += ProcessScrollWheelAndDragInput;
         _itemContainer.MouseExited += () => _isDragging = false;
+
+        _additionalScrollInputTargets = additionalScrollInputTargets;
+        foreach (var control in _additionalScrollInputTargets)
+        {
+            if (ReferenceEquals(control, _itemContainer)) continue;
+            control.GuiInput += ProcessScrollWheelAndDragInput;
+        }
 
         _collectInvincibleControlHandler = CollectButtonInstance;
         _currentView = new DataView[ViewXCount, ViewYCount];
@@ -126,19 +155,41 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             instance.CallCreate();
             _buttonPool.Push(instance);
         }
+    }
 
-        return;
+    private void WireInteractiveScrollBar(ScrollBar? scrollBar, bool interactive, bool vertical)
+    {
+        if (scrollBar is null || !interactive) return;
 
-        static void InitializeScrollBar(ScrollBar? scrollBar)
+        if (vertical)
         {
-            if (scrollBar is null) return;
-            scrollBar.Rounded = false;
-            scrollBar.MaxValue = 1f;
-            scrollBar.MinValue = 0f;
-            scrollBar.Step = 0;
-            scrollBar.FocusMode = Control.FocusModeEnum.None;
-            scrollBar.MouseFilter = Control.MouseFilterEnum.Ignore;
+            _verticalScrollBarValueChangedCallable = Callable.From((double value) => OnInteractiveVerticalScrollBarValueChanged(value));
+            scrollBar.Connect(Godot.Range.SignalName.ValueChanged, _verticalScrollBarValueChangedCallable);
+            _verticalScrollBarGuiInputCallable = Callable.From((InputEvent inputEvent) => OnInteractiveVerticalScrollBarGuiInput(inputEvent));
+            scrollBar.Connect(Control.SignalName.GuiInput, _verticalScrollBarGuiInputCallable);
+            _verticalScrollBarSignalsConnected = true;
         }
+        else
+        {
+            _horizontalScrollBarValueChangedCallable = Callable.From((double value) => OnInteractiveHorizontalScrollBarValueChanged(value));
+            scrollBar.Connect(Godot.Range.SignalName.ValueChanged, _horizontalScrollBarValueChangedCallable);
+            _horizontalScrollBarGuiInputCallable = Callable.From((InputEvent inputEvent) => OnInteractiveHorizontalScrollBarGuiInput(inputEvent));
+            scrollBar.Connect(Control.SignalName.GuiInput, _horizontalScrollBarGuiInputCallable);
+            _horizontalScrollBarSignalsConnected = true;
+        }
+    }
+
+    private static void InitializeScrollBar(ScrollBar? scrollBar, bool interactive)
+    {
+        if (scrollBar is null) return;
+        scrollBar.Rounded = false;
+        scrollBar.MaxValue = 1f;
+        scrollBar.MinValue = 0f;
+        scrollBar.Step = 0;
+        scrollBar.FocusMode = Control.FocusModeEnum.None;
+        scrollBar.MouseFilter = interactive
+            ? Control.MouseFilterEnum.Stop
+            : Control.MouseFilterEnum.Ignore;
     }
 
     public bool EnableDragging { get; set; }
@@ -149,6 +200,12 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     public int ViewXCount { get; }
     public int ViewYCount { get; }
 
+    /// <inheritdoc />
+    public FocusEdgeBehavior HorizontalFocusEdgeBehavior { get; set; } = FocusEdgeBehavior.None;
+
+    /// <inheritdoc />
+    public FocusEdgeBehavior VerticalFocusEdgeBehavior { get; set; } = FocusEdgeBehavior.None;
+
     public IElementPositioner ElementPositioner { get; set; }
     public IElementTweener ElementTweener { get; set; }
     public IElementFader ElementFader { get; set; }
@@ -158,6 +215,16 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     public IElementFader VScrollBarFader { get; set; }
     public bool AutoHideHScrollBar { get; set; }
     public bool AutoHideVScrollBar { get; set; }
+    public Control.FocusBehaviorRecursiveEnum FocusBehaviorRecursive
+    {
+        get => _itemContainer.FocusBehaviorRecursive;
+        set => _itemContainer.FocusBehaviorRecursive = value;
+    }
+    public Color Modulate
+    {
+        get => _itemContainer.Modulate;
+        set => _itemContainer.Modulate = value;
+    }
 
     public bool GrabFocus() =>
         _currentSelectedData.TryUnwrap(out var currentSelectedData)
@@ -257,11 +324,33 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     public void Redraw()
     {
+        ClampViewOffsetToCurrentMetrics();
         Redraw(out _, out _, out _, out _, out _, out _, out var dataSetMaxXIndex, out var dataSetMaxYIndex);
         UpdateScrollBar(dataSetMaxXIndex + 1, dataSetMaxYIndex + 1);
     }
 
-    public TExtraArgument? ExtraArgument { get; }
+    /// <inheritdoc/>
+    public void ForceRedraw()
+    {
+        ClampViewOffsetToCurrentMetrics();
+        Redraw(out _, out _, out _, out _, out _, out _, out var dataSetMaxXIndex, out var dataSetMaxYIndex);
+        UpdateScrollBar(dataSetMaxXIndex + 1, dataSetMaxYIndex + 1);
+
+        foreach (var viewItem in _currentView)
+        {
+            var button = viewItem.AssignedButton;
+            if (button is not null) button.DrawGridItem(button.Info!.Value);
+        }
+    }
+
+    private void ClampViewOffsetToCurrentMetrics()
+    {
+        _dataInspector.GetDataSetCurrentMetrics(out var dataSetXCount, out var dataSetYCount);
+        ViewXIndex = Math.Clamp(ViewXIndex, 0, Math.Max(0, dataSetXCount - ViewXCount));
+        ViewYIndex = Math.Clamp(ViewYIndex, 0, Math.Max(0, dataSetYCount - ViewYCount));
+    }
+
+    public TExtraArgument ExtraArgument { get; }
 
     public void FocusTo(VirtualGridViewItemArg<TDataType, TExtraArgument>.CellInfo info)
     {
@@ -309,9 +398,58 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                 out var targetAbsoluteYIndex
             )) return;
 
-        if (!readOnlyDataArray.TryGetData(targetAbsoluteXIndex, targetAbsoluteYIndex, out var data)) return;
-        GrabFocus(FocusFinders.Value, data);
+        TryGrabFocusCore(
+            targetAbsoluteXIndex - ViewXIndex,
+            targetAbsoluteYIndex - ViewYIndex
+        );
     }
+
+    /// <inheritdoc />
+    public bool TryHandleDataSetEdge(MoveDirection moveDirection, int viewXIndex, int viewYIndex)
+    {
+        var behavior = moveDirection is MoveDirection.Left or MoveDirection.Right
+            ? HorizontalFocusEdgeBehavior
+            : VerticalFocusEdgeBehavior;
+
+        return behavior switch
+        {
+            FocusEdgeBehavior.None => false,
+            FocusEdgeBehavior.Clamped => true,
+            FocusEdgeBehavior.Looped => TryLoopFocusAtDataSetEdge(moveDirection, viewXIndex, viewYIndex),
+            _ => false,
+        };
+    }
+
+    private bool TryLoopFocusAtDataSetEdge(MoveDirection moveDirection, int viewXIndex, int viewYIndex)
+    {
+        var dataX = ViewXIndex + viewXIndex;
+        var dataY = ViewYIndex + viewYIndex;
+
+        return moveDirection switch
+        {
+            MoveDirection.Left => TryGrabFocusAtData(new Vector2I(-1, dataY), SearchDirections.Left)
+                                  || TryGrabFocusAtData(new Vector2I(-1, dataY), SearchDirections.LeftDown)
+                                  || TryGrabFocusAtData(new Vector2I(-1, dataY), SearchDirections.DownRight),
+            MoveDirection.Right => TryGrabFocusAtData(new Vector2I(0, dataY), SearchDirections.Right)
+                                   || TryGrabFocusAtData(new Vector2I(0, dataY), SearchDirections.RightDown)
+                                   || TryGrabFocusAtData(new Vector2I(0, dataY), SearchDirections.DownRight),
+            MoveDirection.Up => TryGrabFocusAtData(new Vector2I(dataX, -1), SearchDirections.Up)
+                                || TryGrabFocusAtData(new Vector2I(dataX, -1), SearchDirections.UpRight)
+                                || TryGrabFocusAtData(new Vector2I(dataX, -1), SearchDirections.RightDown),
+            MoveDirection.Down => TryGrabFocusAtData(new Vector2I(dataX, 0), SearchDirections.Down)
+                                  || TryGrabFocusAtData(new Vector2I(dataX, 0), SearchDirections.DownRight)
+                                  || TryGrabFocusAtData(new Vector2I(dataX, 0), SearchDirections.RightDown),
+            _ => false,
+        };
+    }
+
+    private bool TryGrabFocusAtData(Vector2I dataPosition, SearchDirection searchDirection) =>
+        GrabFocus<Vector2I>(
+            FocusFinders.DataPosition,
+            StartHandlers.DataPosition,
+            dataPosition,
+            searchDirection
+        );
 
     private bool TryGetDataPositionRelativeToViewport(Func<TDataType, TDataType, bool> comparer, out int xIndex, out int yIndex, TDataType data)
     {
@@ -319,7 +457,7 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
         yIndex = -1;
         if (!Utils.SearchForData(_dataInspector, ViewXCount, ViewYCount, out var matchedViewData, comparer, data)) return false;
         var (matchedYIndex, matchedXOffset, matchedYOffset, matchXIndex) = matchedViewData;
-        int yIndex1 = matchedYOffset + matchedYIndex;
+        var yIndex1 = matchedYOffset + matchedYIndex;
         var absoluteDataPosition = new Vector2I(matchedXOffset + matchXIndex, yIndex1);
 
         var currentViewOffset = new Vector2I(ViewXIndex, ViewYIndex);
@@ -347,7 +485,8 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
         if (selectedView.GetFocusModeWithOverride() is Control.FocusModeEnum.None) return false;
 
-        selectedView.GrabFocus();
+        if (!selectedView.HasFocus()) selectedView.GrabFocus();
+        else selectedView.CallFocusEntered();
 
         return true;
     }
@@ -372,6 +511,68 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
         ApplyMovementOffset(offset);
         (targetXIndex, targetYIndex) = targetDataPosition;
+    }
+
+    public bool TryFindAssociatedControl<TControlType>(
+        Predicate<TDataType> predicate,
+        [NotNullWhen(true)] out TControlType? control,
+        out Vector2I controlViewPosition) where TControlType : Control
+    {
+        if (typeof(TControlType) != typeof(TButtonType))
+            throw new InvalidOperationException($"The specified control type '{typeof(TControlType)}' is not compatible with the button type '{typeof(TButtonType)}' of this VirtualGridView.");
+        var wrapper = new ReadOnlyDataArray<TDataType>(_dataInspector, ViewXCount, ViewYCount);
+
+        for (var yIndex = 0; yIndex < ViewYCount; yIndex++)
+        for (var xIndex = 0; xIndex < ViewXCount; xIndex++)
+        {
+            if (!wrapper.TryGetData(xIndex, yIndex, out var data)) continue;
+            if (!predicate(data)) continue;
+            var viewItem = _currentView[xIndex, yIndex];
+            if (viewItem.AssignedButton is not TControlType typedControl) continue;
+            control = typedControl;
+            controlViewPosition = new(xIndex, yIndex);
+            return true;
+        }
+
+        control = null;
+        controlViewPosition = Vector2I.Zero;
+        return false;
+    }
+
+
+    public bool TryGetControlAtViewPosition(
+        in Vector2I viewPosition,
+        [NotNullWhen(true)] out Control? control
+    )
+    {
+        if (viewPosition.X < 0 || viewPosition.Y < 0
+            || viewPosition.X >= ViewXCount || viewPosition.Y >= ViewYCount)
+        {
+            control = null;
+            return false;
+        }
+
+        control = _currentView[viewPosition.X, viewPosition.Y].AssignedButton;
+        return control is not null;
+    }
+
+    public bool TryGetControlAtViewPosition<TControlType>(
+        in Vector2I viewPosition,
+        [NotNullWhen(true)] out TControlType? control
+    ) where TControlType : Control
+    {
+        if (typeof(TControlType) != typeof(TButtonType))
+            throw new InvalidOperationException($"The specified control type '{typeof(TControlType)}' is not compatible with the button type '{typeof(TButtonType)}' of this VirtualGridView.");
+
+        if (!TryGetControlAtViewPosition(viewPosition, out var untypedControl)
+            || untypedControl is not TControlType typedControl)
+        {
+            control = null;
+            return false;
+        }
+
+        control = typedControl;
+        return true;
     }
 
     private static bool BackingResolver(object obj) => !((DataView)obj).Data.IsNull;
@@ -428,98 +629,85 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
     private void ProcessScrollWheelAndDragInput(InputEvent inputEvent)
     {
-        using (inputEvent)
+        if (this != Utils.CurrentActiveGridView) return;
+
+        if (Input.IsMouseButtonPressed(MouseButton.Left))
         {
-            if (this != Utils.CurrentActiveGridView) return;
-
-            if (Input.IsMouseButtonPressed(MouseButton.Left))
+            if (!_isDragging && EnableDragging)
             {
-                if (!_isDragging && EnableDragging)
-                {
-                    _isDragging = true;
-                    _startDragPosition = _containerViewport.GetMousePosition();
-                }
+                _isDragging = true;
+                _startDragPosition = _containerViewport.GetMousePosition();
             }
-            else
-            {
-                if (_isDragging)
-                {
-                    _isDragging = false;
-                    _startDragPosition = Vector2.Zero;
-                }
-            }
-
-
-            MoveDirection simulatedMoveDirection;
-
-            switch (inputEvent)
-            {
-                case InputEventMouseButton mouseButton:
-
-                    if (mouseButton.IsReleased()) return;
-
-                    var mouseButtonButtonIndex = mouseButton.ButtonIndex;
-
-                    var mapVH = mouseButton.GetModifiersMask().HasFlag(KeyModifierMask.MaskShift);
-
-                    switch (mouseButtonButtonIndex)
-                    {
-                        case MouseButton.WheelUp:
-                            simulatedMoveDirection = mapVH ? MoveDirection.Left : MoveDirection.Up;
-                            break;
-                        case MouseButton.WheelDown:
-                            simulatedMoveDirection = mapVH ? MoveDirection.Right : MoveDirection.Down;
-                            break;
-                        case MouseButton.WheelLeft:
-                            simulatedMoveDirection = MoveDirection.Left;
-                            break;
-                        case MouseButton.WheelRight:
-                            simulatedMoveDirection = MoveDirection.Right;
-                            break;
-                        default:
-                            return;
-                    }
-
-                    break;
-                case InputEventMouseMotion mouseMotion:
-
-                    if (!_isDragging) return;
-
-                    if (!TryGetMoveDirection(
-                            ref _startDragPosition,
-                            mouseMotion.GlobalPosition,
-                            _cellItemSize,
-                            out simulatedMoveDirection
-                        )) return;
-
-                    break;
-                default: return;
-            }
-
-            var currentFocusPosition = new Vector2I(_currentSelectedViewXIndex, _currentSelectedViewYIndex);
-
-            ElementPositioner.GetDragViewPosition(
-                _viewportSize,
-                simulatedMoveDirection,
-                currentFocusPosition,
-                out var targetFocusPosition
-            );
-
-            if (currentFocusPosition != targetFocusPosition)
-                _currentView[targetFocusPosition.X, targetFocusPosition.Y]
-                    .AssignedButton?.GrabFocus();
-
-            var eventName = simulatedMoveDirection switch
-            {
-                MoveDirection.Up => Utils.UIUp,
-                MoveDirection.Down => Utils.UIDown,
-                MoveDirection.Left => Utils.UILeft,
-                MoveDirection.Right => Utils.UIRight,
-                _ => throw new InvalidOperationException(),
-            };
-
-            Input.ParseInputEvent(new InputEventAction { Pressed = true, Action = eventName });
         }
+        else if (_isDragging)
+        {
+            _isDragging = false;
+            _startDragPosition = Vector2.Zero;
+        }
+
+        MoveDirection simulatedMoveDirection;
+
+        switch (inputEvent)
+        {
+            case InputEventMouseButton mouseButton:
+
+                if (mouseButton.IsReleased()) return;
+
+                var mouseButtonButtonIndex = mouseButton.ButtonIndex;
+
+                var mapVH = mouseButton.GetModifiersMask().HasFlag(KeyModifierMask.MaskShift);
+
+                switch (mouseButtonButtonIndex)
+                {
+                    case MouseButton.WheelUp:
+                        simulatedMoveDirection = mapVH ? MoveDirection.Left : MoveDirection.Up;
+                        break;
+                    case MouseButton.WheelDown:
+                        simulatedMoveDirection = mapVH ? MoveDirection.Right : MoveDirection.Down;
+                        break;
+                    case MouseButton.WheelLeft:
+                        simulatedMoveDirection = MoveDirection.Left;
+                        break;
+                    case MouseButton.WheelRight:
+                        simulatedMoveDirection = MoveDirection.Right;
+                        break;
+                    default:
+                        return;
+                }
+
+                _containerViewport.SetInputAsHandled();
+
+                break;
+            case InputEventMouseMotion mouseMotion:
+
+                if (!_isDragging) return;
+
+                if (!TryGetMoveDirection(
+                        ref _startDragPosition,
+                        mouseMotion.GlobalPosition,
+                        _cellItemSize,
+                        out simulatedMoveDirection
+                    )) return;
+
+                break;
+            default: return;
+        }
+
+        TryScrollViewByMoveDirection(simulatedMoveDirection);
+    }
+
+    private bool TryScrollViewByMoveDirection(MoveDirection direction)
+    {
+        var vertical = direction is MoveDirection.Up or MoveDirection.Down;
+        _dataInspector.GetDataSetCurrentMetrics(out var dataXCount, out var dataYCount);
+        var dataCount = vertical ? dataYCount : dataXCount;
+        var viewCount = vertical ? ViewYCount : ViewXCount;
+        if (viewCount >= dataCount) return false;
+
+        var delta = direction is MoveDirection.Down or MoveDirection.Right ? 1 : -1;
+        var current = vertical ? ViewYIndex : ViewXIndex;
+        var target = Math.Clamp(current + delta, 0, dataCount - viewCount);
+        return TryScrollViewToIndex(vertical, target, scrollBarDriving: false);
     }
 
     private static bool TryGetMoveDirection(ref Vector2 startDragPosition, Vector2 currentPosition, Vector2 objectDistance, out MoveDirection simulateDirection)
@@ -740,7 +928,7 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
         if (ViewYCount >= dataYCount)
         {
-            yProgress = 1f;
+            yProgress = 0f;
             yPage = 1f;
             canAutoHideYScrollBar = true;
         }
@@ -755,7 +943,7 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
         if (ViewXCount >= dataXCount)
         {
-            xProgress = 1f;
+            xProgress = 0f;
             xPage = 1f;
             canAutoHideXScrollBar = true;
         }
@@ -770,6 +958,8 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
         UpdateScroller(
             _verticalScrollBar,
+            _interactiveVerticalScrollBar,
+            ref _verticalScrollBarDriveSuspended,
             VScrollBarTweener,
             VScrollBarFader,
             yProgress,
@@ -782,6 +972,8 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
 
         UpdateScroller(
             _horizontalScrollBar,
+            _interactiveHorizontalScrollBar,
+            ref _horizontalScrollBarDriveSuspended,
             HScrollBarTweener,
             HScrollBarFader,
             xProgress,
@@ -791,27 +983,38 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
             AutoHideHScrollBar,
             ref _isHorizontalScrollBarVisible
         );
+    }
 
-        return;
+    private void UpdateScroller(
+        ScrollBar? scrollBar,
+        bool interactive,
+        ref bool driveSuspended,
+        IScrollBarTweener tweener,
+        IElementFader fader,
+        float progress,
+        float page,
+        bool noAnimation,
+        bool canAutoHide,
+        bool autoHide,
+        ref bool isCurrentVisible
+    )
+    {
+        if (scrollBar is null) return;
 
-        static void UpdateScroller(
-            ScrollBar? scrollBar,
-            IScrollBarTweener tweener,
-            IElementFader fader,
-            float progress,
-            float page,
-            bool noAnimation,
-            bool canAutoHide,
-            bool autoHide,
-            ref bool isCurrentVisible
-        )
+        if (interactive && !_scrollBarDrivingView && Input.IsMouseButtonPressed(MouseButton.Left))
         {
-            if (scrollBar is null) return;
+            InterruptScrollBarDrag(scrollBar);
+            driveSuspended = true;
+        }
+
+        _suppressScrollBarValueChanged = true;
+        try
+        {
             tweener.KillTween(scrollBar);
 
             if (noAnimation)
             {
-                scrollBar.Value = progress;
+                if (!_scrollBarDrivingView) scrollBar.Value = progress;
                 scrollBar.Page = page;
 
                 if (!autoHide) return;
@@ -857,9 +1060,195 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
                     }
                 }
 
-                tweener.UpdateValue(scrollBar, progress, page);
+                if (_scrollBarDrivingView)
+                    scrollBar.Page = page;
+                else
+                    tweener.UpdateValue(scrollBar, progress, page);
             }
         }
+        finally
+        {
+            _suppressScrollBarValueChanged = false;
+        }
+    }
+
+    private static void InterruptScrollBarDrag(ScrollBar scrollBar)
+    {
+        var mouseButton = new InputEventMouseButton
+        {
+            ButtonIndex = MouseButton.Left,
+            Pressed = false,
+            Position = scrollBar.GetLocalMousePosition(),
+            GlobalPosition = scrollBar.GetGlobalMousePosition(),
+        };
+        scrollBar.GetViewport().PushInput(mouseButton);
+    }
+
+    private void OnInteractiveHorizontalScrollBarGuiInput(InputEvent inputEvent)
+    {
+        if (inputEvent is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true })
+            _horizontalScrollBarDriveSuspended = false;
+    }
+
+    private void OnInteractiveVerticalScrollBarGuiInput(InputEvent inputEvent)
+    {
+        if (inputEvent is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true })
+            _verticalScrollBarDriveSuspended = false;
+    }
+
+    private void OnInteractiveHorizontalScrollBarValueChanged(double value) =>
+        HandleInteractiveScrollBarValueChanged(value, verticalAxis: false);
+
+    private void OnInteractiveVerticalScrollBarValueChanged(double value) =>
+        HandleInteractiveScrollBarValueChanged(value, verticalAxis: true);
+
+    private void HandleInteractiveScrollBarValueChanged(double value, bool verticalAxis)
+    {
+        if (_suppressScrollBarValueChanged) return;
+        if (verticalAxis ? _verticalScrollBarDriveSuspended : _horizontalScrollBarDriveSuspended) return;
+
+        _dataInspector.GetDataSetCurrentMetrics(out var dataXCount, out var dataYCount);
+        var dataCount = verticalAxis ? dataYCount : dataXCount;
+        var viewCount = verticalAxis ? ViewYCount : ViewXCount;
+        if (viewCount >= dataCount) return;
+
+        var targetIndex = (int)Math.Round(value * dataCount);
+        targetIndex = Math.Clamp(targetIndex, 0, dataCount - viewCount);
+        TryScrollViewToIndex(verticalAxis, targetIndex, scrollBarDriving: true);
+    }
+
+    private bool TryScrollViewToIndex(bool verticalAxis, int targetIndex, bool scrollBarDriving)
+    {
+        if (targetIndex == (verticalAxis ? ViewYIndex : ViewXIndex)) return false;
+
+        var preferredX = _currentSelectedViewXIndex;
+        var preferredY = _currentSelectedViewYIndex;
+
+        if (scrollBarDriving) _scrollBarDrivingView = true;
+        try
+        {
+            if (verticalAxis) ViewYIndex = targetIndex;
+            else ViewXIndex = targetIndex;
+
+            Redraw(
+                out _,
+                out _,
+                out _,
+                out _,
+                out _,
+                out _,
+                out var dataSetMaxXIndex,
+                out var dataSetMaxYIndex
+            );
+            UpdateScrollBar(dataSetMaxXIndex + 1, dataSetMaxYIndex + 1, noAnimation: true);
+            TryRelocateFocusAfterScrollBarDrive(verticalAxis, preferredX, preferredY);
+        }
+        finally
+        {
+            if (scrollBarDriving) _scrollBarDrivingView = false;
+        }
+
+        return true;
+    }
+
+    private void TryRelocateFocusAfterScrollBarDrive(bool verticalAxis, int preferredX, int preferredY)
+    {
+        if (ViewXCount <= 0 || ViewYCount <= 0) return;
+
+        preferredX = Math.Clamp(preferredX, 0, ViewXCount - 1);
+        preferredY = Math.Clamp(preferredY, 0, ViewYCount - 1);
+
+        if (TryGrabFocusAtViewCell(preferredX, preferredY)) return;
+
+        if (verticalAxis)
+        {
+            if (TryGrabNearestFocusInColumn(preferredX, preferredY)) return;
+
+            for (var distance = 1; distance < ViewXCount; distance++)
+            {
+                var left = preferredX - distance;
+                var right = preferredX + distance;
+                if (left >= 0 && TryGrabNearestFocusInColumn(left, preferredY)) return;
+                if (right < ViewXCount && TryGrabNearestFocusInColumn(right, preferredY)) return;
+            }
+        }
+        else
+        {
+            if (TryGrabNearestFocusInRow(preferredY, preferredX)) return;
+
+            for (var distance = 1; distance < ViewYCount; distance++)
+            {
+                var up = preferredY - distance;
+                var down = preferredY + distance;
+                if (up >= 0 && TryGrabNearestFocusInRow(up, preferredX)) return;
+                if (down < ViewYCount && TryGrabNearestFocusInRow(down, preferredX)) return;
+            }
+        }
+    }
+
+    private bool TryGrabNearestFocusInColumn(int column, int preferredY)
+    {
+        var bestRow = -1;
+        var bestDistance = int.MaxValue;
+
+        for (var row = 0; row < ViewYCount; row++)
+        {
+            if (!IsViewCellFocusable(column, row)) continue;
+
+            var distance = Math.Abs(row - preferredY);
+            if (distance > bestDistance) continue;
+            if (distance == bestDistance && row >= bestRow) continue;
+
+            bestDistance = distance;
+            bestRow = row;
+        }
+
+        return bestRow >= 0 && TryGrabFocusAtViewCell(column, bestRow);
+    }
+
+    private bool TryGrabNearestFocusInRow(int row, int preferredX)
+    {
+        var bestColumn = -1;
+        var bestDistance = int.MaxValue;
+
+        for (var column = 0; column < ViewXCount; column++)
+        {
+            if (!IsViewCellFocusable(column, row)) continue;
+
+            var distance = Math.Abs(column - preferredX);
+            if (distance > bestDistance) continue;
+            if (distance == bestDistance && column >= bestColumn) continue;
+
+            bestDistance = distance;
+            bestColumn = column;
+        }
+
+        return bestColumn >= 0 && TryGrabFocusAtViewCell(bestColumn, row);
+    }
+
+    private bool IsViewCellFocusable(int viewXIndex, int viewYIndex)
+    {
+        var button = _currentView[viewXIndex, viewYIndex].AssignedButton;
+        return button is not null
+               && !_movingOutControls.Contains(button)
+               && button.GetFocusModeWithOverride() is not Control.FocusModeEnum.None;
+    }
+
+    private bool TryGrabFocusAtViewCell(int viewXIndex, int viewYIndex)
+    {
+        if (!IsViewCellFocusable(viewXIndex, viewYIndex)) return false;
+
+        var viewItem = _currentView[viewXIndex, viewYIndex];
+        var button = viewItem.AssignedButton!;
+
+        _currentSelectedViewXIndex = viewXIndex;
+        _currentSelectedViewYIndex = viewYIndex;
+        _currentSelectedData = viewItem.Data;
+
+        if (!button.HasFocus()) button.GrabFocus();
+        else button.CallFocusEntered();
+
+        return true;
     }
 
     private void ApplyMovementOffset(Vector2I offset)
@@ -1136,6 +1525,29 @@ class VirtualGridViewImpl<TDataType, TButtonType, TExtraArgument> :
     /// <inheritdoc/>
     public void Dispose()
     {
+        if (_horizontalScrollBarSignalsConnected && _horizontalScrollBar is not null)
+        {
+            _horizontalScrollBar.Disconnect(Godot.Range.SignalName.ValueChanged, _horizontalScrollBarValueChangedCallable);
+            _horizontalScrollBar.Disconnect(Control.SignalName.GuiInput, _horizontalScrollBarGuiInputCallable);
+            _horizontalScrollBarSignalsConnected = false;
+        }
+
+        if (_verticalScrollBarSignalsConnected && _verticalScrollBar is not null)
+        {
+            _verticalScrollBar.Disconnect(Godot.Range.SignalName.ValueChanged, _verticalScrollBarValueChangedCallable);
+            _verticalScrollBar.Disconnect(Control.SignalName.GuiInput, _verticalScrollBarGuiInputCallable);
+            _verticalScrollBarSignalsConnected = false;
+        }
+
         while (_buttonPool.TryPop(out var instance)) instance.QueueFree();
+
+        if (GodotObject.IsInstanceValid(_itemContainer))
+            _itemContainer.GuiInput -= ProcessScrollWheelAndDragInput;
+        foreach (var control in _additionalScrollInputTargets)
+        {
+            if (!GodotObject.IsInstanceValid(control)) continue;
+            if (ReferenceEquals(control, _itemContainer)) continue;
+            control.GuiInput -= ProcessScrollWheelAndDragInput;
+        }
     }
 }

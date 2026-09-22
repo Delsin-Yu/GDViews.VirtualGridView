@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using Godot;
 using GodotViews.VirtualGrid.FocusFinding;
 using GodotViews.VirtualGrid.Positioner;
 using GodotViews.VirtualGrid.Transition;
@@ -6,11 +8,38 @@ using GodotViews.VirtualGrid.Transition;
 namespace GodotViews.VirtualGrid;
 
 /// <summary>
+/// Non-generic virtual grid view surface for viewport metrics and visible cell controls.
+/// </summary>
+public interface IVirtualGridView : IDisposable
+{
+    /// <summary>
+    /// The number of xs for the concurrently displayed virtualized grid items.
+    /// </summary>
+    int ViewXCount { get; }
+
+    /// <summary>
+    /// The number of ys for the concurrently displayed virtualized grid items.
+    /// </summary>
+    int ViewYCount { get; }
+
+    /// <summary>
+    /// Try to get the control at the specified view position.
+    /// </summary>
+    /// <param name="viewPosition">The viewport position of the control to get.</param>
+    /// <param name="control">When this method returns, contains the found control if successful; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if a control at the specified view position is found; otherwise, <see langword="false"/>.</returns>
+    bool TryGetControlAtViewPosition(
+        in Vector2I viewPosition,
+        [NotNullWhen(true)] out Control? control
+    );
+}
+
+/// <summary>
 /// Represents a controller that provides feature
 /// to navigate through and customise the virtualized grid view.   
 /// </summary>
 /// <typeparam name="TDataType">The type for the data this controller focuses on.</typeparam>
-public interface IVirtualGridView<TDataType> : IDisposable
+public interface IVirtualGridView<TDataType> : IVirtualGridView
 {
     /// <summary> When sets to true, the user can drag the grid view to scroll through the content. </summary>
     bool EnableDragging { get; set; }
@@ -70,20 +99,27 @@ public interface IVirtualGridView<TDataType> : IDisposable
     bool AutoHideVScrollBar { get; set; }
 
     /// <summary>
-    /// The number of xs for the concurrently displayed virtualized grid items.
+    /// Focus behavior when left/right input reaches a dataset edge. Defaults to <see cref="FocusEdgeBehavior.None"/>.
     /// </summary>
-    int ViewXCount { get; }
+    FocusEdgeBehavior HorizontalFocusEdgeBehavior { get; set; }
 
     /// <summary>
-    /// The number of ys for the concurrently displayed virtualized grid items.
+    /// Focus behavior when up/down input reaches a dataset edge. Defaults to <see cref="FocusEdgeBehavior.None"/>.
     /// </summary>
-    int ViewYCount { get; }
-
+    FocusEdgeBehavior VerticalFocusEdgeBehavior { get; set; }
 
     /// <summary>
-    /// Triggers a redraw of the current viewport, reflecting the external changes to the datasets.  
+    /// Triggers a redraw of the current viewport, reflecting the external changes to the datasets.
+    /// Clamps the viewport offset so it stays inside the current dataset metrics.
     /// </summary>
     void Redraw();
+
+    /// <summary>
+    /// Triggers a forced redraw of all currently visible items, calling <c>_OnGridItemDraw</c>
+    /// on every visible button regardless of whether the underlying data has changed.
+    /// Clamps the viewport offset so it stays inside the current dataset metrics.
+    /// </summary>
+    void ForceRedraw();
 
     /// <summary>
     /// Trying to create a focus on the first available element.
@@ -254,11 +290,46 @@ public interface IVirtualGridView<TDataType> : IDisposable
         Func<TDataType, TExtraArgument, bool> predicate,
         TExtraArgument extraArgument
     );
+
+    /// <summary>
+    /// Tries to find the control from the currently visible viewport that is associated with the data matching the specified predicate.
+    /// </summary>
+    /// <param name="predicate">The predicate used for finding the associated data.</param>
+    /// <param name="control">When this method returns, contains the found control if successful; otherwise, <see langword="null" />.</param>
+    /// <param name="controlViewPosition">When this method returns, contains the view position of the found control if successful; otherwise, <see cref="Vector2I.Zero"/>.</param>
+    /// <typeparam name="TControlType">The type of the control to find.</typeparam>
+    /// <returns><see langword="true" /> if a control associated with the matching data is found; otherwise, <see langword="false" />.</returns>
+    bool TryFindAssociatedControl<TControlType>(
+        Predicate<TDataType> predicate,
+        [NotNullWhen(true)] out TControlType? control,
+        out Vector2I controlViewPosition
+    ) where TControlType : Control;
+
+    /// <summary>
+    /// Try to get the control at the specified view position.
+    /// </summary>
+    /// <typeparam name="TControlType">The type of the control to get.</typeparam>
+    /// <param name="viewPosition">When this method returns, contains the view position of the found control if successful; otherwise, <see cref="Vector2I.Zero"/>.</param>
+    /// <param name="control">When this method returns, contains the found control if successful; otherwise, <see langword="null" />.</param>
+    /// <returns><see langword="true" /> if a control at the specified view position is found; otherwise, <see langword="false" />.</returns>
+    bool TryGetControlAtViewPosition<TControlType>(
+        in Vector2I viewPosition,
+        [NotNullWhen(true)] out TControlType? control
+    ) where TControlType : Control;
 }
 
 interface IVirtualGridViewParent<TDataType, TExtraArgument>
 {
-    TExtraArgument? ExtraArgument { get; }
+    TExtraArgument ExtraArgument { get; }
     void FocusTo(VirtualGridViewItemArg<TDataType, TExtraArgument>.CellInfo info);
     void MoveAndGrabFocus(MoveDirection moveDirection, int xIndex, int yIndex);
+
+    /// <summary>
+    /// Applies the configured <see cref="FocusEdgeBehavior"/> for a dataset-edge directional input.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the edge was clamped or looped;
+    /// <see langword="false"/> when the behavior is <see cref="FocusEdgeBehavior.None"/>.
+    /// </returns>
+    bool TryHandleDataSetEdge(MoveDirection moveDirection, int viewXIndex, int viewYIndex);
 }

@@ -36,6 +36,23 @@ public partial class VirtualGridViewItem<TDataType> : VirtualGridViewItemArg<TDa
     /// <inheritdoc />
     protected sealed override void _OnGridItemPressed(TDataType data, Vector2I viewPosition, NoExtraArgument extraArgument) => _OnGridItemPressed(data, viewPosition);
 
+    /// <inheritdoc />
+    protected sealed override void _OnGuiInput(
+        InputEvent inputEvent,
+        TDataType data,
+        Vector2I viewPosition,
+        NoExtraArgument extraArgument
+    ) =>
+        _OnGuiInput(inputEvent, data, viewPosition);
+
+    /// <summary>
+    /// Invoked when this virtualized grid element receives a GUI input event that was not
+    /// consumed by viewport edge scrolling.
+    /// </summary>
+    /// <param name="inputEvent">The input event received by this virtualized grid element.</param>
+    /// <param name="data">The data of the current virtualized grid element instance.</param>
+    /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
+    protected virtual void _OnGuiInput(InputEvent inputEvent, TDataType data, Vector2I viewPosition) { }
 
     /// <summary>
     /// Invoked when the internal data of the current virtualized grid element instance

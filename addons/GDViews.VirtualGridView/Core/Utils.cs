@@ -124,6 +124,20 @@ static class DelegateRunner
         }
     }
 
+    internal static bool RunProtected<T1, T2, T3, T4>(Action<T1, T2, T3, T4>? call, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, string actionName, string targetName, [CallerArgumentExpression(nameof(call))] string? methodName = null)
+    {
+        try
+        {
+            call?.Invoke(arg1, arg2, arg3, arg4);
+            return true;
+        }
+        catch (Exception e)
+        {
+            ReportException(e, actionName, targetName, methodName);
+            return false;
+        }
+    }
+
     internal static bool RunProtected(Action? call, string actionName, string targetName, [CallerArgumentExpression(nameof(call))] string? methodName = null)
     {
         try

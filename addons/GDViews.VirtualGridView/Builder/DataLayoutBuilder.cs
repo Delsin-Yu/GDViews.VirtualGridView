@@ -18,7 +18,7 @@ partial class DataLayoutBuilder<TDataType>(
     public DataLayoutSelectionBuilder DataLayoutSelectionBuilder { get; } = dataLayoutSelectionBuilder;
     public IEqualityComparer<TDataType> EqualityComparer { get; } = equalityComparer ?? EqualityComparer<TDataType>.Default;
 
-    IHorizontalDataLayoutBuilder<TDataType> IHorizontalDataLayoutBuilder<TDataType>.AppendDataSet(IDynamicGridViewer<TDataType> dataSetDefinition, int repeatCount = 1)
+    IHorizontalDataLayoutBuilder<TDataType> IHorizontalDataLayoutBuilder<TDataType>.AppendDataSet(IDynamicGridViewer<TDataType> dataSetDefinition, int repeatCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(repeatCount);
         for (var i = 0; i < repeatCount; i++)
@@ -72,7 +72,7 @@ partial class DataLayoutBuilder<TDataType>(
         );
     }
 
-    IVerticalDataLayoutBuilder<TDataType> IVerticalDataLayoutBuilder<TDataType>.AppendDataSet(IDynamicGridViewer<TDataType> dataSetDefinition, int repeatCount = 1)
+    IVerticalDataLayoutBuilder<TDataType> IVerticalDataLayoutBuilder<TDataType>.AppendDataSet(IDynamicGridViewer<TDataType> dataSetDefinition, int repeatCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(repeatCount);
         for (var i = 0; i < repeatCount; i++)

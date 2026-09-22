@@ -1,4 +1,3 @@
-﻿using Godot;
 using GodotViews.VirtualGrid.Positioner;
 
 namespace GodotViews.VirtualGrid;

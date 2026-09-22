@@ -29,7 +29,7 @@ public static class DynamicGridViewers
     /// can be passed to the builders of <see cref="IVirtualGridView{TDataType}"/>
     /// for constructing the datasets.</returns>
     public static IDynamicGridViewer<T> CreateLoopedList<T>(IReadOnlyList<T> list) => new LoopedCollectionImpl<T>(list);
-    
+
     private class CollectionImpl<T>(IReadOnlyList<T> backing) : IDynamicGridViewer<T>
     {
         public int FixedMetric { get; set; }
@@ -56,7 +56,7 @@ public static class DynamicGridViewers
             return true;
         }
     }
-    
+
     private class LoopedCollectionImpl<T>(IReadOnlyList<T> backing) : IDynamicGridViewer<T>
     {
         public int FixedMetric { get; set; }
@@ -78,13 +78,10 @@ public static class DynamicGridViewers
             }
 
             var index = dynamicMetricIndex * FixedMetric + fixedMetricIndex;
-            
+
             // Wrap around using modulo operation
             var wrappedIndex = index % backing.Count;
-            if (wrappedIndex < 0)
-            {
-                wrappedIndex += backing.Count;
-            }
+            if (wrappedIndex < 0) wrappedIndex += backing.Count;
 
             element = backing[wrappedIndex]!;
             return true;

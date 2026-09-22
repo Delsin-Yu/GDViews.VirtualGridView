@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using GodotViews.VirtualGrid.Transition.GodotTween;
 
 namespace GodotViews.VirtualGrid;

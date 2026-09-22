@@ -1,4 +1,3 @@
-﻿using Godot;
 using GodotViews.VirtualGrid.FocusFinding;
 
 namespace GodotViews.VirtualGrid;

@@ -12,7 +12,17 @@ public readonly struct ReadOnlyViewArray
     /// </summary>
     /// <param name="xIndex">The view x index.</param>
     /// <param name="yIndex">The view y index.</param>
-    public bool this[int xIndex, int yIndex] => _backingResolver(_backing[xIndex, yIndex]);
+    public bool this[int xIndex, int yIndex]
+    {
+        get
+        {
+            if (xIndex < 0 || xIndex >= ViewXCount)
+                return false;
+            if (yIndex < 0 || yIndex >= ViewYCount)
+                return false;
+            return _backingResolver(_backing[xIndex, yIndex]);
+        }
+    }
 
     /// <summary>
     /// The total defined xs of the viewport.

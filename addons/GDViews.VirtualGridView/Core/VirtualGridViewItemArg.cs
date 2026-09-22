@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Godot;
 
 namespace GodotViews.VirtualGrid
@@ -18,13 +19,13 @@ namespace GodotViews.VirtualGrid
         private readonly Action<TDataType, Vector2I, TExtraArgument> _onAppearHandler;
 
         private readonly Action _onCreateHandler;
-        private readonly Action<TExtraArgument?> _onDisappearHandler;
+        private readonly Action<TExtraArgument> _onDisappearHandler;
 
         private readonly Action<TDataType, Vector2I, TExtraArgument> _onDrawHandler;
 
         private readonly Action<TDataType, Vector2I, TExtraArgument> _onFocusEnteredHandler;
         private readonly Action<TDataType, Vector2I, TExtraArgument> _onFocusExitedHandler;
-        private readonly Action<InputEvent> _onGuiInputHandler;
+        private readonly Action<InputEvent, TDataType, Vector2I, TExtraArgument> _onGuiInputHandler;
 
         private readonly Action<TDataType, Vector2I, TExtraArgument> _onMoveHandler;
         private readonly Action<TDataType, Vector2I, TExtraArgument> _onMoveInHandler;
@@ -100,8 +101,32 @@ namespace GodotViews.VirtualGrid
                     return;
                 }
 
-                DelegateRunner.RunProtected(_onGuiInputHandler, inputEvent, "Gui Input", LocalName);
+                if (TryHandleConfiguredDataSetEdge(Utils.UIDown, EdgeType.Down, MoveDirection.Down, in info, inputEvent)
+                    || TryHandleConfiguredDataSetEdge(Utils.UIUp, EdgeType.Up, MoveDirection.Up, in info, inputEvent)
+                    || TryHandleConfiguredDataSetEdge(Utils.UILeft, EdgeType.Left, MoveDirection.Left, in info, inputEvent)
+                    || TryHandleConfiguredDataSetEdge(Utils.UIRight, EdgeType.Right, MoveDirection.Right, in info, inputEvent))
+                    return;
+
+                CallGuiInputDelegate(in info, inputEvent);
             }
+        }
+
+        private bool TryHandleConfiguredDataSetEdge(
+            StringName actionName,
+            EdgeType edgeType,
+            MoveDirection moveDirection,
+            ref readonly CellInfo info,
+            InputEvent inputEvent
+        )
+        {
+            if (!info.DataSetEdgeType.HasFlag(edgeType) || !inputEvent.IsAction(actionName, true))
+                return false;
+
+            if (!info.Parent.TryHandleDataSetEdge(moveDirection, info.XIndex, info.YIndex))
+                return false;
+
+            AcceptEvent();
+            return true;
         }
 
         private static bool Check(
@@ -133,7 +158,7 @@ namespace GodotViews.VirtualGrid
         private void CallDelegate(Action<TExtraArgument> call, in CellInfo info, string methodName) =>
             DelegateRunner.RunProtected(
                 call,
-                info.Parent.ExtraArgument!,
+                info.Parent.ExtraArgument,
                 methodName,
                 LocalName
             );
@@ -143,8 +168,19 @@ namespace GodotViews.VirtualGrid
                 call,
                 info.Data!,
                 new(info.XIndex, info.YIndex),
-                info.Parent.ExtraArgument!,
+                info.Parent.ExtraArgument,
                 methodName,
+                LocalName
+            );
+
+        private void CallGuiInputDelegate(in CellInfo info, InputEvent inputEvent) =>
+            DelegateRunner.RunProtected(
+                _onGuiInputHandler,
+                inputEvent,
+                info.Data!,
+                new(info.XIndex, info.YIndex),
+                info.Parent.ExtraArgument,
+                "Gui Input",
                 LocalName
             );
 
@@ -186,6 +222,12 @@ namespace GodotViews.VirtualGrid
             }
         }
 
+        internal void CallFocusEntered()
+        {
+            if (!TryGetInfo(out var info)) return;
+            CallDelegate(_onFocusEnteredHandler, info, "On Focus Enter");
+        }
+
         internal void CallCreate() => DelegateRunner.RunProtected(_onCreateHandler, "On Create", LocalName);
 
         internal void DrawGridItem(in CellInfo info)
@@ -217,7 +259,11 @@ namespace GodotViews.VirtualGrid
         }
 
         /// <inheritdoc cref="Control._GuiInput"/>
-        protected virtual void _OnGuiInput(InputEvent inputEvent) { }
+        /// <param name="inputEvent">The input event received by this virtualized grid element.</param>
+        /// <param name="data">The data of the current virtualized grid element instance.</param>
+        /// <param name="viewPosition">The position of this virtualized grid element instance in the viewport.</param>
+        /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
+        protected virtual void _OnGuiInput(InputEvent inputEvent, TDataType data, Vector2I viewPosition, TExtraArgument extraArgument) { }
 
         /// <inheritdoc cref="GodotObject._Notification"/>
         protected virtual void _OnNotification(int what) { }
@@ -274,7 +320,7 @@ namespace GodotViews.VirtualGrid
         /// Invoked when the view controller is hiding this virtualized grid element instance.
         /// </summary>
         /// <param name="extraArgument">The extra argument passed to this virtualized grid element instance.</param>
-        protected virtual void _OnGridItemDisapper(TExtraArgument? extraArgument) { }
+        protected virtual void _OnGridItemDisapper(TExtraArgument extraArgument) { }
 
         /// <summary>
         /// Invoked when this virtualized grid element instance grabs focus.
@@ -329,7 +375,7 @@ namespace GodotViews.VirtualGrid
             /// <summary>
             /// The extra argument associated to this virtualized grid element. 
             /// </summary>
-            public TExtraArgument? ExtraArgument => Parent.ExtraArgument;
+            public TExtraArgument ExtraArgument => Parent.ExtraArgument;
 
             /// <summary>
             /// The viewport x index this virtualized grid element belongs to.

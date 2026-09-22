@@ -1,5 +1,4 @@
-﻿using System;
-using Godot;
+using System;
 
 namespace GodotViews.VirtualGrid.FocusFinding;
 

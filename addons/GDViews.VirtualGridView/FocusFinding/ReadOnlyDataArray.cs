@@ -13,7 +13,7 @@ public readonly struct ReadOnlyDataArray<TDataType>
     /// The current xs of the viewport.
     /// </summary>
     public readonly int DataSetXCount;
-    
+
     /// <summary>
     /// The current ys of the viewport.
     /// </summary>
